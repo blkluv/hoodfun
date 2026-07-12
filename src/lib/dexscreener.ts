@@ -11,11 +11,15 @@ interface DsPair {
   priceUsd?: string;
   marketCap?: number;
   fdv?: number;
-  volume?: { h24?: number };
-  priceChange?: { h24?: number };
+  volume?: { h24?: number; h6?: number; h1?: number; m5?: number };
+  priceChange?: { h24?: number; h6?: number; h1?: number; m5?: number };
   liquidity?: { usd?: number };
   pairCreatedAt?: number;
-  txns?: { h24?: { buys?: number; sells?: number } };
+  txns?: {
+    h24?: { buys?: number; sells?: number };
+    h1?: { buys?: number; sells?: number };
+    m5?: { buys?: number; sells?: number };
+  };
   info?: { imageUrl?: string };
 }
 
@@ -25,9 +29,43 @@ function toNum(v: string | number | null | undefined): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+function trendScore(t: {
+  volume1h: number | null;
+  volume24h: number | null;
+  priceChange1h: number | null;
+  priceChange5m: number | null;
+  txns24h: number | null;
+  liquidity: number | null;
+}): number {
+  const v1 = t.volume1h ?? 0;
+  const v24 = t.volume24h ?? 0;
+  const c1 = Math.abs(t.priceChange1h ?? 0);
+  const c5 = Math.abs(t.priceChange5m ?? 0);
+  const tx = t.txns24h ?? 0;
+  const liq = Math.log10(Math.max(t.liquidity ?? 1, 1));
+  // Weight recent activity hard (NOXA-style trenches heat)
+  return v1 * 3 + v24 * 0.15 + c1 * 800 + c5 * 2000 + tx * 40 + liq * 500;
+}
+
 function pairToToken(p: DsPair): TokenCardData {
   const buys = p.txns?.h24?.buys ?? 0;
   const sells = p.txns?.h24?.sells ?? 0;
+  const volume1h = toNum(p.volume?.h1);
+  const volume24h = toNum(p.volume?.h24);
+  const priceChange1h = toNum(p.priceChange?.h1);
+  const priceChange5m = toNum(p.priceChange?.m5);
+  const liquidity = toNum(p.liquidity?.usd);
+  const txns24h = buys + sells || null;
+
+  const partial = {
+    volume1h,
+    volume24h,
+    priceChange1h,
+    priceChange5m,
+    txns24h,
+    liquidity,
+  };
+
   return {
     address: p.baseToken.address,
     name: p.baseToken.name,
@@ -35,22 +73,30 @@ function pairToToken(p: DsPair): TokenCardData {
     pairAddress: p.pairAddress,
     priceUsd: toNum(p.priceUsd),
     marketCap: toNum(p.marketCap ?? p.fdv),
-    volume24h: toNum(p.volume?.h24),
+    volume24h,
+    volume1h,
+    volume6h: toNum(p.volume?.h6),
+    priceChange5m,
+    priceChange1h,
+    priceChange6h: toNum(p.priceChange?.h6),
     priceChange24h: toNum(p.priceChange?.h24),
-    liquidity: toNum(p.liquidity?.usd),
+    liquidity,
     imageUrl: p.info?.imageUrl ?? null,
     dexscreenerUrl: p.url ?? null,
     createdAt: p.pairCreatedAt ?? null,
     source: "dex",
     isNative: false,
-    txns24h: buys + sells || null,
+    txns24h,
+    buys24h: buys || null,
+    sells24h: sells || null,
+    trendScore: trendScore(partial),
   };
 }
 
 async function searchQuery(q: string): Promise<DsPair[]> {
   const url = `https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(q)}`;
   const res = await fetch(url, {
-    next: { revalidate: 30 },
+    next: { revalidate: 20 },
     headers: { Accept: "application/json" },
   });
   if (!res.ok) return [];
@@ -58,7 +104,6 @@ async function searchQuery(q: string): Promise<DsPair[]> {
   return (data.pairs ?? []).filter((p) => p.chainId === DEXSCREENER_CHAIN);
 }
 
-/** Fetch + dedupe RH tokens. Keeps the highest-liquidity pair per token. */
 export async function fetchRobinhoodTokens(
   extraQueries: string[] = []
 ): Promise<TokenCardData[]> {
@@ -68,7 +113,6 @@ export async function fetchRobinhoodTokens(
 
   for (const pairs of batches) {
     for (const p of pairs) {
-      // skip pure WETH/stable pairs as base
       const sym = p.baseToken.symbol?.toUpperCase();
       if (sym === "WETH" || sym === "ETH" || sym === "USDC" || sym === "USDT") {
         continue;
@@ -82,9 +126,7 @@ export async function fetchRobinhoodTokens(
     }
   }
 
-  return [...best.values()].sort(
-    (a, b) => (b.marketCap ?? 0) - (a.marketCap ?? 0)
-  );
+  return [...best.values()].sort((a, b) => b.trendScore - a.trendScore);
 }
 
 export async function fetchTokenByAddress(

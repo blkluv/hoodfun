@@ -40,12 +40,15 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-sans">
         <Providers>
           <Header />
-          <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
+          <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-0 sm:py-2">
             {children}
           </main>
-          <footer className="border-t border-white/5 py-6 text-center text-[11px] text-white/30">
-            HoodMemes (hoodmemes.fun) is independent and not affiliated with
-            Robinhood Markets, Inc. · Not financial advice · DYOR
+          <footer className="border-t border-white/5 py-8 text-center text-[11px] text-white/25">
+            <div className="font-semibold text-white/40">hoodmemes.fun</div>
+            <div className="mt-1">
+              Independent · not affiliated with Robinhood Markets, Inc. · Not
+              financial advice · DYOR
+            </div>
           </footer>
         </Providers>
       </body>

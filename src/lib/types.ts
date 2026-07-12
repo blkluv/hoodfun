@@ -8,15 +8,42 @@ export interface TokenCardData {
   priceUsd: number | null;
   marketCap: number | null;
   volume24h: number | null;
+  volume1h: number | null;
+  volume6h: number | null;
+  priceChange5m: number | null;
+  priceChange1h: number | null;
+  priceChange6h: number | null;
   priceChange24h: number | null;
   liquidity: number | null;
   imageUrl: string | null;
   dexscreenerUrl: string | null;
   createdAt: number | null;
   source: TokenSource;
-  /** True when launched via HoodMemes bonding curve (not just indexed) */
   isNative: boolean;
   txns24h: number | null;
+  buys24h: number | null;
+  sells24h: number | null;
+  /** Composite score for "trending" */
+  trendScore: number;
 }
 
-export type SortKey = "marketCap" | "volume24h" | "priceChange24h" | "createdAt";
+export type BoardTab =
+  | "trending"
+  | "hot"
+  | "new"
+  | "gainers"
+  | "losers"
+  | "volume"
+  | "mcap"
+  | "liquidity";
+
+export type SortKey =
+  | "marketCap"
+  | "volume24h"
+  | "volume1h"
+  | "priceChange24h"
+  | "priceChange1h"
+  | "createdAt"
+  | "liquidity"
+  | "trendScore"
+  | "txns24h";

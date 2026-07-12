@@ -12,32 +12,33 @@ export function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-[#0b0f0c]/90 backdrop-blur-md">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4">
-          <Link href="/" className="flex items-center gap-2 group">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#00c805] text-sm font-black text-black shadow-[0_0_20px_rgba(0,200,5,0.35)]">
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-[#050806]/85 backdrop-blur-xl">
+        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4">
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <span className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-[#00c805] text-sm font-black text-black shadow-[0_0_24px_rgba(0,200,5,0.45)] transition group-hover:scale-105">
               HM
+              <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-white hm-live-dot" />
             </span>
             <div className="leading-tight">
-              <div className="text-sm font-bold tracking-tight text-white group-hover:text-[#00c805] transition-colors">
+              <div className="text-sm font-black tracking-tight text-white group-hover:text-[#00c805] transition-colors">
                 HoodMemes
               </div>
-              <div className="text-[10px] uppercase tracking-widest text-white/40">
-                hoodmemes.fun
+              <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-white/35">
+                trenches
               </div>
             </div>
           </Link>
 
-          <nav className="flex items-center gap-1 sm:gap-2">
+          <nav className="flex items-center gap-1.5 sm:gap-2">
             <Link
               href="/"
-              className="rounded-lg px-3 py-1.5 text-sm text-white/70 hover:bg-white/5 hover:text-white transition-colors"
+              className="hidden rounded-lg px-3 py-1.5 text-sm font-medium text-white/60 transition hover:bg-white/5 hover:text-white sm:inline"
             >
               Board
             </Link>
             <Link
               href="/create"
-              className="rounded-lg bg-[#00c805] px-3 py-1.5 text-sm font-semibold text-black hover:bg-[#00e006] transition-colors shadow-[0_0_16px_rgba(0,200,5,0.25)]"
+              className="rounded-xl bg-[#00c805] px-3.5 py-1.5 text-sm font-black text-black shadow-[0_0_20px_rgba(0,200,5,0.3)] transition hover:bg-[#00e006]"
             >
               Launch
             </Link>
@@ -48,9 +49,9 @@ export function Header() {
               <div className="flex items-center gap-1.5">
                 <Link
                   href="/account"
-                  className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-left transition hover:border-[#00c805]/40"
+                  className="rounded-xl border border-white/10 bg-white/[0.04] px-2.5 py-1.5 text-left transition hover:border-[#00c805]/40"
                 >
-                  <div className="font-mono text-[11px] text-white/90">
+                  <div className="font-mono text-[11px] font-semibold text-white/90">
                     {shortAddr(address, 4)}
                   </div>
                   <div className="text-[10px] text-white/40">
@@ -60,7 +61,7 @@ export function Header() {
                 <button
                   type="button"
                   onClick={logout}
-                  className="hidden rounded-lg px-2 py-1.5 text-xs text-white/40 hover:text-white sm:inline"
+                  className="hidden rounded-lg px-2 py-1.5 text-xs text-white/35 hover:text-white sm:inline"
                 >
                   Out
                 </button>
@@ -69,7 +70,7 @@ export function Header() {
               <button
                 type="button"
                 onClick={() => setConnectOpen(true)}
-                className="rounded-lg border border-white/15 px-3 py-1.5 text-sm font-medium text-white/80 hover:bg-white/5"
+                className="rounded-xl border border-white/15 bg-white/5 px-3.5 py-1.5 text-sm font-semibold text-white/85 transition hover:border-[#00c805]/40 hover:text-white"
               >
                 Log in
               </button>
