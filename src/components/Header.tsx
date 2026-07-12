@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "./AuthProvider";
@@ -15,9 +16,15 @@ export function Header() {
       <header className="sticky top-0 z-50 border-b border-white/10 bg-[#050806]/85 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <span className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-[#00c805] text-sm font-black text-black shadow-[0_0_24px_rgba(0,200,5,0.45)] transition group-hover:scale-105">
-              HM
-              <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-white hm-live-dot" />
+            <span className="relative h-9 w-9 overflow-hidden rounded-xl shadow-[0_0_24px_rgba(0,200,5,0.4)] ring-1 ring-[#00c805]/30 transition group-hover:scale-105 group-hover:shadow-[0_0_32px_rgba(0,200,5,0.55)]">
+              <Image
+                src="/logo.png"
+                alt="HoodMemes"
+                width={36}
+                height={36}
+                className="h-9 w-9 object-cover"
+                priority
+              />
             </span>
             <div className="leading-tight">
               <div className="text-sm font-black tracking-tight text-white group-hover:text-[#00c805] transition-colors">
