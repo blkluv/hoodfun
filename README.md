@@ -1,12 +1,14 @@
-# HoodFun
+# HoodMemes
 
-Pump.fun-style memecoin **board + launchpad** for **Robinhood Chain** (chain ID `4663`).
+**https://hoodmemes.fun** — Pump.fun-style memecoin **board + launchpad** for **Robinhood Chain** (chain ID `4663`).
+
+Repo: [danyalsad/hoodfun](https://github.com/danyalsad/hoodfun)
 
 ## Why this exists
 
 - Robinhood Chain meme meta is live (CASHCAT etc.)
 - NOXA paused **new token generation** due to spam
-- `hoodpump.fun` is nearly empty — we fill the board by indexing **existing Uniswap pairs** via DexScreener, then add native bonding-curve launches
+- Competitors like hoodpump are nearly empty — we fill the board by indexing **existing Uniswap pairs** via DexScreener, then add native bonding-curve launches
 
 ## Features (MVP)
 
@@ -33,9 +35,26 @@ Open [http://localhost:3000](http://localhost:3000).
 
 API: `GET /api/tokens` · `GET /api/tokens?q=CASHCAT` · `GET /api/tokens?address=0x…`
 
-## Domain candidates
+## Domain
 
-See conversation / buy ASAP. Working brand: **HoodFun**.
+| | |
+|--|--|
+| **Primary** | [hoodmemes.fun](https://hoodmemes.fun) |
+| Registrar | Namecheap |
+| Deploy | Vercel (recommended) |
+
+### Namecheap → Vercel DNS
+
+1. Deploy this repo to Vercel
+2. Project → Settings → Domains → add `hoodmemes.fun` and `www.hoodmemes.fun`
+3. In Namecheap → Domain List → Manage → Advanced DNS:
+
+| Type | Host | Value |
+|------|------|--------|
+| A | `@` | `76.76.21.21` |
+| CNAME | `www` | `cname.vercel-dns.com` |
+
+(Or use the exact records Vercel shows — they win if different.)
 
 ## Disclaimer
 

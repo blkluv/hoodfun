@@ -6,14 +6,14 @@ export function Header() {
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4">
         <Link href="/" className="flex items-center gap-2 group">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#00c805] text-sm font-black text-black shadow-[0_0_20px_rgba(0,200,5,0.35)]">
-            HF
+            HM
           </span>
           <div className="leading-tight">
             <div className="text-sm font-bold tracking-tight text-white group-hover:text-[#00c805] transition-colors">
-              HoodFun
+              HoodMemes
             </div>
             <div className="text-[10px] uppercase tracking-widest text-white/40">
-              Robinhood Chain
+              hoodmemes.fun
             </div>
           </div>
         </Link>

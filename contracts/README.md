@@ -1,4 +1,6 @@
-# HoodFun contracts (Robinhood Chain)
+# HoodMemes contracts (Robinhood Chain)
+
+Site: https://hoodmemes.fun
 
 Target chain: **Robinhood Chain mainnet** — chain ID `4663`, RPC `https://rpc.mainnet.chain.robinhood.com`.
 

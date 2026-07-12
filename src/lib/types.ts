@@ -14,7 +14,7 @@ export interface TokenCardData {
   dexscreenerUrl: string | null;
   createdAt: number | null;
   source: TokenSource;
-  /** True when launched via HoodFun bonding curve (not just indexed) */
+  /** True when launched via HoodMemes bonding curve (not just indexed) */
   isNative: boolean;
   txns24h: number | null;
 }

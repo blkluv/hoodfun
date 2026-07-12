@@ -29,7 +29,7 @@ export function TokenCard({ token }: { token: TokenCardData }) {
             <span className="truncate font-bold text-white">${token.symbol}</span>
             {token.isNative && (
               <span className="rounded bg-[#00c805]/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#00c805]">
-                HoodFun
+                HoodMemes
               </span>
             )}
           </div>

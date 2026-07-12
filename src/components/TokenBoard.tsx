@@ -59,7 +59,7 @@ export function TokenBoard() {
           </h1>
           <p className="mt-1 max-w-xl text-sm text-white/50">
             Live memecoins on Robinhood Chain — existing Uniswap pairs plus
-            upcoming HoodFun launches. NOXA paused creates; the board still
+            upcoming HoodMemes launches. NOXA paused creates; the board still
             pumps.
           </p>
         </div>

@@ -14,12 +14,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "HoodFun — Robinhood Chain launchpad",
+  title: "HoodMemes — Robinhood Chain launchpad",
   description:
-    "Pump-style memecoin board for Robinhood Chain. Browse live tokens, launch with bonding curves, trade the trenches.",
+    "Pump-style memecoin board for Robinhood Chain. Browse live tokens, launch with bonding curves, trade the trenches. hoodmemes.fun",
+  metadataBase: new URL("https://hoodmemes.fun"),
   openGraph: {
-    title: "HoodFun",
+    title: "HoodMemes",
     description: "The trenches on Robinhood Chain",
+    url: "https://hoodmemes.fun",
+    siteName: "HoodMemes",
   },
 };
 
@@ -39,8 +42,8 @@ export default function RootLayout({
           {children}
         </main>
         <footer className="border-t border-white/5 py-6 text-center text-[11px] text-white/30">
-          HoodFun is independent and not affiliated with Robinhood Markets, Inc.
-          · Not financial advice · DYOR
+          HoodMemes (hoodmemes.fun) is independent and not affiliated with
+          Robinhood Markets, Inc. · Not financial advice · DYOR
         </footer>
       </body>
     </html>
