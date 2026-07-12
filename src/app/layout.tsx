@@ -14,12 +14,26 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteDescription =
+  "Pump-style memecoin board for Robinhood Chain. Launch, trade, and burn in the trenches. hoodmemes.fun";
+
 export const metadata: Metadata = {
-  title: "HoodMemes — Robinhood Chain launchpad",
-  description:
-    "Pump-style memecoin board for Robinhood Chain. Browse live tokens, launch with bonding curves, trade the trenches. hoodmemes.fun",
+  title: {
+    default: "HoodMemes — Robinhood Chain launchpad",
+    template: "%s · HoodMemes",
+  },
+  description: siteDescription,
   metadataBase: new URL("https://hoodmemes.fun"),
   applicationName: "HoodMemes",
+  keywords: [
+    "HoodMemes",
+    "Robinhood Chain",
+    "memecoin",
+    "launchpad",
+    "pump",
+    "4663",
+  ],
+  authors: [{ name: "HoodMemes" }],
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -32,17 +46,32 @@ export const metadata: Metadata = {
     shortcut: ["/favicon.ico"],
   },
   openGraph: {
-    title: "HoodMemes",
-    description: "The trenches on Robinhood Chain",
+    type: "website",
+    locale: "en_US",
     url: "https://hoodmemes.fun",
     siteName: "HoodMemes",
-    images: [{ url: "/logo.png", width: 1024, height: 1024, alt: "HoodMemes" }],
+    title: "HoodMemes — Robinhood Chain Trenches",
+    description: siteDescription,
+    images: [
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: "HoodMemes — Robinhood Chain Trenches",
+        type: "image/png",
+      },
+    ],
   },
   twitter: {
-    card: "summary",
-    title: "HoodMemes",
-    description: "The trenches on Robinhood Chain",
-    images: ["/logo.png"],
+    card: "summary_large_image",
+    title: "HoodMemes — Robinhood Chain Trenches",
+    description: siteDescription,
+    images: ["/og.png"],
+    creator: "@hoodmemes",
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
