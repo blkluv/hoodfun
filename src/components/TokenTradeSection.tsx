@@ -13,13 +13,21 @@ import type { SiteConfig } from "@/lib/site-config";
 export function TokenTradeSection({
   tokenAddress,
   symbol,
+  marketHint,
 }: {
   tokenAddress: string;
   symbol: string;
+  marketHint?: Address | string | null;
 }) {
   const search = useSearchParams();
-  const [market, setMarket] = useState<string | null>(search.get("market"));
+  const [market, setMarket] = useState<string | null>(
+    marketHint || search.get("market")
+  );
   const [config, setConfig] = useState<SiteConfig | null>(null);
+
+  useEffect(() => {
+    if (marketHint) setMarket(marketHint);
+  }, [marketHint]);
 
   useEffect(() => {
     fetch("/api/site-config")
@@ -29,6 +37,8 @@ export function TokenTradeSection({
   }, []);
 
   useEffect(() => {
+    if (market) return;
+
     try {
       const raw = localStorage.getItem("hoodmemes_launches");
       if (raw) {
@@ -45,10 +55,10 @@ export function TokenTradeSection({
       /* ignore */
     }
 
-    // featured market from config
     if (config?.featured) {
       const f = config.featured.find(
-        (x) => x.address.toLowerCase() === tokenAddress.toLowerCase() && x.market
+        (x) =>
+          x.address.toLowerCase() === tokenAddress.toLowerCase() && x.market
       );
       if (f?.market) {
         setMarket(f.market);
@@ -56,7 +66,7 @@ export function TokenTradeSection({
       }
     }
 
-    if (!isFactoryConfigured() || market) return;
+    if (!isFactoryConfigured()) return;
 
     (async () => {
       try {
@@ -112,7 +122,10 @@ export function TokenTradeSection({
   if (config?.requireLoginToTrade === false) return panel;
 
   return (
-    <RequireAuth title="Log in to trade" blurb="Connect MetaMask or use your private quick wallet.">
+    <RequireAuth
+      title="Log in to trade"
+      blurb="Connect MetaMask or use your private quick wallet."
+    >
       {panel}
     </RequireAuth>
   );
