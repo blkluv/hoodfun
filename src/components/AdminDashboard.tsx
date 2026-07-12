@@ -40,6 +40,12 @@ export function AdminDashboard() {
         const j = await c.json();
         setConfig(j.config);
       }
+      try {
+        const d = await fetch("/api/admin/diagnose");
+        if (d.ok) setDiag(await d.json());
+      } catch {
+        /* ignore */
+      }
     }
   }, []);
 
@@ -75,6 +81,16 @@ export function AdminDashboard() {
 
   const [exportJson, setExportJson] = useState("");
   const [copied, setCopied] = useState(false);
+  const [diag, setDiag] = useState<Record<string, unknown> | null>(null);
+
+  async function loadDiag() {
+    try {
+      const res = await fetch("/api/admin/diagnose");
+      if (res.ok) setDiag(await res.json());
+    } catch {
+      /* ignore */
+    }
+  }
 
   async function save(partial?: Partial<SiteConfig>) {
     setBusy(true);
@@ -95,6 +111,7 @@ export function AdminDashboard() {
         (data.config ? JSON.stringify(data.config) : JSON.stringify(body));
       setExportJson(json);
 
+      await loadDiag();
       if (data.ok) {
         setMsg(
           `✓ Saved via ${data.persistence}${data.hint ? ` — ${data.hint}` : ""}`
@@ -103,9 +120,10 @@ export function AdminDashboard() {
       }
 
       // Soft failure — still show export path
-      setErr(data.hint || "Could not persist permanently on this host.");
+      const upErr = data.upstashError ? ` Upstash: ${data.upstashError}` : "";
+      setErr((data.hint || "Could not persist permanently.") + upErr);
       setMsg(
-        "Your changes are built below as SITE_CONFIG_JSON — copy into Vercel (one-time) or add Upstash/GITHUB_TOKEN for one-click saves."
+        "Fallback: copy SITE_CONFIG_JSON — or fix Upstash (no quotes, Production env, Redeploy)."
       );
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Save failed");
@@ -257,6 +275,49 @@ export function AdminDashboard() {
             </li>
           </ol>
         </div>
+      )}
+
+      {diag && (
+        <Section title="Persistence status">
+          <div className="grid gap-2 text-xs text-white/70 sm:grid-cols-2">
+            <div>
+              Upstash URL set:{" "}
+              <strong className="text-white">
+                {String(diag.upstashUrlSet)}
+              </strong>
+              {diag.upstashUrlHost ? (
+                <span className="text-white/40"> ({String(diag.upstashUrlHost)})</span>
+              ) : null}
+            </div>
+            <div>
+              Upstash token set:{" "}
+              <strong className="text-white">
+                {String(diag.upstashTokenSet)}
+              </strong>
+            </div>
+            <div className="sm:col-span-2">
+              Upstash PING:{" "}
+              <strong
+                className={
+                  String(diag.upstashPing).includes("PONG") ||
+                  String(diag.upstashPing) === "OK"
+                    ? "text-[#00c805]"
+                    : "text-amber-300"
+                }
+              >
+                {String(diag.upstashPing)}
+              </strong>
+            </div>
+          </div>
+          <p className="text-[11px] text-white/35">
+            If URL/token show false after you added them: remove surrounding
+            quotes in Vercel, enable Production, then Redeploy. Env vars only
+            apply to new deployments.
+          </p>
+          <button type="button" className={btnSec} onClick={loadDiag}>
+            Re-check
+          </button>
+        </Section>
       )}
 
       {/* Kill switches */}
