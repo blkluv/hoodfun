@@ -20,7 +20,8 @@ export async function PUT(req: NextRequest) {
   try {
     const body = (await req.json()) as Partial<SiteConfig>;
     const result = await saveSiteConfig(body);
-    return NextResponse.json(result, { status: result.ok ? 200 : 207 });
+    // 200 even for memory fallback so UI can show export helper
+    return NextResponse.json(result, { status: 200 });
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Save failed" },

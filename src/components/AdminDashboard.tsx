@@ -73,10 +73,14 @@ export function AdminDashboard() {
     setAuthed(false);
   }
 
+  const [exportJson, setExportJson] = useState("");
+  const [copied, setCopied] = useState(false);
+
   async function save(partial?: Partial<SiteConfig>) {
     setBusy(true);
     setMsg(null);
     setErr(null);
+    setCopied(false);
     try {
       const body = partial ?? config;
       const res = await fetch("/api/admin/config", {
@@ -86,19 +90,35 @@ export function AdminDashboard() {
       });
       const data = await res.json();
       if (data.config) setConfig(data.config);
-      if (!data.ok && res.status !== 207) {
-        throw new Error(data.error || data.hint || "Save failed");
+      const json =
+        data.exportJson ||
+        (data.config ? JSON.stringify(data.config) : JSON.stringify(body));
+      setExportJson(json);
+
+      if (data.ok) {
+        setMsg(
+          `✓ Saved via ${data.persistence}${data.hint ? ` — ${data.hint}` : ""}`
+        );
+        return;
       }
+
+      // Soft failure — still show export path
+      setErr(data.hint || "Could not persist permanently on this host.");
       setMsg(
-        data.ok
-          ? `Saved (${data.persistence})${data.hint ? ` — ${data.hint}` : ""}`
-          : data.hint || "Partial save — copy export JSON to Vercel"
+        "Your changes are built below as SITE_CONFIG_JSON — copy into Vercel (one-time) or add Upstash/GITHUB_TOKEN for one-click saves."
       );
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Save failed");
     } finally {
       setBusy(false);
     }
+  }
+
+  async function copyExport() {
+    const json = exportJson || JSON.stringify(config);
+    await navigator.clipboard.writeText(json);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   }
 
   function addFeatured() {
@@ -205,8 +225,37 @@ export function AdminDashboard() {
         </div>
       )}
       {err && (
-        <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-xs text-rose-200">
-          {err}
+        <div className="space-y-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs text-amber-100">
+          <p>{err}</p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={copyExport}
+              className="rounded-lg bg-[#00c805] px-3 py-1.5 font-bold text-black"
+            >
+              {copied ? "Copied!" : "Copy SITE_CONFIG_JSON"}
+            </button>
+          </div>
+          <ol className="list-decimal space-y-1 pl-4 text-amber-100/80">
+            <li>Vercel → Project → Settings → Environment Variables</li>
+            <li>
+              Name: <code className="text-white">SITE_CONFIG_JSON</code> · paste
+              the copied value · Production + Preview
+            </li>
+            <li>Deployments → … → Redeploy (or push any commit)</li>
+            <li>
+              Better long-term: free{" "}
+              <a
+                className="underline"
+                href="https://console.upstash.com"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Upstash Redis
+              </a>{" "}
+              → set UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN
+            </li>
+          </ol>
         </div>
       )}
 
