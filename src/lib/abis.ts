@@ -18,6 +18,7 @@ export const factoryAbi = [
           { name: "tokenBurnOnBuyBps", type: "uint16" },
         ],
       },
+      { name: "totalSupply", type: "uint256" },
       { name: "initialBuyMinTokens", type: "uint256" },
     ],
     outputs: [
@@ -28,6 +29,13 @@ export const factoryAbi = [
   {
     type: "function",
     name: "createFee",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "graduateThreshold",
     stateMutability: "view",
     inputs: [],
     outputs: [{ type: "uint256" }],
@@ -62,8 +70,10 @@ export const factoryAbi = [
       { name: "creator", type: "address", indexed: true },
       { name: "name", type: "string", indexed: false },
       { name: "symbol", type: "string", indexed: false },
+      { name: "totalSupply", type: "uint256", indexed: false },
       { name: "initialBuyEth", type: "uint256", indexed: false },
       { name: "createFeePaid", type: "uint256", indexed: false },
+      { name: "graduateThreshold", type: "uint256", indexed: false },
     ],
   },
 ] as const;
@@ -88,6 +98,13 @@ export const marketAbi = [
       { name: "minEthOut", type: "uint256" },
     ],
     outputs: [{ name: "ethToUser", type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "graduate",
+    stateMutability: "nonpayable",
+    inputs: [],
+    outputs: [],
   },
   {
     type: "function",
@@ -154,6 +171,34 @@ export const marketAbi = [
   },
   {
     type: "function",
+    name: "totalSupplyFixed",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "graduateThreshold",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "graduated",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ type: "bool" }],
+  },
+  {
+    type: "function",
+    name: "uniswapPair",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ type: "address" }],
+  },
+  {
+    type: "function",
     name: "fees",
     stateMutability: "view",
     inputs: [],
@@ -174,6 +219,26 @@ export const erc20Abi = [
     name: "balanceOf",
     stateMutability: "view",
     inputs: [{ name: "account", type: "address" }],
+    outputs: [{ type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "approve",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "spender", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
+    outputs: [{ type: "bool" }],
+  },
+  {
+    type: "function",
+    name: "allowance",
+    stateMutability: "view",
+    inputs: [
+      { name: "owner", type: "address" },
+      { name: "spender", type: "address" },
+    ],
     outputs: [{ type: "uint256" }],
   },
   {
@@ -207,6 +272,13 @@ export const erc20Abi = [
   {
     type: "function",
     name: "totalSupply",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "maxSupply",
     stateMutability: "view",
     inputs: [],
     outputs: [{ type: "uint256" }],

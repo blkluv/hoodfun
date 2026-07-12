@@ -116,6 +116,16 @@ export function TradePanel({ marketAddress, tokenAddress, symbol = "TOKEN" }: Pr
       } else {
         const tokensIn = parseEther(amount || "0");
         if (tokensIn === 0n) throw new Error("Enter token amount");
+        // approve market to pull tokens (fixed-supply inventory model)
+        const approveHash = await writeContract({
+          address: tokenAddress,
+          abi: erc20Abi,
+          functionName: "approve",
+          args: [marketAddress, tokensIn],
+        });
+        await publicClient.waitForTransactionReceipt({
+          hash: approveHash as Hex,
+        });
         const hash = await writeContract({
           address: marketAddress,
           abi: marketAbi,

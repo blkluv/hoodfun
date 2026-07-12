@@ -87,14 +87,32 @@ export function CurveChart({
           </div>
         </div>
         <div className="text-right text-[11px] text-white/40">
-          <div>
-            Not on DexScreener yet — trades the{" "}
-            <span className="text-[#00c805]">HoodMemes curve</span>
-          </div>
-          <div className="mt-0.5">
-            Raised {Number(curve.realEth).toFixed(4)} ETH · progress{" "}
-            {curve.progressPct.toFixed(1)}%
-          </div>
+          {curve.graduated ? (
+            <div>
+              <span className="font-bold text-[#00c805]">Graduated → Uniswap</span>
+              {curve.uniswapPair && (
+                <div className="mt-0.5 font-mono text-[10px]">
+                  pair {curve.uniswapPair.slice(0, 10)}…
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              <div>
+                Bonding curve · DexScreener after{" "}
+                <span className="text-[#00c805]">
+                  {curve.graduateThresholdEth || 0.25} ETH
+                </span>
+              </div>
+              <div className="mt-0.5">
+                Raised {Number(curve.realEth).toFixed(4)} ETH ·{" "}
+                {curve.progressPct.toFixed(1)}% to Uniswap
+              </div>
+            </>
+          )}
+          {curve.maxSupply && (
+            <div className="mt-0.5">Max supply {curve.maxSupply}</div>
+          )}
         </div>
       </div>
 
@@ -154,8 +172,13 @@ export function CurveChart({
       {/* progress to “graduation” soft target */}
       <div className="border-t border-white/5 px-4 py-3">
         <div className="mb-1.5 flex justify-between text-[11px] text-white/40">
-          <span>Bonding progress</span>
-          <span className="text-white/70">{curve.progressPct.toFixed(1)}% to soft target</span>
+          <span>{curve.graduated ? "Graduated" : "To Uniswap / DexScreener"}</span>
+          <span className="text-white/70">
+            {curve.progressPct.toFixed(1)}%
+            {!curve.graduated && curve.graduateThresholdEth
+              ? ` of ${curve.graduateThresholdEth} ETH`
+              : ""}
+          </span>
         </div>
         <div className="h-2 overflow-hidden rounded-full bg-white/10">
           <div
@@ -164,8 +187,9 @@ export function CurveChart({
           />
         </div>
         <p className="mt-2 text-[10px] text-white/30">
-          DexScreener only lists Uniswap pairs. Your token trades on the HoodMemes
-          bonding curve until graduation — chart & price are live from chain.
+          {curve.graduated
+            ? "Liquidity is on Uniswap V2 (LP burned). DexScreener should index the pair shortly."
+            : "Fixed max supply. When the raise target hits, liquidity auto-seeds Uniswap and DexScreener can list it."}
         </p>
       </div>
     </div>
@@ -192,7 +216,10 @@ export function CurveStats({ curve }: { curve: CurveSnapshot }) {
         }
       />
       <Stat label="Curve ETH" value={`${Number(curve.realEth).toFixed(4)} ETH`} />
-      <Stat label="Supply" value={curve.totalSupply} />
+      <Stat
+        label={curve.maxSupply ? "Max supply" : "Supply"}
+        value={curve.maxSupply ?? curve.totalSupply}
+      />
     </div>
   );
 }

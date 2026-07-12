@@ -21,6 +21,15 @@ const inputCls =
 
 const CREATE_FEE_FALLBACK = "0.0005";
 
+/** Fixed total supply presets (wei with 18 decimals) */
+export const SUPPLY_PRESETS = [
+  { label: "1 Billion", value: 1_000_000_000n * 10n ** 18n },
+  { label: "5 Billion", value: 5_000_000_000n * 10n ** 18n },
+  { label: "10 Billion", value: 10_000_000_000n * 10n ** 18n },
+  { label: "100 Billion", value: 100_000_000_000n * 10n ** 18n },
+  { label: "1 Trillion", value: 1_000_000_000_000n * 10n ** 18n },
+] as const;
+
 export function CreateForm() {
   const { address, mode, ethBalance, writeContract, refreshBalance } = useAuth();
   const [name, setName] = useState("");
@@ -28,6 +37,7 @@ export function CreateForm() {
   const [desc, setDesc] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [creatorBuy, setCreatorBuy] = useState("0.05");
+  const [totalSupply, setTotalSupply] = useState<bigint>(SUPPLY_PRESETS[0].value);
   const [preset, setPreset] = useState<FeePresetId>("balanced");
   const [fees, setFees] = useState<FeeConfig>(FEE_PRESETS.balanced.fees);
   const [busy, setBusy] = useState(false);
@@ -105,6 +115,7 @@ export function CreateForm() {
             feeBuybackBurnBps: fees.feeBuybackBurnBps,
             tokenBurnOnBuyBps: fees.tokenBurnOnBuyBps,
           },
+          totalSupply,
           0n,
         ],
         value,
@@ -232,10 +243,36 @@ export function CreateForm() {
         </div>
 
         <div className="space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-          <h3 className="text-sm font-bold text-white">1 · Creator buy supply</h3>
+          <h3 className="text-sm font-bold text-white">1 · Total supply (fixed)</h3>
           <p className="text-xs text-white/45">
-            ETH spent on the bonding curve at create (you receive tokens). Set 0
-            to skip. Plus anti-spam create fee (~{CREATE_FEE_FALLBACK} ETH).
+            Entire supply is minted once into the curve. No unlimited minting.
+            When ~0.25 ETH is raised, the market auto-graduates to Uniswap →
+            DexScreener.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {SUPPLY_PRESETS.map((p) => (
+              <button
+                key={p.label}
+                type="button"
+                onClick={() => setTotalSupply(p.value)}
+                className={`rounded-lg px-3 py-2 text-xs font-bold transition ${
+                  totalSupply === p.value
+                    ? "bg-[#00c805] text-black"
+                    : "bg-white/5 text-white/60 hover:bg-white/10"
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+          <h3 className="text-sm font-bold text-white">2 · Creator buy at launch</h3>
+          <p className="text-xs text-white/45">
+            ETH spent on the bonding curve at create (you receive tokens from the
+            fixed supply). Set 0 to skip. Plus create fee (~{CREATE_FEE_FALLBACK}{" "}
+            ETH).
           </p>
           <Field label="Initial buy (ETH)">
             <input
@@ -255,7 +292,7 @@ export function CreateForm() {
 
         <div className="space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
           <h3 className="text-sm font-bold text-white">
-            2 · Fees & burns (industry settings)
+            3 · Fees & burns
           </h3>
           <div className="flex flex-wrap gap-2">
             {(Object.keys(FEE_PRESETS) as Array<keyof typeof FEE_PRESETS>).map(

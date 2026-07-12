@@ -44,6 +44,7 @@ export type CurveSnapshot = {
   symbol: string;
   totalSupply: string;
   totalSupplyRaw: string;
+  maxSupply: string | null;
   virtualEth: string;
   virtualToken: string;
   realEth: string;
@@ -54,8 +55,11 @@ export type CurveSnapshot = {
   /** totalSupply * priceEth */
   marketCapEth: number;
   marketCapUsd: number | null;
-  /** rough progress vs virtual reserves (0-100) */
+  /** progress to graduate threshold (0-100) */
   progressPct: number;
+  graduateThresholdEth: number;
+  graduated: boolean;
+  uniswapPair: Address | null;
   ethUsd: number | null;
   fees: {
     buyFeeBps: number;
@@ -143,6 +147,10 @@ export async function fetchCurveSnapshot(
     realEth,
     fees,
     ethUsd,
+    graduated,
+    uniswapPair,
+    totalSupplyFixed,
+    graduateThreshold,
   ] = await Promise.all([
     pc.readContract({
       address: market,
@@ -175,6 +183,34 @@ export async function fetchCurveSnapshot(
       functionName: "fees",
     }) as Promise<readonly [number, number, number, number, number, number]>,
     fetchEthUsd(),
+    pc
+      .readContract({
+        address: market,
+        abi: marketAbi,
+        functionName: "graduated",
+      })
+      .catch(() => false) as Promise<boolean>,
+    pc
+      .readContract({
+        address: market,
+        abi: marketAbi,
+        functionName: "uniswapPair",
+      })
+      .catch(() => "0x0000000000000000000000000000000000000000") as Promise<Address>,
+    pc
+      .readContract({
+        address: market,
+        abi: marketAbi,
+        functionName: "totalSupplyFixed",
+      })
+      .catch(() => 0n) as Promise<bigint>,
+    pc
+      .readContract({
+        address: market,
+        abi: marketAbi,
+        functionName: "graduateThreshold",
+      })
+      .catch(() => 0n) as Promise<bigint>,
   ]);
 
   const [name, symbol, totalSupply] = await Promise.all([
@@ -201,21 +237,23 @@ export async function fetchCurveSnapshot(
   const supply = Number(formatEther(totalSupply));
   const priceEth = vTok > 0 ? vEth / vTok : 0;
   const priceUsd = ethUsd != null ? priceEth * ethUsd : null;
-  const marketCapEth = priceEth * supply;
-  const marketCapUsd = priceUsd != null ? priceUsd * supply : null;
+  // Market cap uses fixed max supply when available (Pump-style FDV)
+  const mcapBase =
+    totalSupplyFixed > 0n ? Number(formatEther(totalSupplyFixed)) : supply;
+  const marketCapEth = priceEth * mcapBase;
+  const marketCapUsd = priceUsd != null ? priceUsd * mcapBase : null;
 
-  // Progress: real ETH raised vs soft target (e.g. graduation ~24 ETH style)
-  // We use realEth / (realEth + remaining virtual gap) heuristic
   const real = Number(formatEther(realEth));
-  const startVirtual = 1.5; // DEFAULT_VIRTUAL_ETH from factory
-  const raised = Math.max(0, vEth - startVirtual);
-  // Show bonding progress: real ETH in market as % of a 10 ETH soft target
-  const softTarget = 10;
-  const progressPct = Math.min(100, (real / softTarget) * 100);
+  const thresh = Number(formatEther(graduateThreshold || 0n));
+  const progressPct =
+    thresh > 0 ? Math.min(100, (real / thresh) * 100) : graduated ? 100 : 0;
+  const maxSup =
+    totalSupplyFixed > 0n ? Number(formatEther(totalSupplyFixed)) : null;
 
   const trades = await fetchTrades(market);
   const chart = buildChart(trades, priceEth, ethUsd);
 
+  const zero = "0x0000000000000000000000000000000000000000";
   return {
     market,
     token,
@@ -224,6 +262,10 @@ export async function fetchCurveSnapshot(
     symbol,
     totalSupply: supply.toLocaleString(undefined, { maximumFractionDigits: 2 }),
     totalSupplyRaw: totalSupply.toString(),
+    maxSupply:
+      maxSup != null
+        ? maxSup.toLocaleString(undefined, { maximumFractionDigits: 0 })
+        : null,
     virtualEth: formatEther(virtualEth),
     virtualToken: formatEther(virtualToken),
     realEth: formatEther(realEth),
@@ -232,6 +274,10 @@ export async function fetchCurveSnapshot(
     marketCapEth,
     marketCapUsd,
     progressPct,
+    graduateThresholdEth: thresh,
+    graduated: Boolean(graduated),
+    uniswapPair:
+      uniswapPair && uniswapPair !== zero ? uniswapPair : null,
     ethUsd,
     fees: {
       buyFeeBps: Number(fees[0]),
