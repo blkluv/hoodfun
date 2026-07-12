@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Header } from "@/components/Header";
+import { Providers } from "@/components/Providers";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -37,14 +38,16 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans">
-        <Header />
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
-          {children}
-        </main>
-        <footer className="border-t border-white/5 py-6 text-center text-[11px] text-white/30">
-          HoodMemes (hoodmemes.fun) is independent and not affiliated with
-          Robinhood Markets, Inc. · Not financial advice · DYOR
-        </footer>
+        <Providers>
+          <Header />
+          <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
+            {children}
+          </main>
+          <footer className="border-t border-white/5 py-6 text-center text-[11px] text-white/30">
+            HoodMemes (hoodmemes.fun) is independent and not affiliated with
+            Robinhood Markets, Inc. · Not financial advice · DYOR
+          </footer>
+        </Providers>
       </body>
     </html>
   );

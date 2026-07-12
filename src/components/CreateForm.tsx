@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { parseEther, decodeEventLog, type Hex } from "viem";
-import Link from "next/link";
 import { ROBINHOOD_CHAIN } from "@/lib/chain";
 import { factoryAbi } from "@/lib/abis";
 import { FACTORY_ADDRESS, isFactoryConfigured } from "@/lib/contracts";
@@ -13,8 +12,9 @@ import {
   feeSplitOk,
   bpsToPct,
 } from "@/lib/feePresets";
-import { getSessionWalletClient } from "@/lib/sessionWallet";
-import { QuickWallet } from "./QuickWallet";
+import { getPublicClient } from "@/lib/wallet-tx";
+import { useAuth } from "./AuthProvider";
+import Link from "next/link";
 
 const inputCls =
   "w-full rounded-xl border border-white/10 bg-black/35 px-3.5 py-2.5 text-sm text-white placeholder:text-white/30 outline-none focus:border-[#00c805]/45 focus:ring-1 focus:ring-[#00c805]/25";
@@ -22,6 +22,7 @@ const inputCls =
 const CREATE_FEE_FALLBACK = "0.0005";
 
 export function CreateForm() {
+  const { address, mode, ethBalance, writeContract, refreshBalance } = useAuth();
   const [name, setName] = useState("");
   const [symbol, setSymbol] = useState("");
   const [desc, setDesc] = useState("");
@@ -84,12 +85,12 @@ export function CreateForm() {
 
     setBusy(true);
     try {
-      const { account, walletClient, publicClient } = getSessionWalletClient();
+      const publicClient = getPublicClient();
       const createFee = parseEther(CREATE_FEE_FALLBACK);
       const buyWei = parseEther(creatorBuy || "0");
       const value = createFee + buyWei;
 
-      const hash = await walletClient.writeContract({
+      const hash = await writeContract({
         address: FACTORY_ADDRESS as `0x${string}`,
         abi: factoryAbi,
         functionName: "createToken",
@@ -107,8 +108,6 @@ export function CreateForm() {
           0n,
         ],
         value,
-        account,
-        chain: walletClient.chain,
       });
 
       setMsg(`Submitted ${hash.slice(0, 12)}… waiting for confirm`);
@@ -148,13 +147,14 @@ export function CreateForm() {
             desc,
             image: imagePreview,
             createdAt: Date.now(),
-            creator: account.address,
+            creator: address,
           });
           localStorage.setItem(key, JSON.stringify(prev.slice(0, 100)));
         } catch {
           /* ignore */
         }
         setMsg(`$${symbol} live on bonding curve.`);
+        await refreshBalance();
       } else {
         setMsg("Confirmed — check explorer if token not decoded.");
       }
@@ -377,7 +377,23 @@ export function CreateForm() {
       </form>
 
       <div className="space-y-4 lg:sticky lg:top-20 lg:self-start">
-        <QuickWallet />
+        <div className="rounded-2xl border border-[#00c805]/20 bg-[#00c805]/[0.06] p-4 text-sm">
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-[#00c805]">
+            Paying from
+          </div>
+          <div className="mt-1 font-mono text-xs text-white/80 break-all">
+            {address}
+          </div>
+          <div className="mt-1 text-xs text-white/50">
+            {ethBalance} ETH · {mode === "session" ? "quick wallet" : "browser wallet"}
+          </div>
+          <Link
+            href="/account"
+            className="mt-2 inline-block text-xs text-[#00c805] hover:underline"
+          >
+            Manage wallet →
+          </Link>
+        </div>
         <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-[11px] leading-relaxed text-white/40">
           <p className="font-semibold text-white/60">How fees work</p>
           <ul className="mt-2 list-disc space-y-1 pl-4">

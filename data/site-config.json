@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "updatedAt": 0,
+  "heroTitle": "Robinhood trenches",
+  "heroSubtitle": "Live memecoins on Robinhood Chain — launch, trade, and burn on HoodMemes.",
+  "announcement": {
+    "enabled": false,
+    "text": "",
+    "href": "",
+    "tone": "info"
+  },
+  "maintenanceMode": false,
+  "launchesEnabled": true,
+  "tradingEnabled": true,
+  "featuredSectionTitle": "Featured",
+  "featured": [],
+  "hiddenTokens": [],
+  "blockedCreators": [],
+  "social": {
+    "twitter": "",
+    "telegram": "",
+    "discord": ""
+  },
+  "minLiquidityUsd": 0,
+  "showDexBoard": true,
+  "requireLoginToTrade": true,
+  "requireLoginToLaunch": true,
+  "notes": ""
+}

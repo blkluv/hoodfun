@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { Address } from "viem";
 import { TradePanel } from "./TradePanel";
-import { getPublicClient } from "@/lib/sessionWallet";
+import { RequireAuth } from "./RequireAuth";
+import { getPublicClient } from "@/lib/wallet-tx";
 import { factoryAbi } from "@/lib/abis";
 import { FACTORY_ADDRESS, isFactoryConfigured } from "@/lib/contracts";
+import type { SiteConfig } from "@/lib/site-config";
 
 export function TokenTradeSection({
   tokenAddress,
@@ -16,12 +18,17 @@ export function TokenTradeSection({
   symbol: string;
 }) {
   const search = useSearchParams();
-  const [market, setMarket] = useState<string | null>(
-    search.get("market")
-  );
+  const [market, setMarket] = useState<string | null>(search.get("market"));
+  const [config, setConfig] = useState<SiteConfig | null>(null);
 
   useEffect(() => {
-    // local launches
+    fetch("/api/site-config")
+      .then((r) => r.json())
+      .then(setConfig)
+      .catch(() => null);
+  }, []);
+
+  useEffect(() => {
     try {
       const raw = localStorage.getItem("hoodmemes_launches");
       if (raw) {
@@ -36,6 +43,17 @@ export function TokenTradeSection({
       }
     } catch {
       /* ignore */
+    }
+
+    // featured market from config
+    if (config?.featured) {
+      const f = config.featured.find(
+        (x) => x.address.toLowerCase() === tokenAddress.toLowerCase() && x.market
+      );
+      if (f?.market) {
+        setMarket(f.market);
+        return;
+      }
     }
 
     if (!isFactoryConfigured() || market) return;
@@ -56,26 +74,29 @@ export function TokenTradeSection({
         /* factory not live */
       }
     })();
-  }, [tokenAddress, market]);
+  }, [tokenAddress, market, config]);
+
+  if (config?.maintenanceMode || (config && !config.tradingEnabled)) {
+    return (
+      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm text-white/50">
+        Trading is temporarily disabled by admin.
+      </div>
+    );
+  }
 
   if (!market) {
     return (
       <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm text-white/50">
         <p className="font-semibold text-white/70">Native trade</p>
         <p className="mt-2 text-xs leading-relaxed">
-          Bonding-curve trading appears here for tokens launched on HoodMemes.
-          External Uniswap memes (DexScreener) use the Trade on Uniswap button
-          until we add a router. Deploy the factory and launch from{" "}
-          <a href="/create" className="text-[#00c805]">
-            /create
-          </a>{" "}
-          to enable one-click quick-wallet buys.
+          Bonding-curve trading appears for tokens launched on HoodMemes. Use
+          Uniswap for external pairs.
         </p>
       </div>
     );
   }
 
-  return (
+  const panel = (
     <div>
       <h2 className="mb-3 text-sm font-bold uppercase tracking-wider text-white/50">
         Trade on HoodMemes
@@ -86,5 +107,13 @@ export function TokenTradeSection({
         symbol={symbol}
       />
     </div>
+  );
+
+  if (config?.requireLoginToTrade === false) return panel;
+
+  return (
+    <RequireAuth title="Log in to trade" blurb="Connect MetaMask or use your private quick wallet.">
+      {panel}
+    </RequireAuth>
   );
 }

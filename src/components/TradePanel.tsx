@@ -8,9 +8,10 @@ import {
   type Hex,
 } from "viem";
 import { marketAbi, erc20Abi } from "@/lib/abis";
-import { getSessionWalletClient } from "@/lib/sessionWallet";
-import { QuickWallet } from "./QuickWallet";
+import { getPublicClient } from "@/lib/wallet-tx";
+import { useAuth } from "./AuthProvider";
 import { shortAddr } from "@/lib/format";
+import Link from "next/link";
 
 type Props = {
   marketAddress: Address;
@@ -19,6 +20,7 @@ type Props = {
 };
 
 export function TradePanel({ marketAddress, tokenAddress, symbol = "TOKEN" }: Props) {
+  const { address, mode, ethBalance, writeContract, refreshBalance } = useAuth();
   const [side, setSide] = useState<"buy" | "sell">("buy");
   const [amount, setAmount] = useState("0.01");
   const [quote, setQuote] = useState<string>("—");
@@ -30,23 +32,24 @@ export function TradePanel({ marketAddress, tokenAddress, symbol = "TOKEN" }: Pr
   const [burnAmt, setBurnAmt] = useState("");
 
   const refreshBal = useCallback(async () => {
+    if (!address) return;
     try {
-      const { account, publicClient } = getSessionWalletClient();
+      const publicClient = getPublicClient();
       const bal = await publicClient.readContract({
         address: tokenAddress,
         abi: erc20Abi,
         functionName: "balanceOf",
-        args: [account.address],
+        args: [address],
       });
       setTokenBal(Number(formatEther(bal as bigint)).toFixed(4));
     } catch {
       /* ignore */
     }
-  }, [tokenAddress]);
+  }, [tokenAddress, address]);
 
   const refreshQuote = useCallback(async () => {
     try {
-      const { publicClient } = getSessionWalletClient();
+      const publicClient = getPublicClient();
       if (side === "buy") {
         const ethIn = parseEther(amount || "0");
         if (ethIn === 0n) {
@@ -59,7 +62,9 @@ export function TradePanel({ marketAddress, tokenAddress, symbol = "TOKEN" }: Pr
           functionName: "getBuyQuote",
           args: [ethIn],
         })) as [bigint, bigint, bigint];
-        setQuote(`${Number(formatEther(tokensOut)).toLocaleString(undefined, { maximumFractionDigits: 2 })} $${symbol}`);
+        setQuote(
+          `${Number(formatEther(tokensOut)).toLocaleString(undefined, { maximumFractionDigits: 2 })} $${symbol}`
+        );
         setFeeNote(
           `fee ${Number(formatEther(feeEth)).toFixed(5)} ETH · burn ${Number(formatEther(tokensBurned)).toLocaleString(undefined, { maximumFractionDigits: 0 })} tokens`
         );
@@ -94,37 +99,35 @@ export function TradePanel({ marketAddress, tokenAddress, symbol = "TOKEN" }: Pr
     setErr(null);
     setTx(null);
     try {
-      const { account, walletClient, publicClient } = getSessionWalletClient();
+      if (!address) throw new Error("Log in first");
+      const publicClient = getPublicClient();
       if (side === "buy") {
         const value = parseEther(amount || "0");
         if (value === 0n) throw new Error("Enter ETH amount");
-        const hash = await walletClient.writeContract({
+        const hash = await writeContract({
           address: marketAddress,
           abi: marketAbi,
           functionName: "buy",
-          args: [account.address, 0n],
+          args: [address, 0n],
           value,
-          account,
-          chain: walletClient.chain,
         });
         setTx(hash);
         await publicClient.waitForTransactionReceipt({ hash: hash as Hex });
       } else {
         const tokensIn = parseEther(amount || "0");
         if (tokensIn === 0n) throw new Error("Enter token amount");
-        const hash = await walletClient.writeContract({
+        const hash = await writeContract({
           address: marketAddress,
           abi: marketAbi,
           functionName: "sell",
           args: [tokensIn, 0n],
-          account,
-          chain: walletClient.chain,
         });
         setTx(hash);
         await publicClient.waitForTransactionReceipt({ hash: hash as Hex });
       }
       await refreshBal();
       await refreshQuote();
+      await refreshBalance();
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Trade failed");
     } finally {
@@ -136,16 +139,14 @@ export function TradePanel({ marketAddress, tokenAddress, symbol = "TOKEN" }: Pr
     setBusy(true);
     setErr(null);
     try {
-      const { account, walletClient, publicClient } = getSessionWalletClient();
+      const publicClient = getPublicClient();
       const amountWei = parseEther(burnAmt || "0");
       if (amountWei === 0n) throw new Error("Enter burn amount");
-      const hash = await walletClient.writeContract({
+      const hash = await writeContract({
         address: tokenAddress,
         abi: erc20Abi,
         functionName: "burn",
         args: [amountWei],
-        account,
-        chain: walletClient.chain,
       });
       setTx(hash);
       await publicClient.waitForTransactionReceipt({ hash: hash as Hex });
@@ -160,7 +161,14 @@ export function TradePanel({ marketAddress, tokenAddress, symbol = "TOKEN" }: Pr
 
   return (
     <div className="space-y-4">
-      <QuickWallet compact />
+      <div className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-white/50">
+        Paying as{" "}
+        <span className="font-mono text-white/80">{shortAddr(address || "")}</span>{" "}
+        · {ethBalance} ETH · {mode === "session" ? "quick" : "browser"}{" "}
+        <Link href="/account" className="text-[#00c805]">
+          account
+        </Link>
+      </div>
 
       <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 space-y-4">
         <div className="flex gap-1 rounded-xl bg-black/30 p-1">
@@ -235,19 +243,13 @@ export function TradePanel({ marketAddress, tokenAddress, symbol = "TOKEN" }: Pr
             Tx {shortAddr(tx, 8)}
           </p>
         )}
-        {err && (
-          <p className="text-xs text-rose-300">{err}</p>
-        )}
+        {err && <p className="text-xs text-rose-300">{err}</p>}
       </div>
 
       <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 space-y-3">
         <div className="text-xs font-semibold uppercase tracking-wider text-white/45">
           Burn tokens
         </div>
-        <p className="text-[11px] text-white/40">
-          Permanently destroy supply you hold (creator or any holder). Separate
-          from auto-burn on buys / fee buyback-burn.
-        </p>
         <div className="flex gap-2">
           <input
             value={burnAmt}
@@ -268,10 +270,6 @@ export function TradePanel({ marketAddress, tokenAddress, symbol = "TOKEN" }: Pr
           </button>
         </div>
       </div>
-
-      <p className="text-[10px] text-white/25">
-        Market {shortAddr(marketAddress)} · signed by quick wallet (no popup)
-      </p>
     </div>
   );
 }

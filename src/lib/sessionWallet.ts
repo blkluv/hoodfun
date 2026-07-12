@@ -9,11 +9,9 @@
  */
 
 import {
-  createWalletClient,
   createPublicClient,
   http,
   type Account,
-  type WalletClient,
   type PublicClient,
   type Hex,
   type Chain,
@@ -108,22 +106,8 @@ export function getPublicClient(): PublicClient {
   });
 }
 
-export function getSessionWalletClient(): {
-  account: Account;
-  walletClient: WalletClient;
-  publicClient: PublicClient;
-} {
+export async function getSessionEthBalance(): Promise<bigint> {
   const { account } = getOrCreateSessionWallet();
   const publicClient = getPublicClient();
-  const walletClient = createWalletClient({
-    account,
-    chain: robinhoodChain,
-    transport: http(ROBINHOOD_CHAIN.rpcUrls.default.http[0]),
-  });
-  return { account, walletClient, publicClient };
-}
-
-export async function getSessionEthBalance(): Promise<bigint> {
-  const { account, publicClient } = getSessionWalletClient();
   return publicClient.getBalance({ address: account.address });
 }
