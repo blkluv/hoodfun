@@ -2,26 +2,51 @@
 
 Site: https://hoodmemes.fun
 
-Target chain: **Robinhood Chain mainnet** — chain ID `4663`, RPC `https://rpc.mainnet.chain.robinhood.com`.
+Target: **Robinhood Chain** — chain ID `4663`, RPC `https://rpc.mainnet.chain.robinhood.com`.
 
-## Planned modules
+## Features
 
-1. **`HoodToken`** — minimal ERC-20 (name/symbol/image metadata off-chain)
-2. **`BondingCurve`** — constant-product style virtual reserves; buy/sell in ETH
-3. **`Factory`** — `createToken(name, symbol, uri)` with **paid create fee** (anti-spam)
-4. **`Graduation`** — on market-cap / ETH threshold, seed Uniswap V3 pool, lock/burn LP
-5. **Fees** — protocol + creator split
+| Feature | Implementation |
+|--------|----------------|
+| Creator buy supply | `createToken` value above `createFee` buys on curve for creator |
+| Manual burn | `HoodToken.burn` / `BondingMarket.burnTokens` |
+| Token burn on buy | `tokenBurnOnBuyBps` — % of purchased tokens never minted |
+| Fee → creator | `feeCreatorBps` of trade fee |
+| Fee → protocol | `feeProtocolBps` |
+| Fee → buyback & burn | `feeBuybackBurnBps` — fee ETH buys tokens off curve, destroyed |
+| Anti-spam create fee | `createFee` (default 0.0005 ETH) |
+| Bonding curve | constant product virtual reserves |
 
-## Why paid create
+Fee split rule: `feeCreatorBps + feeProtocolBps + feeBuybackBurnBps == 10000`.
 
-NOXA paused free mints after spam/vamps. Create fee + rate limit is non-negotiable for day-1.
+## Test
 
-## Deploy (Foundry)
+```bash
+forge test -vv
+```
+
+## Deploy (mainnet RH)
 
 ```bash
 export RH_RPC_URL=https://rpc.mainnet.chain.robinhood.com
-forge init --force
-# forge create ... --rpc-url $RH_RPC_URL --chain 4663
+export PRIVATE_KEY=0x...
+export PROTOCOL=0xYourTreasury   # receives create fees + protocol fee share
+export CREATE_FEE_WEI=500000000000000   # 0.0005 ETH
+
+forge script script/Deploy.s.sol:Deploy \
+  --rpc-url $RH_RPC_URL \
+  --broadcast \
+  --chain 4663
 ```
 
-Contracts are intentionally not deployed until audit-lite + fee wiring is ready.
+Copy printed `HoodFactory` address into Vercel:
+
+```
+NEXT_PUBLIC_FACTORY_ADDRESS=0x...
+```
+
+## Contracts
+
+- `HoodToken.sol` — ERC-20 mint/burn
+- `BondingMarket.sol` — curve + fees
+- `HoodFactory.sol` — launches

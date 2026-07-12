@@ -26,6 +26,12 @@ export function Header() {
             Board
           </Link>
           <Link
+            href="/wallet"
+            className="rounded-lg px-3 py-1.5 text-sm text-white/70 hover:bg-white/5 hover:text-white transition-colors"
+          >
+            Wallet
+          </Link>
+          <Link
             href="/create"
             className="rounded-lg bg-[#00c805] px-3 py-1.5 text-sm font-semibold text-black hover:bg-[#00e006] transition-colors shadow-[0_0_16px_rgba(0,200,5,0.25)]"
           >

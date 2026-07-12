@@ -1,28 +1,25 @@
 # HoodMemes
 
-**https://hoodmemes.fun** — Pump.fun-style memecoin **board + launchpad** for **Robinhood Chain** (chain ID `4663`).
+**https://hoodmemes.fun** — Pump-style memecoin board + launchpad for **Robinhood Chain** (`4663`).
 
 Repo: [danyalsad/hoodfun](https://github.com/danyalsad/hoodfun)
 
-## Why this exists
+## What stands out
 
-- Robinhood Chain meme meta is live (CASHCAT etc.)
-- NOXA paused **new token generation** due to spam
-- Competitors like hoodpump are nearly empty — we fill the board by indexing **existing Uniswap pairs** via DexScreener, then add native bonding-curve launches
+1. **Creator buy** — launch with ETH to buy your own supply on the curve (not just “hope”)
+2. **Fees & burns (industry presets)**  
+   - Trade fee on buy/sell  
+   - Split: **creator** / **protocol** / **buyback & burn**  
+   - **Token burn on buy** (% of purchased supply destroyed)  
+   - **Manual burn** for any holder
+3. **Quick wallet** — browser keypair, deposit address, one-click trades **without MetaMask popups**
 
-## Features (MVP)
-
-- Live token board (multi-query DexScreener → RH chain only)
-- Sort by mcap / volume / gainers / newest
-- Search
-- Token page with Uniswap trade link + DexScreener embed
-- Create form UI (factory contracts next; anti-spam paid mint)
+Plus a live board of existing RH memes via DexScreener so the site isn’t empty.
 
 ## Stack
 
-- Next.js 16 (App Router) + Tailwind
-- DexScreener public API (no key)
-- Foundry-ready `contracts/` for RH EVM
+- Next.js 16 + Tailwind + viem  
+- Foundry contracts: `HoodFactory` · `BondingMarket` · `HoodToken`
 
 ## Dev
 
@@ -31,31 +28,28 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+```bash
+cd contracts && forge test -vv
+```
 
-API: `GET /api/tokens` · `GET /api/tokens?q=CASHCAT` · `GET /api/tokens?address=0x…`
+## Deploy factory (unlocks launch + curve trade)
 
-## Domain
+```bash
+export RH_RPC_URL=https://rpc.mainnet.chain.robinhood.com
+export PRIVATE_KEY=0x...
+export PROTOCOL=0xYourTreasury
+forge script contracts/script/Deploy.s.sol:Deploy --rpc-url $RH_RPC_URL --broadcast --chain 4663
+```
 
-| | |
-|--|--|
-| **Primary** | [hoodmemes.fun](https://hoodmemes.fun) |
-| Registrar | Namecheap |
-| Deploy | Vercel (recommended) |
+Vercel env:
 
-### Namecheap → Vercel DNS
+```
+NEXT_PUBLIC_FACTORY_ADDRESS=0x...
+NEXT_PUBLIC_RPC_URL=https://rpc.mainnet.chain.robinhood.com
+```
 
-1. Deploy this repo to Vercel
-2. Project → Settings → Domains → add `hoodmemes.fun` and `www.hoodmemes.fun`
-3. In Namecheap → Domain List → Manage → Advanced DNS:
-
-| Type | Host | Value |
-|------|------|--------|
-| A | `@` | `76.76.21.21` |
-| CNAME | `www` | `cname.vercel-dns.com` |
-
-(Or use the exact records Vercel shows — they win if different.)
+See `contracts/README.md` and `.env.example`.
 
 ## Disclaimer
 
-Not affiliated with Robinhood Markets, Inc. Not financial advice.
+Not affiliated with Robinhood Markets, Inc. Not financial advice. Quick wallet keys live in the browser only — export if you fund them.
