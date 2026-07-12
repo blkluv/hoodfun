@@ -1,11 +1,11 @@
 import { ROBINHOOD_CHAIN } from "./chain";
 
 /**
- * Set after deploy: NEXT_PUBLIC_FACTORY_ADDRESS=0x...
- * Until set, create/trade on curve is UI-ready but will show "factory not deployed".
+ * Live HoodFactory on Robinhood Chain (4663).
+ * Override with NEXT_PUBLIC_FACTORY_ADDRESS if you redeploy.
  */
 export const FACTORY_ADDRESS = (process.env.NEXT_PUBLIC_FACTORY_ADDRESS ||
-  "") as `0x${string}` | "";
+  "0xD0F7f28C32e111C2367aB08B289d66Ab3DeFf8Eb") as `0x${string}`;
 
 export const RPC_URL =
   process.env.NEXT_PUBLIC_RPC_URL ||
