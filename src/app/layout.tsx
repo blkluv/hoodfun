@@ -20,13 +20,18 @@ const geistMono = Geist_Mono({
 const siteDescription =
   "Pump-style memecoin board for Robinhood Chain. Launch, trade, and burn in the trenches. hoodmemes.fun";
 
+/** Canonical host = www (apex 308s to www; X crawler fails image redirects) */
+const SITE_URL = "https://www.hoodmemes.fun";
+/** Absolute OG URL — no redirect chain for Twitter/X */
+const OG_IMAGE = `${SITE_URL}/og.png?v=3`;
+
 export const metadata: Metadata = {
   title: {
     default: "HoodMemes — Robinhood Chain launchpad",
     template: "%s · HoodMemes",
   },
   description: siteDescription,
-  metadataBase: new URL("https://hoodmemes.fun"),
+  metadataBase: new URL(SITE_URL),
   applicationName: "HoodMemes",
   keywords: [
     "HoodMemes",
@@ -51,13 +56,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://hoodmemes.fun",
+    url: SITE_URL,
     siteName: "HoodMemes",
     title: "HoodMemes — Robinhood Chain Trenches",
     description: siteDescription,
     images: [
       {
-        url: "/og.png",
+        url: OG_IMAGE,
+        secureUrl: OG_IMAGE,
         width: 1200,
         height: 630,
         alt: "HoodMemes — Robinhood Chain Trenches",
@@ -69,7 +75,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "HoodMemes — Robinhood Chain Trenches",
     description: siteDescription,
-    images: ["/og.png"],
+    images: [OG_IMAGE],
     creator: "@hoodmemesdotfun",
     site: "@hoodmemesdotfun",
   },
@@ -78,7 +84,7 @@ export const metadata: Metadata = {
     follow: true,
   },
   alternates: {
-    canonical: "https://hoodmemes.fun",
+    canonical: SITE_URL,
   },
 };
 
