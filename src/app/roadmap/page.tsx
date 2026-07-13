@@ -76,6 +76,11 @@ const PHASES: Phase[] = [
         body: "Better ranking, new-pair alerts, and Fomo / Dex deep-links so launches surface where traders already live.",
         tag: "Growth",
       },
+      {
+        title: "Ansem-style airdrop",
+        body: "High-signal CT distribution: dust/bags to curated wallets (early trenchers, RH memecoin holders, KOL-adjacent lists) — loud, cultural, not a farm for bots. Aim is mindshare and real wallet activity, not empty sybil spam. Exact lists + size drop when ready; CA only from @hoodmemesdotfun.",
+        tag: "Culture",
+      },
     ],
   },
   {
@@ -206,6 +211,13 @@ export default function RoadmapPage() {
             Public dashboard so anyone can audit the flow
           </li>
         </ul>
+        <p className="mt-4 border-t border-white/10 pt-4 text-sm leading-relaxed text-white/50">
+          <strong className="text-white/80">Also cooking:</strong> an{" "}
+          <strong className="text-white/85">Ansem-style airdrop</strong> — CT
+          culture distribution to high-signal wallets so the official coin shows
+          up where the timeline already lives. Details when we ship it; not
+          financial advice, not a partnership claim.
+        </p>
       </section>
 
       {PHASES.map((phase) => (
