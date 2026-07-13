@@ -126,6 +126,12 @@ export default function RootLayout({
                 How it works
               </Link>
               <Link
+                href="/tokenlist"
+                className="font-semibold text-white/55 hover:text-[#00c805]"
+              >
+                Token list
+              </Link>
+              <Link
                 href="/disclaimer"
                 className="font-semibold text-white/55 hover:text-[#00c805]"
               >

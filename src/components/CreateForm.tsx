@@ -1041,7 +1041,7 @@ function SuccessPanel({
   };
 }) {
   const pct = creatorBps / 100;
-  const pageUrl = `https://hoodmemes.fun/token/${token}${pair ? `?pair=${pair}` : ""}`;
+  const pageUrl = `https://www.hoodmemes.fun/token/${token}${pair ? `?pair=${pair}` : ""}`;
   const tweetText = `$${symbol} just launched on Robinhood Chain via @hoodmemesdotfun\n\nCA: ${token}\n${pageUrl}`;
   const tweetIntent = `https://x.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
 
@@ -1069,6 +1069,7 @@ function SuccessPanel({
           {creatorBps > 0
             ? ` · Creator ${pct}% in your wallet`
             : " · fair launch"}
+          {imagePreview ? " · logo saved on HoodMemes" : ""}
         </p>
         <button
           type="button"
@@ -1116,10 +1117,45 @@ function SuccessPanel({
             rel="noreferrer"
             className="rounded-xl border border-white/15 px-5 py-3 text-sm font-semibold text-white"
           >
-            DexScreener
+            DexScreener chart
           </a>
         )}
       </div>
+
+      {/* Legit stack */}
+      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left space-y-3">
+        <div className="text-[10px] font-bold uppercase tracking-widest text-[#00c805]">
+          Legit stack
+        </div>
+        <ul className="space-y-2 text-[12px] leading-relaxed text-white/50">
+          <li>
+            <strong className="text-white/80">HoodMemes</strong> — logo + socials
+            live on your token page and our{" "}
+            <Link href="/tokenlist" className="text-[#00c805] hover:underline">
+              token list
+            </Link>
+            .
+          </li>
+          <li>
+            <strong className="text-white/80">DexScreener logo (optional, paid)</strong>{" "}
+            — they have no free API. Use Enhanced Token Info: chain{" "}
+            <em>Robinhood</em>, paste CA, upload logo.
+          </li>
+        </ul>
+        <a
+          href="https://marketplace.dexscreener.com/product/token-info"
+          target="_blank"
+          rel="noreferrer"
+          className="flex w-full items-center justify-center rounded-xl border border-amber-500/40 bg-amber-500/10 py-2.5 text-xs font-bold text-amber-100"
+        >
+          Set logo on DexScreener (paid) ↗
+        </a>
+        <p className="text-[10px] text-white/30">
+          CA for the form:{" "}
+          <span className="font-mono text-white/45">{token}</span>
+        </p>
+      </div>
+
       {(socials.website || socials.twitter || socials.telegram) && (
         <p className="text-xs text-white/40">
           Socials attached to the token page for authority.

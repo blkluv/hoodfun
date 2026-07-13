@@ -16,6 +16,7 @@ import {
   timeAgo,
 } from "@/lib/format";
 import { ROBINHOOD_CHAIN, UNISWAP_APP } from "@/lib/chain";
+import { DEX_TOKEN_INFO_URL } from "@/lib/dex-links";
 import { VerifiedBadge } from "./VerifyXPanel";
 
 type InstantLaunch = {
@@ -1127,7 +1128,7 @@ export function TokenPageClient({
             <Panel title="Quick links">
               <QLink href={tradeUrl()} label="Uniswap swap" />
               {dexscreenerUrl && (
-                <QLink href={dexscreenerUrl} label="DexScreener" />
+                <QLink href={dexscreenerUrl} label="DexScreener chart" />
               )}
               <QLink href={explorer} label="Token explorer" />
               {pairAddress && (
@@ -1142,7 +1143,33 @@ export function TokenPageClient({
                   label="Creator wallet"
                 />
               )}
+              <QLink
+                href="https://www.hoodmemes.fun/tokenlist.json"
+                label="HoodMemes token list"
+              />
             </Panel>
+
+            <div className="rounded-2xl border border-amber-500/25 bg-amber-500/5 p-3.5">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-amber-200/90">
+                Dex logo / socials
+              </div>
+              <p className="mt-1.5 text-[11px] leading-relaxed text-white/45">
+                Logo is on HoodMemes
+                {displayImage ? " ✓" : ""}. DexScreener icons need their paid
+                Enhanced Token Info (no free API).
+              </p>
+              <a
+                href={DEX_TOKEN_INFO_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-2 flex w-full items-center justify-center rounded-xl border border-amber-500/35 bg-amber-500/10 py-2 text-[11px] font-bold text-amber-100"
+              >
+                Open Dex Token Info ↗
+              </a>
+              <p className="mt-2 font-mono text-[9px] leading-relaxed text-white/30 break-all">
+                Form: Robinhood · {address}
+              </p>
+            </div>
 
             <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 px-3.5 py-3 text-[10px] leading-relaxed text-amber-100/60">
               <strong className="text-amber-100/80">Risk</strong> — Memecoins

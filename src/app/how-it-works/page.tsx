@@ -60,6 +60,33 @@ export default function HowItWorksPage() {
         remaining pool ETH (minus fees/gas). Memecoins can go to zero.
       </div>
 
+      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 space-y-2 text-sm text-white/50">
+        <h2 className="text-base font-black text-white">Legit stack</h2>
+        <p>
+          <strong className="text-white/80">1.</strong> Logo + socials on
+          HoodMemes (free, automatic on launch).
+        </p>
+        <p>
+          <strong className="text-white/80">2.</strong> Public{" "}
+          <Link href="/tokenlist" className="text-[#00c805] hover:underline">
+            token list
+          </Link>{" "}
+          for wallets/apps that import custom lists.
+        </p>
+        <p>
+          <strong className="text-white/80">3.</strong> Optional paid{" "}
+          <a
+            href="https://marketplace.dexscreener.com/product/token-info"
+            className="text-[#00c805] hover:underline"
+            target="_blank"
+            rel="noreferrer"
+          >
+            DexScreener Enhanced Token Info
+          </a>{" "}
+          if you want the logo on Dex itself (no free API).
+        </p>
+      </div>
+
       <div className="flex flex-wrap gap-3">
         <Link
           href="/create"

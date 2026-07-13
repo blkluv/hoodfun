@@ -36,6 +36,7 @@ export function Header() {
     { href: "/", label: "Board" },
     { href: "/create", label: "Launch" },
     { href: "/how-it-works", label: "How it works" },
+    { href: "/tokenlist", label: "List" },
   ];
 
   function navCls(href: string) {
