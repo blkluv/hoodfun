@@ -992,11 +992,17 @@ function SuccessPanel({
   };
 }) {
   const pct = creatorBps / 100;
+  const pageUrl = `https://hoodmemes.fun/token/${token}${pair ? `?pair=${pair}` : ""}`;
+  const tweetText = `$${symbol} just launched on Robinhood Chain via @hoodmemesdotfun\n\nCA: ${token}\n${pageUrl}`;
+  const tweetIntent = `https://x.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+
   return (
     <div className="mx-auto max-w-lg space-y-5 py-4 text-center">
       <div className="hm-glass-green rounded-3xl p-8">
-        <div className="text-4xl">🚀</div>
-        <h2 className="mt-3 text-2xl font-black text-white">
+        <div className="text-[10px] font-bold uppercase tracking-widest text-[#00c805]">
+          Launch complete
+        </div>
+        <h2 className="mt-3 text-3xl font-black text-white">
           ${symbol} is live
         </h2>
         <p className="mt-2 text-sm text-white/50">
@@ -1006,16 +1012,23 @@ function SuccessPanel({
             ? ` · Creator ${pct}% in your wallet`
             : " · fair launch"}
         </p>
-        <p className="mt-4 break-all font-mono text-[11px] text-white/35">
+        <button
+          type="button"
+          onClick={() => navigator.clipboard.writeText(token)}
+          className="mt-4 w-full break-all rounded-xl border border-white/10 bg-black/40 px-3 py-2.5 font-mono text-[11px] text-white/60 hover:border-[#00c805]/40 hover:text-white"
+        >
           {token}
-        </p>
+          <span className="mt-1 block font-sans text-[10px] font-bold text-[#00c805]">
+            Tap to copy CA
+          </span>
+        </button>
         {pair && (
-          <p className="mt-1 break-all font-mono text-[11px] text-white/35">
+          <p className="mt-2 break-all font-mono text-[10px] text-white/30">
             pair {pair}
           </p>
         )}
       </div>
-      <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
+      <div className="grid gap-2 sm:grid-cols-2">
         <Link
           href={`/token/${token}${pair ? `?pair=${pair}` : ""}`}
           className="rounded-xl bg-[#00c805] px-5 py-3 text-sm font-black text-black"
@@ -1023,12 +1036,20 @@ function SuccessPanel({
           Token page
         </Link>
         <a
+          href={tweetIntent}
+          target="_blank"
+          rel="noreferrer"
+          className="rounded-xl border border-sky-500/40 bg-sky-500/10 px-5 py-3 text-sm font-bold text-sky-100"
+        >
+          Post on X
+        </a>
+        <a
           href={`https://app.uniswap.org/swap?chain=robinhood&inputCurrency=NATIVE&outputCurrency=${token}`}
           target="_blank"
           rel="noreferrer"
           className="rounded-xl border border-white/15 px-5 py-3 text-sm font-semibold text-white"
         >
-          Uniswap ↗
+          Uniswap
         </a>
         {pair && (
           <a
@@ -1037,13 +1058,18 @@ function SuccessPanel({
             rel="noreferrer"
             className="rounded-xl border border-white/15 px-5 py-3 text-sm font-semibold text-white"
           >
-            DexScreener ↗
+            DexScreener
           </a>
         )}
       </div>
       {(socials.website || socials.twitter || socials.telegram) && (
         <p className="text-xs text-white/40">
-          Your socials are attached to the token page for authority.
+          Socials attached to the token page for authority.
+        </p>
+      )}
+      {!burnLp && (
+        <p className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-100/80">
+          You kept LP — you can remove liquidity later. Buyers will see this.
         </p>
       )}
     </div>

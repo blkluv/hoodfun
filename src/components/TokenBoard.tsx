@@ -6,16 +6,17 @@ import type { SiteConfig } from "@/lib/site-config";
 import { TokenCard } from "./TokenCard";
 import { formatPct, formatUsd, shortAddr, timeAgo } from "@/lib/format";
 import Link from "next/link";
+import { AddNetworkButton } from "./AddNetworkButton";
 
 const TABS: { id: BoardTab; label: string; emoji: string }[] = [
-  { id: "trending", label: "Trending", emoji: "🔥" },
-  { id: "hot", label: "Hot 1h", emoji: "⚡" },
-  { id: "new", label: "New", emoji: "✨" },
-  { id: "gainers", label: "Gainers", emoji: "📈" },
-  { id: "losers", label: "Losers", emoji: "📉" },
-  { id: "volume", label: "Volume", emoji: "💧" },
-  { id: "mcap", label: "MCap", emoji: "👑" },
-  { id: "liquidity", label: "Liquidity", emoji: "🏦" },
+  { id: "trending", label: "Trending", emoji: "" },
+  { id: "hot", label: "Hot 1h", emoji: "" },
+  { id: "new", label: "New", emoji: "" },
+  { id: "gainers", label: "Gainers", emoji: "" },
+  { id: "losers", label: "Losers", emoji: "" },
+  { id: "volume", label: "Volume", emoji: "" },
+  { id: "mcap", label: "MCap", emoji: "" },
+  { id: "liquidity", label: "Liquidity", emoji: "" },
 ];
 
 type ViewMode = "grid" | "table";
@@ -136,16 +137,9 @@ export function TokenBoard() {
     );
   }
 
-  const ann = config?.announcement;
-  const toneClass =
-    ann?.tone === "warn"
-      ? "border-amber-500/40 bg-amber-500/10 text-amber-100"
-      : ann?.tone === "success"
-        ? "border-[#00c805]/40 bg-[#00c805]/10 text-[#b8f5b8]"
-        : "border-sky-500/30 bg-sky-500/10 text-sky-100";
-
   const ticker = movers.length ? movers : tokens.slice(0, 12);
   const doubleTicker = [...ticker, ...ticker];
+  const official = featuredCards[0];
 
   return (
     <div className="relative -mx-4 space-y-0 sm:-mx-0">
@@ -153,18 +147,6 @@ export function TokenBoard() {
       <section className="relative overflow-hidden border-b border-white/5 px-4 pb-8 pt-2 sm:px-0">
         <div className="hm-grid pointer-events-none absolute inset-0 opacity-60" />
         <div className="relative space-y-6">
-          {ann?.enabled && ann.text && (
-            <div className={`rounded-xl border px-4 py-2.5 text-sm ${toneClass}`}>
-              {ann.href ? (
-                <a href={ann.href} target="_blank" rel="noreferrer" className="hover:underline">
-                  {ann.text}
-                </a>
-              ) : (
-                ann.text
-              )}
-            </div>
-          )}
-
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
               <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#00c805]/30 bg-[#00c805]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-[#00c805]">
@@ -178,32 +160,91 @@ export function TokenBoard() {
               </h1>
               <p className="mt-3 max-w-lg text-sm leading-relaxed text-white/45 sm:text-base">
                 {config?.heroSubtitle ||
-                  "Trending memecoins, instant launch, one-click trade. The board that actually pops."}
+                  "Launch a fixed-supply coin, seed Uniswap LP, trade immediately."}
               </p>
-              <div className="mt-5 flex flex-wrap gap-3">
+              <div className="mt-5 flex flex-wrap items-center gap-3">
                 <Link
                   href="/create"
-                  className="rounded-xl bg-[#00c805] px-5 py-2.5 text-sm font-black text-black shadow-[0_0_30px_rgba(0,200,5,0.35)] transition hover:bg-[#00e006] hover:shadow-[0_0_40px_rgba(0,200,5,0.5)]"
+                  className="rounded-xl bg-[#00c805] px-5 py-2.5 text-sm font-black text-black shadow-[0_0_30px_rgba(0,200,5,0.35)] transition hover:bg-[#00e006]"
                 >
-                  Launch coin 🚀
+                  Launch coin
                 </Link>
+                <a
+                  href="#board"
+                  className="rounded-xl border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white/80 transition hover:border-[#00c805]/40 hover:text-white"
+                >
+                  Browse trenches
+                </a>
                 <button
                   type="button"
                   onClick={load}
-                  className="rounded-xl border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white/80 transition hover:border-[#00c805]/40 hover:text-white"
+                  className="rounded-xl border border-white/10 px-4 py-2.5 text-sm font-semibold text-white/50 hover:text-white"
                 >
-                  Refresh board
+                  Refresh
                 </button>
+              </div>
+              <div className="mt-4">
+                <AddNetworkButton />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
               <HeroStat label="Tokens" value={String(totals.n)} accent />
-              <HeroStat label="Σ Volume 24h" value={formatUsd(totals.vol)} />
+              <HeroStat label="Vol 24h" value={formatUsd(totals.vol)} />
               <HeroStat label="Σ MCap" value={formatUsd(totals.mcap)} />
-              <HeroStat label="Hot 1h" value={`${totals.hot} 🔥`} />
+              <HeroStat label="Hot 1h" value={String(totals.hot)} />
             </div>
           </div>
+
+          {/* How it works */}
+          <div className="grid gap-2 sm:grid-cols-3">
+            {[
+              { n: "1", t: "Launch", d: "Name, supply, creator % (0–10%)" },
+              { n: "2", t: "Seed LP", d: "Your ETH + tokens → Uniswap V2" },
+              { n: "3", t: "Trade", d: "Live pool · DexScreener · share CA" },
+            ].map((s) => (
+              <div
+                key={s.n}
+                className="rounded-2xl border border-white/8 bg-black/30 px-3 py-3"
+              >
+                <div className="text-[10px] font-black text-[#00c805]">{s.n}</div>
+                <div className="text-sm font-bold text-white">{s.t}</div>
+                <div className="text-[11px] text-white/40">{s.d}</div>
+              </div>
+            ))}
+          </div>
+
+          {official && (
+            <Link
+              href={`/token/${official.address}`}
+              className="block overflow-hidden rounded-3xl border border-[#00c805]/35 bg-gradient-to-r from-[#00c805]/15 via-transparent to-transparent p-4 transition hover:border-[#00c805]/55 sm:p-5"
+            >
+              <div className="text-[10px] font-bold uppercase tracking-widest text-[#00c805]">
+                {config?.featuredSectionTitle || "Official / Featured"}
+              </div>
+              <div className="mt-1 flex flex-wrap items-center gap-3">
+                <div className="text-2xl font-black text-white">
+                  ${official.symbol}
+                </div>
+                <div className="text-sm text-white/45">{official.name}</div>
+                <div className="ml-auto text-sm font-bold tabular-nums text-white">
+                  {formatUsd(official.marketCap)}{" "}
+                  <span
+                    className={
+                      (official.priceChange24h ?? 0) >= 0
+                        ? "text-[#00c805]"
+                        : "text-rose-400"
+                    }
+                  >
+                    {formatPct(official.priceChange24h)}
+                  </span>
+                </div>
+              </div>
+              <div className="mt-1 font-mono text-[10px] text-white/30">
+                {official.address}
+              </div>
+            </Link>
+          )}
         </div>
       </section>
 
@@ -264,10 +305,26 @@ export function TokenBoard() {
           </section>
         )}
 
+        {error && (
+          <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 px-4 py-4 text-center">
+            <p className="text-sm text-rose-100">{error}</p>
+            <button
+              type="button"
+              onClick={load}
+              className="mt-2 rounded-xl bg-[#00c805] px-4 py-2 text-xs font-bold text-black"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
         {config?.showDexBoard !== false && (
           <>
             {/* Filters bar */}
-            <div className="hm-glass sticky top-14 z-40 space-y-3 rounded-2xl p-3 shadow-2xl shadow-black/40">
+            <div
+              id="board"
+              className="hm-glass sticky top-14 z-40 space-y-3 rounded-2xl p-3 shadow-2xl shadow-black/40"
+            >
               <div className="flex gap-1.5 overflow-x-auto hm-scroll pb-0.5">
                 {TABS.map((t) => (
                   <button

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Link from "next/link";
 import { Header } from "@/components/Header";
 import { Providers } from "@/components/Providers";
+import { AnnouncementBar, MobileBottomNav } from "@/components/SiteChrome";
 import { getBuildInfo } from "@/lib/build-info";
 import "./globals.css";
 
@@ -75,6 +77,9 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  alternates: {
+    canonical: "https://hoodmemes.fun",
+  },
 };
 
 export default function RootLayout({
@@ -84,7 +89,8 @@ export default function RootLayout({
 }>) {
   const build = getBuildInfo();
   const builtLabel = build.builtAt
-    ? new Date(build.builtAt).toISOString().replace("T", " ").slice(0, 16) + " UTC"
+    ? new Date(build.builtAt).toISOString().replace("T", " ").slice(0, 16) +
+      " UTC"
     : null;
 
   return (
@@ -92,34 +98,46 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans">
+      <body className="flex min-h-full flex-col font-sans">
         <Providers>
           <Header />
-          <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-0 sm:py-2">
+          <AnnouncementBar />
+          <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-20 pt-0 sm:py-2 md:pb-2">
             {children}
           </main>
-          <footer className="border-t border-white/5 py-8 text-center text-[11px] text-white/25">
-            <div className="flex flex-wrap items-center justify-center gap-4">
-              <a
-                href="https://hoodmemes.fun"
-                className="font-semibold text-white/50 hover:text-[#00c805]"
+          <footer className="border-t border-white/5 py-10 text-center text-[11px] text-white/30">
+            <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-center gap-x-4 gap-y-2">
+              <Link href="/" className="font-semibold text-white/55 hover:text-[#00c805]">
+                Board
+              </Link>
+              <Link href="/create" className="font-semibold text-white/55 hover:text-[#00c805]">
+                Launch
+              </Link>
+              <Link
+                href="/how-it-works"
+                className="font-semibold text-white/55 hover:text-[#00c805]"
               >
-                hoodmemes.fun
-              </a>
+                How it works
+              </Link>
+              <Link
+                href="/disclaimer"
+                className="font-semibold text-white/55 hover:text-[#00c805]"
+              >
+                Disclaimer
+              </Link>
               <a
                 href="https://x.com/hoodmemesdotfun"
                 target="_blank"
                 rel="noreferrer"
-                className="font-semibold text-white/50 hover:text-[#00c805]"
+                className="font-semibold text-white/55 hover:text-[#00c805]"
               >
                 𝕏 @hoodmemesdotfun
               </a>
             </div>
-            <div className="mt-2">
+            <div className="mt-3 text-white/25">
               Independent · not affiliated with Robinhood Markets, Inc. · Not
               financial advice · DYOR
             </div>
-            {/* Deploy fingerprint — hard-refresh if this doesn’t match latest push */}
             <div
               className="mx-auto mt-4 max-w-xl font-mono text-[10px] leading-relaxed text-white/30"
               title={`Factory ${build.factory}${builtLabel ? ` · built ${builtLabel}` : ""}`}
@@ -135,6 +153,7 @@ export default function RootLayout({
               )}
             </div>
           </footer>
+          <MobileBottomNav />
         </Providers>
       </body>
     </html>

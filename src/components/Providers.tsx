@@ -2,7 +2,12 @@
 
 import type { ReactNode } from "react";
 import { AuthProvider } from "./AuthProvider";
+import { ToastProvider } from "./Toast";
 
 export function Providers({ children }: { children: ReactNode }) {
-  return <AuthProvider>{children}</AuthProvider>;
+  return (
+    <AuthProvider>
+      <ToastProvider>{children}</ToastProvider>
+    </AuthProvider>
+  );
 }

@@ -400,6 +400,24 @@ export function TokenPageClient({
       </div>
 
       <div className="mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-5">
+        {/* Risk banners */}
+        {(creatorBps != null && creatorBps >= 500) ||
+        (isInstant && instant && !instant.lpBurned) ? (
+          <div className="mb-4 space-y-2">
+            {isInstant && instant && !instant.lpBurned && (
+              <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-2.5 text-xs font-semibold text-amber-100">
+                LP not burned — creator can remove liquidity. Trade carefully.
+              </div>
+            )}
+            {creatorBps != null && creatorBps >= 500 && (
+              <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-2.5 text-xs font-semibold text-amber-100">
+                Creator allocation {creatorBps / 100}% at launch — check tokenomics
+                before size.
+              </div>
+            )}
+          </div>
+        ) : null}
+
         {/* ═══ HEADER ═══ */}
         <header className="mb-4 grid gap-4 lg:grid-cols-[1fr_auto]">
           <div className="flex gap-4">
@@ -472,6 +490,41 @@ export function TokenPageClient({
                   className="rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[11px] font-semibold text-white/55 hover:border-[#00c805]/40 hover:text-white"
                 >
                   {copied === "share" ? "Link copied" : "Share"}
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      const eth = (
+                        window as unknown as {
+                          ethereum?: {
+                            request: (a: {
+                              method: string;
+                              params?: unknown;
+                            }) => Promise<unknown>;
+                          };
+                        }
+                      ).ethereum;
+                      if (!eth) return;
+                      await eth.request({
+                        method: "wallet_watchAsset",
+                        params: {
+                          type: "ERC20",
+                          options: {
+                            address,
+                            symbol: symbol.slice(0, 11),
+                            decimals: 18,
+                            image: stats?.imageUrl || undefined,
+                          },
+                        },
+                      });
+                    } catch {
+                      /* user rejected */
+                    }
+                  }}
+                  className="rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[11px] font-semibold text-white/55 hover:border-[#00c805]/40 hover:text-white"
+                >
+                  + Wallet
                 </button>
               </div>
               {meta?.description && (

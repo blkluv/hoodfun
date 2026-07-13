@@ -251,6 +251,11 @@ export async function getVerifiedByAddress(
   return map[address.toLowerCase()] ?? null;
 }
 
+export async function getAllVerified(): Promise<VerifiedLauncher[]> {
+  const map = await loadVerifyMap();
+  return Object.values(map).sort((a, b) => b.verifiedAt - a.verifiedAt);
+}
+
 export async function getVerifiedByHandle(
   handle: string
 ): Promise<VerifiedLauncher | null> {

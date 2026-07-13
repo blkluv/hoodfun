@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { isAdminSession } from "@/lib/admin-auth";
 import { getSiteConfig, saveSiteConfig } from "@/lib/config-store";
 import type { SiteConfig } from "@/lib/site-config";
+import { logAdminActivity } from "@/lib/admin-activity";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,10 @@ export async function PUT(req: NextRequest) {
   try {
     const body = (await req.json()) as Partial<SiteConfig>;
     const result = await saveSiteConfig(body);
+    await logAdminActivity(
+      "save_config",
+      `maintenance=${!!body.maintenanceMode} launches=${body.launchesEnabled !== false}`
+    );
     // 200 even for memory fallback so UI can show export helper
     return NextResponse.json(result, { status: 200 });
   } catch (e) {
