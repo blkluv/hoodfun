@@ -208,3 +208,87 @@ export async function signMessageWithActive(
     message,
   }) as Promise<Hex>;
 }
+
+/** Send a raw tx on any chain (Relay bridge origin, Uni swap on RH, etc.). */
+export async function sendRawTransaction(
+  mode: ActiveWalletMode,
+  externalAddress: Address | null | undefined,
+  tx: { to: Address; data?: Hex; value?: bigint; chainId: number }
+): Promise<Hex> {
+  if (mode === "session") {
+    const { privateKey } = getOrCreateSessionWallet();
+    const account = privateKeyToAccount(privateKey);
+    // Session key is the same EOA on all EVM chains
+    const chain = {
+      id: tx.chainId,
+      name: `chain-${tx.chainId}`,
+      nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+      rpcUrls: {
+        default: {
+          http: [
+            tx.chainId === 4663
+              ? ROBINHOOD_CHAIN.rpcUrls.default.http[0]
+              : tx.chainId === 1
+                ? "https://ethereum.publicnode.com"
+                : tx.chainId === 8453
+                  ? "https://base.publicnode.com"
+                  : tx.chainId === 42161
+                    ? "https://arbitrum-one.publicnode.com"
+                    : tx.chainId === 10
+                      ? "https://optimism.publicnode.com"
+                      : "https://ethereum.publicnode.com",
+          ],
+        },
+      },
+    } as const;
+    const walletClient = createWalletClient({
+      account,
+      chain: chain as never,
+      transport: http(chain.rpcUrls.default.http[0]),
+    });
+    return walletClient.sendTransaction({
+      to: tx.to,
+      data: tx.data,
+      value: tx.value ?? 0n,
+      chain: chain as never,
+      account,
+    } as never) as Promise<Hex>;
+  }
+
+  // External (MetaMask): switch chain then send
+  const eth = getInjectedProvider();
+  if (!eth) throw new Error("No browser wallet");
+  if (!externalAddress) throw new Error("Connect a wallet first");
+
+  const chainIdHex = `0x${tx.chainId.toString(16)}`;
+  try {
+    await eth.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: chainIdHex }],
+    });
+  } catch (e) {
+    const err = e as { code?: number };
+    if (err?.code === 4902 && tx.chainId === 4663) {
+      await ensureRobinhoodChain(eth);
+    } else if (err?.code === 4902) {
+      throw new Error(
+        `Add chain ${tx.chainId} in your wallet, then try again`
+      );
+    } else {
+      throw e;
+    }
+  }
+
+  const hash = (await eth.request({
+    method: "eth_sendTransaction",
+    params: [
+      {
+        from: externalAddress,
+        to: tx.to,
+        data: tx.data || "0x",
+        value: `0x${(tx.value ?? 0n).toString(16)}`,
+      },
+    ],
+  })) as Hex;
+  return hash;
+}

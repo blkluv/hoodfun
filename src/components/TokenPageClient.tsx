@@ -7,6 +7,7 @@ import type { CurveSnapshot } from "@/lib/curve";
 import type { TokenCardData } from "@/lib/types";
 import { CurveChart, CurveStats, RecentTrades } from "./CurveChart";
 import { TokenTradeSection } from "./TokenTradeSection";
+import { SwapBridgePanel } from "./SwapBridgePanel";
 import {
   formatPct,
   formatPrice,
@@ -791,91 +792,14 @@ export function TokenPageClient({
             )}
           </section>
 
-          {/* RIGHT — sticky trade (LaunchHood 320px) */}
+          {/* RIGHT — sticky trade + Relay bridge */}
           <aside className="space-y-3 lg:sticky lg:top-20 lg:self-start">
-            {isInstant ? (
-              <div className="rounded-lg border border-[#2a2f37] bg-[#171b21] p-4 shadow-sm">
-                <div className="mb-3 flex items-center justify-between">
-                  <div className="text-xs font-semibold uppercase tracking-wider text-[#9aa3ab]">
-                    Buy
-                  </div>
-                  <span className="rounded bg-[#00c805]/15 px-1.5 py-0.5 text-[10px] font-semibold text-[#00c805]">
-                    Uniswap V3
-                  </span>
-                </div>
-
-                <div className="mb-2 flex gap-1 rounded-md bg-[#0e1116] p-1">
-                  <span className="flex-1 rounded bg-[#00c805] py-1.5 text-center text-sm font-semibold text-black">
-                    Buy
-                  </span>
-                  <a
-                    href={`${UNISWAP_APP}/swap?chain=robinhood&inputCurrency=${address}&outputCurrency=NATIVE`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex-1 rounded py-1.5 text-center text-sm font-semibold text-[#9aa3ab] transition hover:text-[#e8eaed]"
-                  >
-                    Sell
-                  </a>
-                </div>
-
-                <label className="block">
-                  <span className="text-[11px] text-[#9aa3ab]">Amount (ETH)</span>
-                  <input
-                    type="number"
-                    min="0"
-                    step="any"
-                    value={ethIn}
-                    onChange={(e) => setEthIn(e.target.value)}
-                    className="mt-1 w-full rounded-md border border-[#2a2f37] bg-[#0e1116] px-3 py-2.5 font-mono text-sm text-[#e8eaed] outline-none focus:border-[#00c805]/60"
-                  />
-                </label>
-                <div className="mt-2 grid grid-cols-4 gap-1.5">
-                  {QUICK_ETH.map((v) => (
-                    <button
-                      key={v}
-                      type="button"
-                      onClick={() => setEthIn(v)}
-                      className={`rounded-md py-1.5 text-xs font-semibold transition ${
-                        ethIn === v
-                          ? "bg-[#00c805] text-black"
-                          : "border border-[#2a2f37] text-[#9aa3ab] hover:text-[#e8eaed]"
-                      }`}
-                    >
-                      {v}
-                    </button>
-                  ))}
-                </div>
-
-                <a
-                  href={tradeUrl(ethIn)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-4 flex w-full items-center justify-center rounded-md bg-[#00c805] py-3 text-sm font-bold text-black transition hover:bg-[#00e006] active:translate-y-px"
-                >
-                  Buy ${symbol}
-                </a>
-                <a
-                  href={tradeUrl()}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-2 flex w-full items-center justify-center rounded-md border border-[#2a2f37] py-2.5 text-xs font-semibold text-[#9aa3ab] hover:text-[#e8eaed]"
-                >
-                  Open Uniswap
-                </a>
-                {dexscreenerUrl && (
-                  <a
-                    href={dexscreenerUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="mt-1.5 flex w-full items-center justify-center py-2 text-xs text-[#9aa3ab] hover:text-[#00c805]"
-                  >
-                    DexScreener chart ↗
-                  </a>
-                )}
-                <p className="mt-3 border-t border-[#2a2f37] pt-2 text-center text-[10px] text-[#9aa3ab]">
-                  Swaps route through Uniswap · always verify CA
-                </p>
-              </div>
+            {isInstant || pairAddress ? (
+              <SwapBridgePanel
+                token={address}
+                symbol={symbol}
+                poolKind={isInstant ? "v3" : "v2"}
+              />
             ) : (
               <Suspense
                 fallback={
@@ -905,8 +829,8 @@ export function TokenPageClient({
 
             <div className="rounded-lg border border-[#2a2f37] bg-[#171b21] p-3 text-[10px] leading-relaxed text-[#9aa3ab]">
               <strong className="text-[#e8eaed]/80">Risk</strong> — Memecoins
-              are extremely volatile. Never buy more than you can lose. Not
-              financial advice.
+              are extremely volatile. Bridging uses Relay (third-party). Never
+              buy more than you can lose. Not financial advice.
             </div>
           </aside>
         </div>
