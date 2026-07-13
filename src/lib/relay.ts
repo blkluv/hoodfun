@@ -12,19 +12,45 @@ export const RELAY_ZERO =
 /** Popular sources pinned to the top of the from-chain list */
 export const RELAY_POPULAR_FROM_IDS = [1, 8453, 42161, 10, 137, 56, 43114] as const;
 
+export function relayChainIconUrl(chainId: number): string {
+  return `https://assets.relay.link/icons/${chainId}/light.png`;
+}
+
 /** Fallback if Relay chains API is unreachable */
 export const RELAY_FROM_CHAINS_FALLBACK: RelayOriginChain[] = [
-  { id: 1, name: "Ethereum", short: "ETH" },
-  { id: 8453, name: "Base", short: "Base" },
-  { id: 42161, name: "Arbitrum", short: "Arb" },
-  { id: 10, name: "Optimism", short: "OP" },
-  { id: 137, name: "Polygon", short: "Polygon" },
-  { id: 56, name: "BNB", short: "BNB" },
-  { id: 43114, name: "Avalanche", short: "AVAX" },
+  { id: 1, name: "Ethereum", short: "ETH", iconUrl: relayChainIconUrl(1) },
+  { id: 8453, name: "Base", short: "Base", iconUrl: relayChainIconUrl(8453) },
+  {
+    id: 42161,
+    name: "Arbitrum",
+    short: "Arb",
+    iconUrl: relayChainIconUrl(42161),
+  },
+  { id: 10, name: "Optimism", short: "OP", iconUrl: relayChainIconUrl(10) },
+  {
+    id: 137,
+    name: "Polygon",
+    short: "Polygon",
+    iconUrl: relayChainIconUrl(137),
+  },
+  { id: 56, name: "BNB", short: "BNB", iconUrl: relayChainIconUrl(56) },
+  {
+    id: 43114,
+    name: "Avalanche",
+    short: "AVAX",
+    iconUrl: relayChainIconUrl(43114),
+  },
 ];
 
 /** @deprecated use RELAY_FROM_CHAINS_FALLBACK or fetchRelayOriginChains() */
 export const RELAY_FROM_CHAINS = RELAY_FROM_CHAINS_FALLBACK;
+
+export const ROBINHOOD_RELAY_META = {
+  id: 4663,
+  name: "Robinhood Chain",
+  short: "RH",
+  iconUrl: relayChainIconUrl(4663),
+} as const;
 
 export type RelayOriginChain = {
   id: number;
@@ -32,6 +58,7 @@ export type RelayOriginChain = {
   short: string;
   rpcUrl?: string;
   depositEnabled?: boolean;
+  iconUrl?: string;
 };
 
 /**
@@ -51,6 +78,7 @@ export async function fetchRelayOriginChains(): Promise<RelayOriginChain[]> {
         depositEnabled?: boolean;
         vmType?: string;
         httpRpcUrl?: string;
+        iconUrl?: string;
         currency?: { supportsBridging?: boolean; symbol?: string };
       }>;
     };
@@ -73,6 +101,7 @@ export async function fetchRelayOriginChains(): Promise<RelayOriginChain[]> {
         short: name.length > 14 ? name.slice(0, 12) + "…" : name,
         rpcUrl: c.httpRpcUrl,
         depositEnabled: Boolean(c.depositEnabled ?? true),
+        iconUrl: c.iconUrl || relayChainIconUrl(id),
       });
     }
 
