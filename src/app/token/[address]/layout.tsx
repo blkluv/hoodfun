@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { resolveTokenIdentity } from "@/lib/token-meta";
 
 const SITE = "https://www.hoodmemes.fun";
-const DEFAULT_OG = `${SITE}/og.png?v=3`;
+/** Static brand OG — X crawler is unreliable with slow dynamic ImageResponse routes */
+const OG_IMAGE = `${SITE}/og.png?v=4`;
 
 type Props = {
   params: Promise<{ address: string }>;
@@ -26,19 +27,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const ogTitle = symbol ? `$${symbol} on HoodMemes` : title;
 
-  // Prefer token logo if absolute URL; else site OG (must be absolute www for X)
-  let imageUrl = DEFAULT_OG;
-  if (id?.imageUrl) {
-    if (id.imageUrl.startsWith("http")) {
-      imageUrl = id.imageUrl;
-    } else if (id.imageUrl.startsWith("/")) {
-      imageUrl = `${SITE}${id.imageUrl}`;
-    }
-  }
-
   return {
     title: { absolute: title },
     description,
+    metadataBase: new URL(SITE),
     openGraph: {
       title: ogTitle,
       description,
@@ -47,11 +39,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       url: `${SITE}/token/${address}`,
       images: [
         {
-          url: imageUrl,
-          secureUrl: imageUrl,
+          url: OG_IMAGE,
+          secureUrl: OG_IMAGE,
           width: 1200,
           height: 630,
-          alt: ogTitle,
+          alt: "HoodMemes — Robinhood Chain Trenches",
           type: "image/png",
         },
       ],
@@ -60,7 +52,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       card: "summary_large_image",
       title: ogTitle,
       description,
-      images: [imageUrl],
+      images: [OG_IMAGE],
       creator: "@hoodmemesdotfun",
       site: "@hoodmemesdotfun",
     },
