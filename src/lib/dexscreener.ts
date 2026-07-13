@@ -129,19 +129,87 @@ export async function fetchRobinhoodTokens(
   return [...best.values()].sort((a, b) => b.trendScore - a.trendScore);
 }
 
-export async function fetchTokenByAddress(
-  address: string
-): Promise<TokenCardData | null> {
-  const url = `https://api.dexscreener.com/tokens/v1/${DEXSCREENER_CHAIN}/${address}`;
-  const res = await fetch(url, {
-    next: { revalidate: 15 },
-    headers: { Accept: "application/json" },
-  });
-  if (!res.ok) return null;
-  const pairs = (await res.json()) as DsPair[];
-  if (!Array.isArray(pairs) || pairs.length === 0) return null;
-  const rh = pairs.filter((p) => p.chainId === DEXSCREENER_CHAIN);
+function pickBestPair(pairs: DsPair[]): TokenCardData | null {
+  const rh = pairs.filter(
+    (p) =>
+      !p.chainId ||
+      p.chainId === DEXSCREENER_CHAIN ||
+      p.chainId === "robinhood"
+  );
   if (rh.length === 0) return null;
   rh.sort((a, b) => (b.liquidity?.usd ?? 0) - (a.liquidity?.usd ?? 0));
   return pairToToken(rh[0]);
+}
+
+export async function fetchTokenByAddress(
+  address: string
+): Promise<TokenCardData | null> {
+  const addr = address.trim();
+  if (!/^0x[a-fA-F0-9]{40}$/.test(addr)) return null;
+
+  // Primary: tokens/v1 (chain-scoped)
+  try {
+    const url = `https://api.dexscreener.com/tokens/v1/${DEXSCREENER_CHAIN}/${addr}`;
+    const res = await fetch(url, {
+      next: { revalidate: 15 },
+      headers: { Accept: "application/json" },
+    });
+    if (res.ok) {
+      const pairs = (await res.json()) as DsPair[];
+      if (Array.isArray(pairs) && pairs.length) {
+        const t = pickBestPair(pairs);
+        if (t) return t;
+      }
+    }
+  } catch {
+    /* fall through */
+  }
+
+  // Fallback: latest/dex/tokens
+  try {
+    const url = `https://api.dexscreener.com/latest/dex/tokens/${addr}`;
+    const res = await fetch(url, {
+      next: { revalidate: 15 },
+      headers: { Accept: "application/json" },
+    });
+    if (res.ok) {
+      const data = (await res.json()) as { pairs?: DsPair[] | null };
+      if (data.pairs?.length) {
+        const t = pickBestPair(data.pairs);
+        if (t) return t;
+      }
+    }
+  } catch {
+    /* fall through */
+  }
+
+  return null;
+}
+
+/** Fetch by pair address (DexScreener pair page) */
+export async function fetchTokenByPair(
+  pairAddress: string
+): Promise<TokenCardData | null> {
+  const pair = pairAddress.trim();
+  if (!/^0x[a-fA-F0-9]{40}$/.test(pair)) return null;
+  try {
+    const url = `https://api.dexscreener.com/latest/dex/pairs/${DEXSCREENER_CHAIN}/${pair}`;
+    const res = await fetch(url, {
+      next: { revalidate: 15 },
+      headers: { Accept: "application/json" },
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as {
+      pairs?: DsPair[] | null;
+      pair?: DsPair | null;
+    };
+    const list = data.pairs?.length
+      ? data.pairs
+      : data.pair
+        ? [data.pair]
+        : [];
+    return pickBestPair(list);
+  } catch {
+    return null;
+  }
 }

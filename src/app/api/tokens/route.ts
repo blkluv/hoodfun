@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchRobinhoodTokens, fetchTokenByAddress } from "@/lib/dexscreener";
+import {
+  fetchRobinhoodTokens,
+  fetchTokenByAddress,
+  fetchTokenByPair,
+} from "@/lib/dexscreener";
 import type { BoardTab, SortKey, TokenCardData } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -67,8 +71,18 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = req.nextUrl;
     const address = searchParams.get("address");
+    const pair = searchParams.get("pair");
     if (address) {
-      const token = await fetchTokenByAddress(address);
+      const token =
+        (await fetchTokenByAddress(address)) ||
+        (pair ? await fetchTokenByPair(pair) : null);
+      if (!token) {
+        return NextResponse.json({ error: "not found" }, { status: 404 });
+      }
+      return NextResponse.json({ token });
+    }
+    if (pair) {
+      const token = await fetchTokenByPair(pair);
       if (!token) {
         return NextResponse.json({ error: "not found" }, { status: 404 });
       }

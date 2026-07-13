@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
-import { fetchTokenByAddress } from "@/lib/dexscreener";
+import { resolveTokenIdentity } from "@/lib/token-meta";
+import { formatUsd } from "@/lib/format";
 
 export const alt = "HoodMemes token";
 export const size = { width: 1200, height: 630 };
@@ -19,27 +20,18 @@ export default async function Image({
   let imgUrl: string | null = null;
 
   try {
-    const token = await fetchTokenByAddress(address);
-    if (token) {
-      symbol = token.symbol || symbol;
-      name = token.name || name;
-      imgUrl = token.imageUrl;
-      if (token.marketCap != null) {
-        const n = token.marketCap;
-        mcap =
-          n >= 1e9
-            ? `$${(n / 1e9).toFixed(2)}B`
-            : n >= 1e6
-              ? `$${(n / 1e6).toFixed(2)}M`
-              : n >= 1e3
-                ? `$${(n / 1e3).toFixed(1)}K`
-                : `$${n.toFixed(0)}`;
-      }
-      if (token.priceChange24h != null) {
-        const c = token.priceChange24h;
-        change = `${c >= 0 ? "+" : ""}${c.toFixed(1)}%`;
-        changeColor = c >= 0 ? "#00c805" : "#f43f5e";
-      }
+    const id = await resolveTokenIdentity(address);
+    symbol = id.symbol || symbol;
+    name = id.name || name;
+    imgUrl = id.imageUrl;
+    const token = id.dexToken;
+    if (token?.marketCap != null) {
+      mcap = formatUsd(token.marketCap);
+    }
+    if (token?.priceChange24h != null) {
+      const c = token.priceChange24h;
+      change = `${c >= 0 ? "+" : ""}${c.toFixed(1)}%`;
+      changeColor = c >= 0 ? "#00c805" : "#f43f5e";
     }
   } catch {
     /* fallback branding */

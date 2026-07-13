@@ -1,4 +1,4 @@
-import { fetchTokenByAddress } from "@/lib/dexscreener";
+import { resolveTokenIdentity } from "@/lib/token-meta";
 import { TokenPageClient } from "@/components/TokenPageClient";
 
 export const revalidate = 15;
@@ -12,14 +12,18 @@ export default async function TokenPage({
 }) {
   const { address } = await params;
   const sp = await searchParams;
-  const dexToken = await fetchTokenByAddress(address).catch(() => null);
+  const identity = await resolveTokenIdentity(address, sp.pair ?? null).catch(
+    () => null
+  );
 
   return (
     <TokenPageClient
       address={address}
       marketHint={sp.market ?? null}
-      pairHint={sp.pair ?? null}
-      dexToken={dexToken}
+      pairHint={sp.pair ?? identity?.pair ?? null}
+      dexToken={identity?.dexToken ?? null}
+      initialSymbol={identity?.symbol ?? null}
+      initialName={identity?.name ?? null}
     />
   );
 }
