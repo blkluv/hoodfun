@@ -93,6 +93,17 @@ async function fetchEthUsd(): Promise<number | null> {
   }
 }
 
+/** Legacy bonding-factory ABI snippet (v1/v2 curve) */
+const legacyFactoryAbi = [
+  {
+    type: "function",
+    name: "marketOfToken",
+    stateMutability: "view",
+    inputs: [{ name: "token", type: "address" }],
+    outputs: [{ type: "address" }],
+  },
+] as const;
+
 export async function resolveMarket(
   tokenAddress: Address
 ): Promise<Address | null> {
@@ -101,7 +112,7 @@ export async function resolveMarket(
   try {
     const m = (await pc.readContract({
       address: FACTORY_ADDRESS as Address,
-      abi: factoryAbi,
+      abi: legacyFactoryAbi,
       functionName: "marketOfToken",
       args: [tokenAddress],
     })) as Address;
