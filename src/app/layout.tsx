@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Header } from "@/components/Header";
 import { Providers } from "@/components/Providers";
+import { getBuildInfo } from "@/lib/build-info";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -81,6 +82,11 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const build = getBuildInfo();
+  const builtLabel = build.builtAt
+    ? new Date(build.builtAt).toISOString().replace("T", " ").slice(0, 16) + " UTC"
+    : null;
+
   return (
     <html
       lang="en"
@@ -112,6 +118,21 @@ export default function RootLayout({
             <div className="mt-2">
               Independent · not affiliated with Robinhood Markets, Inc. · Not
               financial advice · DYOR
+            </div>
+            {/* Deploy fingerprint — hard-refresh if this doesn’t match latest push */}
+            <div
+              className="mx-auto mt-4 max-w-xl font-mono text-[10px] leading-relaxed text-white/30"
+              title={`Factory ${build.factory}${builtLabel ? ` · built ${builtLabel}` : ""}`}
+            >
+              <span className="text-white/45">{build.label}</span>
+              <span className="mx-1.5 text-white/15">·</span>
+              <span>factory {build.factoryShort}</span>
+              {builtLabel && (
+                <>
+                  <span className="mx-1.5 text-white/15">·</span>
+                  <span>{builtLabel}</span>
+                </>
+              )}
             </div>
           </footer>
         </Providers>
