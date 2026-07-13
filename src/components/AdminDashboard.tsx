@@ -312,12 +312,29 @@ export function AdminDashboard() {
         /* */
       }
 
+      let imageUrl: string | undefined;
+      try {
+        const m = await fetch(`/api/launch-meta?token=${ca}`);
+        if (m.ok) {
+          const j = await m.json();
+          if (j.meta?.imageUrl) imageUrl = j.meta.imageUrl;
+          if (j.meta?.symbol) symbol = j.meta.symbol;
+          if (j.meta?.name) name = j.meta.name;
+        }
+      } catch {
+        /* */
+      }
+      if (!imageUrl) {
+        imageUrl = `/api/logo/${ca.toLowerCase()}`;
+      }
+
       const featured: FeaturedToken[] = [
         {
           address: ca,
           symbol,
           name,
           note: "Official",
+          imageUrl,
           order: 0,
         },
         ...config.featured.filter(

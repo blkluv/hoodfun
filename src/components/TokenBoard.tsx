@@ -33,6 +33,10 @@ export function TokenBoard() {
   const [error, setError] = useState<string | null>(null);
   const [updatedAt, setUpdatedAt] = useState<number | null>(null);
   const [minLiqLocal, setMinLiqLocal] = useState(0);
+  /** Enriched featured tokens (logo from launch-meta / tokens API) */
+  const [featuredLive, setFeaturedLive] = useState<
+    Record<string, TokenCardData>
+  >({});
 
   useEffect(() => {
     fetch("/api/site-config")
@@ -40,6 +44,76 @@ export function TokenBoard() {
       .then(setConfig)
       .catch(() => null);
   }, []);
+
+  // Pull logo + live stats for each featured CA (board list often misses new launches)
+  useEffect(() => {
+    if (!config?.featured?.length) return;
+    let cancelled = false;
+    (async () => {
+      const next: Record<string, TokenCardData> = {};
+      await Promise.all(
+        config.featured.map(async (f) => {
+          const addr = f.address.toLowerCase();
+          try {
+            const res = await fetch(`/api/tokens?address=${f.address}`, {
+              cache: "no-store",
+            });
+            if (res.ok) {
+              const j = await res.json();
+              if (j.token) {
+                next[addr] = j.token as TokenCardData;
+                return;
+              }
+            }
+          } catch {
+            /* */
+          }
+          try {
+            const m = await fetch(`/api/launch-meta?token=${f.address}`);
+            if (m.ok) {
+              const j = await m.json();
+              const meta = j.meta;
+              if (meta) {
+                next[addr] = {
+                  address: f.address,
+                  name: meta.name || f.name || "Featured",
+                  symbol: meta.symbol || f.symbol || "???",
+                  pairAddress: meta.pair || null,
+                  priceUsd: null,
+                  marketCap: null,
+                  volume24h: null,
+                  volume1h: null,
+                  volume6h: null,
+                  priceChange5m: null,
+                  priceChange1h: null,
+                  priceChange6h: null,
+                  priceChange24h: null,
+                  liquidity: null,
+                  imageUrl:
+                    meta.imageUrl ||
+                    `/api/logo/${addr}`,
+                  dexscreenerUrl: null,
+                  createdAt: meta.createdAt || null,
+                  source: "hoodfun",
+                  isNative: true,
+                  txns24h: null,
+                  buys24h: null,
+                  sells24h: null,
+                  trendScore: 0,
+                };
+              }
+            }
+          } catch {
+            /* */
+          }
+        })
+      );
+      if (!cancelled) setFeaturedLive(next);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [config?.featured]);
 
   useEffect(() => {
     const t = setTimeout(() => setQDebounced(q), 280);
@@ -81,38 +155,50 @@ export function TokenBoard() {
   const featuredCards: TokenCardData[] = useMemo(() => {
     if (!config?.featured?.length) return [];
     return config.featured.map((f) => {
-      const live = tokens.find(
-        (t) => t.address.toLowerCase() === f.address.toLowerCase()
-      );
-      return (
-        live ?? {
-          address: f.address,
-          name: f.name || f.symbol || "Featured",
-          symbol: f.symbol || "???",
-          pairAddress: null,
-          priceUsd: null,
-          marketCap: null,
-          volume24h: null,
-          volume1h: null,
-          volume6h: null,
-          priceChange5m: null,
-          priceChange1h: null,
-          priceChange6h: null,
-          priceChange24h: null,
-          liquidity: null,
-          imageUrl: f.imageUrl ?? null,
-          dexscreenerUrl: null,
-          createdAt: null,
-          source: "hoodfun" as const,
-          isNative: !!f.market,
-          txns24h: null,
-          buys24h: null,
-          sells24h: null,
-          trendScore: 0,
-        }
-      );
+      const key = f.address.toLowerCase();
+      const fromBoard = tokens.find((t) => t.address.toLowerCase() === key);
+      const fromFeat = featuredLive[key];
+      const live = fromFeat || fromBoard;
+      const logo =
+        live?.imageUrl ||
+        f.imageUrl ||
+        `/api/logo/${key}`;
+      if (live) {
+        return {
+          ...live,
+          name: f.name || live.name,
+          symbol: f.symbol || live.symbol,
+          imageUrl: logo,
+          isNative: true,
+        };
+      }
+      return {
+        address: f.address,
+        name: f.name || f.symbol || "Featured",
+        symbol: f.symbol || "???",
+        pairAddress: null,
+        priceUsd: null,
+        marketCap: null,
+        volume24h: null,
+        volume1h: null,
+        volume6h: null,
+        priceChange5m: null,
+        priceChange1h: null,
+        priceChange6h: null,
+        priceChange24h: null,
+        liquidity: null,
+        imageUrl: logo,
+        dexscreenerUrl: null,
+        createdAt: null,
+        source: "hoodfun" as const,
+        isNative: true,
+        txns24h: null,
+        buys24h: null,
+        sells24h: null,
+        trendScore: 0,
+      };
     });
-  }, [config, tokens]);
+  }, [config, tokens, featuredLive]);
 
   const boardTokens = useMemo(() => {
     if (!config?.featured?.length) return tokens;
@@ -141,110 +227,175 @@ export function TokenBoard() {
   const doubleTicker = [...ticker, ...ticker];
   const official = featuredCards[0];
 
+  const offUp = (official?.priceChange24h ?? 0) >= 0;
+
   return (
     <div className="relative -mx-4 space-y-0 sm:-mx-0">
-      {/* Hero */}
-      <section className="relative overflow-hidden border-b border-white/5 px-4 pb-8 pt-2 sm:px-0">
-        <div className="hm-grid pointer-events-none absolute inset-0 opacity-60" />
-        <div className="relative space-y-6">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+      {/* ═══ MEGA HERO ═══ */}
+      <section className="relative overflow-hidden border-b border-white/5">
+        <div className="hm-grid pointer-events-none absolute inset-0 opacity-70" />
+        <div className="pointer-events-none absolute -left-20 top-0 h-80 w-80 rounded-full bg-[#00c805]/25 blur-[100px]" />
+        <div className="pointer-events-none absolute -right-10 bottom-0 h-72 w-72 rounded-full bg-emerald-400/15 blur-[90px]" />
+        <div className="pointer-events-none absolute left-1/2 top-1/3 h-40 w-[60%] -translate-x-1/2 rounded-full bg-[#00c805]/10 blur-[80px]" />
+
+        <div className="relative space-y-8 px-4 pb-10 pt-6 sm:px-0 sm:pb-12 sm:pt-8">
+          <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-2xl">
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#00c805]/30 bg-[#00c805]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-[#00c805]">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#00c805]/40 bg-[#00c805]/15 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em] text-[#00c805] shadow-[0_0_24px_rgba(0,200,5,0.2)]">
                 <span className="hm-live-dot h-2 w-2 rounded-full bg-[#00c805]" />
-                Live on Robinhood Chain · 4663
+                Live · Robinhood Chain · 4663
               </div>
-              <h1 className="text-4xl font-black leading-[1.05] tracking-tight text-white sm:text-5xl md:text-6xl">
-                <span className="bg-gradient-to-r from-white via-white to-[#00c805] bg-clip-text text-transparent">
+              <h1 className="text-5xl font-black leading-[0.98] tracking-tight text-white sm:text-6xl md:text-7xl">
+                <span className="bg-gradient-to-br from-white via-white to-[#00c805] bg-clip-text text-transparent">
                   {config?.heroTitle || "Robinhood trenches"}
                 </span>
               </h1>
-              <p className="mt-3 max-w-lg text-sm leading-relaxed text-white/45 sm:text-base">
+              <p className="mt-4 max-w-xl text-base leading-relaxed text-white/50 sm:text-lg">
                 {config?.heroSubtitle ||
                   "Launch a fixed-supply coin, seed Uniswap LP, trade immediately."}
               </p>
-              <div className="mt-5 flex flex-wrap items-center gap-3">
+              <div className="mt-7 flex flex-wrap items-center gap-3">
                 <Link
                   href="/create"
-                  className="rounded-xl bg-[#00c805] px-5 py-2.5 text-sm font-black text-black shadow-[0_0_30px_rgba(0,200,5,0.35)] transition hover:bg-[#00e006]"
+                  className="rounded-2xl bg-[#00c805] px-7 py-3.5 text-base font-black text-black shadow-[0_0_40px_rgba(0,200,5,0.45)] transition hover:scale-[1.02] hover:bg-[#00e006]"
                 >
                   Launch coin
                 </Link>
                 <a
                   href="#board"
-                  className="rounded-xl border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white/80 transition hover:border-[#00c805]/40 hover:text-white"
+                  className="rounded-2xl border border-white/15 bg-white/5 px-6 py-3.5 text-base font-bold text-white/85 transition hover:border-[#00c805]/45 hover:bg-[#00c805]/10"
                 >
-                  Browse trenches
+                  Browse board
                 </a>
                 <button
                   type="button"
                   onClick={load}
-                  className="rounded-xl border border-white/10 px-4 py-2.5 text-sm font-semibold text-white/50 hover:text-white"
+                  className="rounded-2xl border border-white/10 px-4 py-3.5 text-sm font-semibold text-white/45 hover:text-white"
                 >
                   Refresh
                 </button>
               </div>
-              <div className="mt-4">
+              <div className="mt-5">
                 <AddNetworkButton />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
-              <HeroStat label="Tokens" value={String(totals.n)} accent />
-              <HeroStat label="Vol 24h" value={formatUsd(totals.vol)} />
-              <HeroStat label="Σ MCap" value={formatUsd(totals.mcap)} />
-              <HeroStat label="Hot 1h" value={String(totals.hot)} />
+            <div className="grid w-full max-w-md grid-cols-2 gap-3 lg:max-w-sm">
+              <HeroStatBig label="Tokens" value={String(totals.n)} accent />
+              <HeroStatBig label="Vol 24h" value={formatUsd(totals.vol)} />
+              <HeroStatBig label="Σ MCap" value={formatUsd(totals.mcap)} />
+              <HeroStatBig label="Hot 1h" value={String(totals.hot)} />
             </div>
           </div>
 
-          {/* How it works */}
-          <div className="grid gap-2 sm:grid-cols-3">
-            {[
-              { n: "1", t: "Launch", d: "Name, supply, creator % (0–10%)" },
-              { n: "2", t: "Seed LP", d: "Your ETH + tokens → Uniswap V2" },
-              { n: "3", t: "Trade", d: "Live pool · DexScreener · share CA" },
-            ].map((s) => (
-              <div
-                key={s.n}
-                className="rounded-2xl border border-white/8 bg-black/30 px-3 py-3"
-              >
-                <div className="text-[10px] font-black text-[#00c805]">{s.n}</div>
-                <div className="text-sm font-bold text-white">{s.t}</div>
-                <div className="text-[11px] text-white/40">{s.d}</div>
-              </div>
-            ))}
-          </div>
-
+          {/* Official mega banner */}
           {official && (
             <Link
-              href={`/token/${official.address}`}
-              className="block overflow-hidden rounded-3xl border border-[#00c805]/35 bg-gradient-to-r from-[#00c805]/15 via-transparent to-transparent p-4 transition hover:border-[#00c805]/55 sm:p-5"
+              href={`/token/${official.address}${
+                official.pairAddress ? `?pair=${official.pairAddress}` : ""
+              }`}
+              className="group relative block overflow-hidden rounded-[1.75rem] border border-[#00c805]/45 bg-gradient-to-br from-[#00c805]/20 via-[#0a140c] to-black p-1 shadow-[0_0_60px_rgba(0,200,5,0.2)] transition hover:border-[#00c805]/70 hover:shadow-[0_0_80px_rgba(0,200,5,0.35)]"
             >
-              <div className="text-[10px] font-bold uppercase tracking-widest text-[#00c805]">
-                {config?.featuredSectionTitle || "Official / Featured"}
-              </div>
-              <div className="mt-1 flex flex-wrap items-center gap-3">
-                <div className="text-2xl font-black text-white">
-                  ${official.symbol}
+              <div className="relative overflow-hidden rounded-[1.4rem] bg-black/50 px-5 py-6 sm:px-8 sm:py-8">
+                <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-[#00c805]/20 blur-3xl transition group-hover:bg-[#00c805]/30" />
+                <div className="pointer-events-none absolute -bottom-20 left-10 h-40 w-40 rounded-full bg-emerald-500/10 blur-3xl" />
+
+                <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center">
+                  <div className="relative shrink-0">
+                    {official.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={official.imageUrl}
+                        alt={official.symbol}
+                        className="h-24 w-24 rounded-3xl object-cover shadow-[0_0_40px_rgba(0,200,5,0.35)] ring-2 ring-[#00c805]/50 sm:h-28 sm:w-28"
+                      />
+                    ) : (
+                      <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-[#00c805]/50 to-emerald-950 text-4xl font-black text-[#00c805] ring-2 ring-[#00c805]/50 sm:h-28 sm:w-28">
+                        {(official.symbol || "?")[0]}
+                      </div>
+                    )}
+                    <span className="hm-live-dot absolute -bottom-1 -right-1 h-5 w-5 rounded-full border-[3px] border-[#050806] bg-[#00c805]" />
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="inline-flex items-center gap-2 rounded-full bg-[#00c805] px-3 py-1 text-[10px] font-black uppercase tracking-widest text-black">
+                      ★ {config?.featuredSectionTitle || "Official"}
+                    </div>
+                    <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                      <span className="text-4xl font-black tracking-tight text-white sm:text-5xl">
+                        ${official.symbol}
+                      </span>
+                      <span className="text-lg text-white/45">
+                        {official.name}
+                      </span>
+                    </div>
+                    <p className="mt-1 max-w-xl font-mono text-[11px] text-white/35 break-all">
+                      {official.address}
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-4 text-sm">
+                      <div>
+                        <div className="text-[10px] uppercase text-white/35">
+                          MCap
+                        </div>
+                        <div className="font-black tabular-nums text-white">
+                          {formatUsd(official.marketCap)}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-[10px] uppercase text-white/35">
+                          24h
+                        </div>
+                        <div
+                          className={`font-black tabular-nums ${
+                            offUp ? "text-[#00c805]" : "text-rose-400"
+                          }`}
+                        >
+                          {formatPct(official.priceChange24h)}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-[10px] uppercase text-white/35">
+                          Liq
+                        </div>
+                        <div className="font-black tabular-nums text-white">
+                          {formatUsd(official.liquidity)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex shrink-0 flex-col gap-2 sm:items-end">
+                    <span className="rounded-2xl bg-[#00c805] px-6 py-3 text-center text-sm font-black text-black shadow-[0_0_28px_rgba(0,200,5,0.4)] transition group-hover:scale-105">
+                      Trade ${official.symbol} →
+                    </span>
+                    <span className="text-center text-[10px] text-white/35">
+                      Official HoodMemes token
+                    </span>
+                  </div>
                 </div>
-                <div className="text-sm text-white/45">{official.name}</div>
-                <div className="ml-auto text-sm font-bold tabular-nums text-white">
-                  {formatUsd(official.marketCap)}{" "}
-                  <span
-                    className={
-                      (official.priceChange24h ?? 0) >= 0
-                        ? "text-[#00c805]"
-                        : "text-rose-400"
-                    }
-                  >
-                    {formatPct(official.priceChange24h)}
-                  </span>
-                </div>
-              </div>
-              <div className="mt-1 font-mono text-[10px] text-white/30">
-                {official.address}
               </div>
             </Link>
           )}
+
+          {/* How it works strip */}
+          <div className="grid gap-3 sm:grid-cols-3">
+            {[
+              { n: "01", t: "Launch", d: "Fixed supply · 0–10% creator" },
+              { n: "02", t: "Seed LP", d: "Your ETH → Uniswap V2 pool" },
+              { n: "03", t: "Go live", d: "Trade · share · get on board" },
+            ].map((s) => (
+              <div
+                key={s.n}
+                className="rounded-2xl border border-white/10 bg-black/40 px-4 py-4 backdrop-blur"
+              >
+                <div className="text-xs font-black tracking-widest text-[#00c805]">
+                  {s.n}
+                </div>
+                <div className="mt-1 text-base font-black text-white">{s.t}</div>
+                <div className="mt-0.5 text-xs text-white/40">{s.d}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -576,7 +727,7 @@ export function TokenBoard() {
   );
 }
 
-function HeroStat({
+function HeroStatBig({
   label,
   value,
   accent,
@@ -586,17 +737,15 @@ function HeroStat({
   accent?: boolean;
 }) {
   return (
-    <div
-      className={`rounded-2xl px-3 py-3 ${
-        accent
-          ? "hm-glass-green"
-          : "border border-white/8 bg-black/30"
-      }`}
-    >
-      <div className="text-[10px] font-semibold uppercase tracking-wider text-white/40">
+    <div className="rounded-2xl border border-white/10 bg-black/45 px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur">
+      <div className="text-[10px] font-bold uppercase tracking-wider text-white/40">
         {label}
       </div>
-      <div className="mt-0.5 text-lg font-black tabular-nums text-white">
+      <div
+        className={`mt-1 text-xl font-black tabular-nums sm:text-2xl ${
+          accent ? "text-[#00c805]" : "text-white"
+        }`}
+      >
         {value}
       </div>
     </div>
