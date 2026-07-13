@@ -30,16 +30,21 @@ type Side = "buy" | "sell";
 
 export function SwapBridgePanel({
   token,
-  symbol,
+  symbol = "TOKEN",
   /** Prefer v3 for HoodMemes launches; auto falls back messaging */
   poolKind = "v3",
+  defaultTab = "swap",
+  /** Hide swap tab — bridge-only (e.g. /bridge page) */
+  bridgeOnly = false,
 }: {
-  token: string;
-  symbol: string;
+  token?: string;
+  symbol?: string;
   poolKind?: "v3" | "v2" | "auto";
+  defaultTab?: Tab;
+  bridgeOnly?: boolean;
 }) {
   const { isLoggedIn, address, mode, ethBalance, refreshBalance } = useAuth();
-  const [tab, setTab] = useState<Tab>("swap");
+  const [tab, setTab] = useState<Tab>(bridgeOnly ? "bridge" : defaultTab);
   const [side, setSide] = useState<Side>("buy");
   const [ethIn, setEthIn] = useState("0.05");
   const [tokenIn, setTokenIn] = useState("");
@@ -53,11 +58,12 @@ export function SwapBridgePanel({
   const [connectOpen, setConnectOpen] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
 
-  const tokenAddr = token as Address;
+  const canSwap = Boolean(token && /^0x[a-fA-F0-9]{40}$/i.test(token));
+  const tokenAddr = (token || "0x0000000000000000000000000000000000000000") as Address;
   const kind = poolKind === "auto" ? "v3" : poolKind;
 
   const refreshTokenBal = useCallback(async () => {
-    if (!address) {
+    if (!address || !canSwap) {
       setTokenBal(null);
       return;
     }
@@ -81,7 +87,7 @@ export function SwapBridgePanel({
     } catch {
       setTokenBal(null);
     }
-  }, [address, tokenAddr]);
+  }, [address, tokenAddr, canSwap]);
 
   useEffect(() => {
     refreshTokenBal();
@@ -106,6 +112,10 @@ export function SwapBridgePanel({
     setErr(null);
     setStatus(null);
     setTxHash(null);
+    if (!canSwap) {
+      setErr("No token selected for swap");
+      return;
+    }
     if (!(await ensureLogin()) || !address || !mode) return;
 
     setBusy(true);
@@ -264,31 +274,43 @@ export function SwapBridgePanel({
   return (
     <div className="rounded-lg border border-[#2a2f37] bg-[#171b21] p-4 shadow-sm">
       {/* Tabs */}
-      <div className="mb-3 flex gap-1 rounded-md bg-[#0e1116] p-1">
-        {(
-          [
-            ["swap", "Swap"],
-            ["bridge", "Bridge"],
-          ] as const
-        ).map(([id, lab]) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => {
-              setTab(id);
-              setErr(null);
-              setStatus(null);
-            }}
-            className={`flex-1 rounded py-1.5 text-sm font-semibold transition ${
-              tab === id
-                ? "bg-[#00c805] text-black"
-                : "text-[#9aa3ab] hover:text-[#e8eaed]"
-            }`}
-          >
-            {lab}
-          </button>
-        ))}
-      </div>
+      {!bridgeOnly && canSwap && (
+        <div className="mb-3 flex gap-1 rounded-md bg-[#0e1116] p-1">
+          {(
+            [
+              ["swap", "Swap"],
+              ["bridge", "Bridge"],
+            ] as const
+          ).map(([id, lab]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => {
+                setTab(id);
+                setErr(null);
+                setStatus(null);
+              }}
+              className={`flex-1 rounded py-1.5 text-sm font-semibold transition ${
+                tab === id
+                  ? "bg-[#00c805] text-black"
+                  : "text-[#9aa3ab] hover:text-[#e8eaed]"
+              }`}
+            >
+              {lab}
+            </button>
+          ))}
+        </div>
+      )}
+      {(bridgeOnly || !canSwap) && (
+        <div className="mb-3 flex items-center justify-between">
+          <div className="text-xs font-semibold uppercase tracking-wider text-[#9aa3ab]">
+            Bridge to Robinhood
+          </div>
+          <span className="rounded bg-[#00c805]/15 px-1.5 py-0.5 text-[10px] font-semibold text-[#00c805]">
+            Relay
+          </span>
+        </div>
+      )}
 
       {!isLoggedIn && (
         <button
@@ -310,7 +332,7 @@ export function SwapBridgePanel({
         </div>
       )}
 
-      {tab === "swap" && (
+      {tab === "swap" && canSwap && (
         <div className="space-y-3">
           <div className="flex gap-1 rounded-md bg-[#0e1116] p-1">
             <button
@@ -418,7 +440,7 @@ export function SwapBridgePanel({
         </div>
       )}
 
-      {tab === "bridge" && (
+      {(tab === "bridge" || bridgeOnly || !canSwap) && (
         <div className="space-y-3">
           <p className="text-[11px] leading-relaxed text-[#9aa3ab]">
             Powered by{" "}
@@ -430,8 +452,8 @@ export function SwapBridgePanel({
             >
               Relay
             </a>
-            — bridge ETH onto Robinhood Chain in seconds. Same address receives
-            funds on RH.
+            — bridge ETH onto Robinhood Chain (4663) in seconds. Funds arrive on
+            the same wallet address.
           </p>
 
           <label className="block">

@@ -35,6 +35,7 @@ export function Header() {
   const nav = [
     { href: "/", label: "Board" },
     { href: "/create", label: "Launch" },
+    { href: "/bridge", label: "Bridge" },
     { href: "/roadmap", label: "Roadmap" },
     { href: "/how-it-works", label: "How it works" },
     { href: "/tokenlist", label: "List" },
