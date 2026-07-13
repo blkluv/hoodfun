@@ -157,6 +157,16 @@ export function Header() {
                     </Link>
                     <button
                       type="button"
+                      className="block w-full px-3 py-2 text-left text-xs font-semibold text-[#00c805] hover:bg-white/5"
+                      onClick={() => {
+                        setWalletOpen(false);
+                        setConnectOpen(true);
+                      }}
+                    >
+                      Switch wallet…
+                    </button>
+                    <button
+                      type="button"
                       className="block w-full px-3 py-2 text-left text-xs text-rose-300 hover:bg-white/5"
                       onClick={() => {
                         logout();

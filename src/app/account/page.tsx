@@ -30,9 +30,12 @@ function AccountInner() {
     logout,
     loginWithInjected,
     loginWithSession,
+    importQuickWallet,
     refreshBalance,
   } = useAuth();
   const [switchOpen, setSwitchOpen] = useState(false);
+  const [importKey, setImportKey] = useState("");
+  const [importErr, setImportErr] = useState<string | null>(null);
   const [launches, setLaunches] = useState<
     Array<{
       token: string;
@@ -106,9 +109,22 @@ function AccountInner() {
           <button
             type="button"
             onClick={() => setSwitchOpen(true)}
+            className="rounded-lg border border-[#00c805]/40 bg-[#00c805]/10 px-3 py-1.5 text-xs font-bold text-[#00c805]"
+          >
+            Switch wallet…
+          </button>
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                await loginWithInjected({ forcePicker: true });
+              } catch {
+                /* user cancelled */
+              }
+            }}
             className="rounded-lg border border-white/15 px-3 py-1.5 text-xs text-white/70"
           >
-            Switch method
+            MetaMask account picker
           </button>
           <a
             href={`${ROBINHOOD_CHAIN.blockExplorers.default.url}/address/${address}`}
@@ -125,6 +141,46 @@ function AccountInner() {
           >
             Log out
           </button>
+        </div>
+
+        <div className="mt-4 space-y-2 border-t border-white/10 pt-4">
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-white/40">
+            Import private key as quick wallet
+          </div>
+          <p className="text-[11px] text-white/40">
+            Paste the key from Desktop{" "}
+            <code className="text-white/55">HOODMEMES-WALLET-SECRET.txt</code>{" "}
+            (or ~/.hoodmemes-wallet) to use{" "}
+            <code className="text-white/55">0x016F…44d6</code> here.
+          </p>
+          <div className="flex gap-2">
+            <input
+              value={importKey}
+              onChange={(e) => setImportKey(e.target.value)}
+              placeholder="0x… private key"
+              className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/40 px-2 py-1.5 font-mono text-[11px] text-white outline-none focus:border-[#00c805]/40"
+              autoComplete="off"
+              spellCheck={false}
+            />
+            <button
+              type="button"
+              onClick={() => {
+                setImportErr(null);
+                try {
+                  importQuickWallet(importKey.trim());
+                  setImportKey("");
+                } catch {
+                  setImportErr("Invalid private key");
+                }
+              }}
+              className="rounded-lg bg-[#00c805] px-3 py-1.5 text-xs font-black text-black"
+            >
+              Import
+            </button>
+          </div>
+          {importErr && (
+            <p className="text-[11px] text-rose-300">{importErr}</p>
+          )}
         </div>
       </div>
 
@@ -188,7 +244,7 @@ function AccountInner() {
         <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-xs text-white/45">
           Using MetaMask / browser wallet. Approvals appear in your extension.
           Prefer quick wallet for one-click trench trading.
-          <div className="mt-3 flex gap-2">
+          <div className="mt-3 flex flex-wrap gap-2">
             <button
               type="button"
               onClick={() => loginWithSession()}
@@ -198,10 +254,10 @@ function AccountInner() {
             </button>
             <button
               type="button"
-              onClick={() => loginWithInjected()}
+              onClick={() => loginWithInjected({ forcePicker: true })}
               className="rounded-lg border border-white/15 px-3 py-1.5"
             >
-              Reconnect browser wallet
+              Switch MetaMask account
             </button>
           </div>
         </div>
@@ -210,7 +266,7 @@ function AccountInner() {
       <ConnectModal
         open={switchOpen}
         onClose={() => setSwitchOpen(false)}
-        title="Switch login method"
+        title="Switch wallet"
       />
     </div>
   );

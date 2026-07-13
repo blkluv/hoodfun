@@ -54,23 +54,51 @@ export async function ensureRobinhoodChain(
   }
 }
 
-export async function connectInjectedWallet(): Promise<Address> {
-  const eth = (
-    window as unknown as {
-      ethereum?: {
-        request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
-      };
-    }
-  ).ethereum;
+type EthProvider = {
+  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
+  on?: (event: string, handler: (...args: unknown[]) => void) => void;
+  removeListener?: (event: string, handler: (...args: unknown[]) => void) => void;
+};
+
+function getEthereum(): EthProvider | undefined {
+  return (window as unknown as { ethereum?: EthProvider }).ethereum;
+}
+
+/**
+ * Connect browser wallet. `forcePicker` re-opens the account chooser so you
+ * can switch away from a previously connected account.
+ */
+export async function connectInjectedWallet(
+  opts?: { forcePicker?: boolean }
+): Promise<Address> {
+  const eth = getEthereum();
   if (!eth) {
     throw new Error("No browser wallet found. Install MetaMask, Rabby, or similar.");
   }
+
+  // Force MetaMask account picker (logout alone does not change selected account)
+  if (opts?.forcePicker) {
+    try {
+      await eth.request({
+        method: "wallet_requestPermissions",
+        params: [{ eth_accounts: {} }],
+      });
+    } catch {
+      /* user rejected or wallet doesn't support — fall through to requestAccounts */
+    }
+  }
+
   const accounts = (await eth.request({
     method: "eth_requestAccounts",
   })) as string[];
   if (!accounts?.[0]) throw new Error("No account returned");
   await ensureRobinhoodChain(eth);
   return accounts[0] as Address;
+}
+
+export function getInjectedProvider(): EthProvider | undefined {
+  if (typeof window === "undefined") return undefined;
+  return getEthereum();
 }
 
 export function getExternalWalletClient(address: Address): WalletClient {

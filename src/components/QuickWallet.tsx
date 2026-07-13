@@ -1,18 +1,19 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { formatEther, type Hex } from "viem";
+import { formatEther } from "viem";
 import {
-  clearSessionWallet,
   exportSessionPrivateKey,
   getOrCreateSessionWallet,
   getSessionEthBalance,
-  importSessionWallet,
 } from "@/lib/sessionWallet";
 import { ROBINHOOD_CHAIN } from "@/lib/chain";
 import { shortAddr } from "@/lib/format";
+import { useAuth } from "./AuthProvider";
 
 export function QuickWallet({ compact = false }: { compact?: boolean }) {
+  const { importQuickWallet, resetQuickWallet, address: authAddr, refreshBalance } =
+    useAuth();
   const [address, setAddress] = useState<string | null>(null);
   const [bal, setBal] = useState<string>("—");
   const [showKey, setShowKey] = useState(false);
@@ -29,13 +30,14 @@ export function QuickWallet({ compact = false }: { compact?: boolean }) {
     } catch {
       setBal("?");
     }
-  }, []);
+    await refreshBalance();
+  }, [refreshBalance]);
 
   useEffect(() => {
     refresh();
     const id = setInterval(refresh, 12_000);
     return () => clearInterval(id);
-  }, [refresh]);
+  }, [refresh, authAddr]);
 
   async function copyAddr() {
     if (!address) return;
@@ -52,7 +54,7 @@ export function QuickWallet({ compact = false }: { compact?: boolean }) {
 
   function doImport() {
     try {
-      importSessionWallet(importVal.trim() as Hex);
+      importQuickWallet(importVal.trim());
       setImportVal("");
       setShowKey(false);
       refresh();
@@ -68,8 +70,7 @@ export function QuickWallet({ compact = false }: { compact?: boolean }) {
       )
     )
       return;
-    clearSessionWallet();
-    getOrCreateSessionWallet();
+    resetQuickWallet();
     setShowKey(false);
     setPk(null);
     refresh();

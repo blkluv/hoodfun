@@ -9,22 +9,24 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { Address } from "viem";
+import type { Address, Hex } from "viem";
 import { formatEther } from "viem";
 import {
+  clearSessionWallet,
   getOrCreateSessionWallet,
   getSessionEthBalance,
+  importSessionWallet,
 } from "@/lib/sessionWallet";
 import {
   connectInjectedWallet,
   getActiveClients,
+  getInjectedProvider,
   type ActiveWalletMode,
   writeWithActive,
   signMessageWithActive,
   type WriteArgs,
   getPublicClient,
 } from "@/lib/wallet-tx";
-import type { Hex } from "viem";
 
 type AuthContextValue = {
   ready: boolean;
@@ -33,7 +35,12 @@ type AuthContextValue = {
   address: Address | null;
   ethBalance: string;
   loginWithSession: () => void;
-  loginWithInjected: () => Promise<void>;
+  /** Connect MetaMask. forcePicker=true opens account chooser (switch account). */
+  loginWithInjected: (opts?: { forcePicker?: boolean }) => Promise<void>;
+  /** Import a private key as the quick wallet and log in with it. */
+  importQuickWallet: (privateKey: string) => void;
+  /** Wipe quick wallet from this browser and create a fresh one. */
+  resetQuickWallet: () => void;
   logout: () => void;
   setMode: (m: ActiveWalletMode) => void;
   refreshBalance: () => Promise<void>;
@@ -95,6 +102,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setReady(true);
   }, []);
 
+  // Keep UI in sync when user switches account inside MetaMask
+  useEffect(() => {
+    const eth = getInjectedProvider();
+    if (!eth?.on) return;
+
+    const onAccounts = (accounts: unknown) => {
+      const list = accounts as string[];
+      if (!list?.length) {
+        // disconnected in extension
+        setLoggedIn(false);
+        setModeState(null);
+        setAddress(null);
+        setEthBalance("—");
+        localStorage.removeItem(LS_LOGGED);
+        localStorage.removeItem(LS_MODE);
+        localStorage.removeItem(LS_EXT);
+        return;
+      }
+      const next = list[0] as Address;
+      if (mode === "external" || localStorage.getItem(LS_MODE) === "external") {
+        setModeState("external");
+        setAddress(next);
+        setLoggedIn(true);
+        localStorage.setItem(LS_LOGGED, "1");
+        localStorage.setItem(LS_MODE, "external");
+        localStorage.setItem(LS_EXT, next);
+      }
+    };
+
+    eth.on("accountsChanged", onAccounts);
+    return () => {
+      eth.removeListener?.("accountsChanged", onAccounts);
+    };
+  }, [mode]);
+
   useEffect(() => {
     if (loggedIn) refreshBalance();
     const id = setInterval(() => {
@@ -113,14 +155,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(LS_EXT);
   }, []);
 
-  const loginWithInjected = useCallback(async () => {
-    const addr = await connectInjectedWallet();
-    setModeState("external");
-    setAddress(addr);
+  const loginWithInjected = useCallback(
+    async (opts?: { forcePicker?: boolean }) => {
+      const addr = await connectInjectedWallet({
+        forcePicker: opts?.forcePicker ?? true,
+      });
+      setModeState("external");
+      setAddress(addr);
+      setLoggedIn(true);
+      localStorage.setItem(LS_LOGGED, "1");
+      localStorage.setItem(LS_MODE, "external");
+      localStorage.setItem(LS_EXT, addr);
+    },
+    []
+  );
+
+  const importQuickWallet = useCallback((privateKey: string) => {
+    const account = importSessionWallet(
+      (privateKey.startsWith("0x") ? privateKey : `0x${privateKey}`) as Hex
+    );
+    setModeState("session");
+    setAddress(account.address);
     setLoggedIn(true);
     localStorage.setItem(LS_LOGGED, "1");
-    localStorage.setItem(LS_MODE, "external");
-    localStorage.setItem(LS_EXT, addr);
+    localStorage.setItem(LS_MODE, "session");
+    localStorage.removeItem(LS_EXT);
+  }, []);
+
+  const resetQuickWallet = useCallback(() => {
+    clearSessionWallet();
+    const { account } = getOrCreateSessionWallet();
+    setModeState("session");
+    setAddress(account.address);
+    setLoggedIn(true);
+    localStorage.setItem(LS_LOGGED, "1");
+    localStorage.setItem(LS_MODE, "session");
+    localStorage.removeItem(LS_EXT);
   }, []);
 
   const logout = useCallback(() => {
@@ -131,19 +201,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(LS_LOGGED);
     localStorage.removeItem(LS_MODE);
     localStorage.removeItem(LS_EXT);
-    // session private key stays in storage until user resets on account page
+    // Keep quick-wallet key so accidental logout doesn't lose funds —
+    // use resetQuickWallet / import to change it.
   }, []);
 
   const setMode = useCallback(
     (m: ActiveWalletMode) => {
       if (m === "session") {
         loginWithSession();
-      } else if (address && mode === "external") {
-        setModeState("external");
-        localStorage.setItem(LS_MODE, "external");
       }
     },
-    [loginWithSession, address, mode]
+    [loginWithSession]
   );
 
   const writeContract = useCallback(
@@ -176,6 +244,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ethBalance,
       loginWithSession,
       loginWithInjected,
+      importQuickWallet,
+      resetQuickWallet,
       logout,
       setMode,
       refreshBalance,
@@ -191,6 +261,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ethBalance,
       loginWithSession,
       loginWithInjected,
+      importQuickWallet,
+      resetQuickWallet,
       logout,
       setMode,
       refreshBalance,
@@ -205,8 +277,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useAuth(): AuthContextValue {
+export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth outside AuthProvider");
+  if (!ctx) throw new Error("useAuth requires AuthProvider");
   return ctx;
 }
