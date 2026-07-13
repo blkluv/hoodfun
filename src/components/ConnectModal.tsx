@@ -138,7 +138,7 @@ export function ConnectModal({
                 Import private key
               </span>
               <span className="text-xs text-white/40">
-                Use the new wallet you saved (~/.hoodmemes-wallet)
+                Paste your own key — only saved in this browser (never uploaded)
               </span>
             </span>
           </button>

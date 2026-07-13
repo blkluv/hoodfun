@@ -361,6 +361,69 @@ export function AdminDashboard() {
     }
   }
 
+  /** Remove Official pin + banner from homepage (partners stay). */
+  async function clearOfficial() {
+    if (
+      !confirm(
+        "Remove the official token from the homepage? Featured partners stay. Announcement banner will be turned off."
+      )
+    )
+      return;
+    setBusy(true);
+    setErr(null);
+    try {
+      const remaining = config.featured.filter(
+        (f) => (f.note || "").toLowerCase() !== "official"
+      );
+      const next: SiteConfig = {
+        ...config,
+        featured: remaining,
+        featuredSectionTitle:
+          remaining.length > 0 ? config.featuredSectionTitle : "Featured",
+        announcement: {
+          ...config.announcement,
+          enabled: false,
+          text: "",
+          href: "",
+        },
+      };
+      setConfig(next);
+      await save(next);
+      setMsg(
+        remaining.length
+          ? "Official pin removed. Other featured tokens kept."
+          : "Official pin removed. Homepage featured section is empty."
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  /** Remove every featured token + official banner. */
+  async function clearAllFeatured() {
+    if (!confirm("Clear ALL featured tokens from the homepage?")) return;
+    setBusy(true);
+    setErr(null);
+    try {
+      const next: SiteConfig = {
+        ...config,
+        featured: [],
+        featuredSectionTitle: "Featured",
+        announcement: {
+          ...config.announcement,
+          enabled: false,
+          text: "",
+          href: "",
+        },
+      };
+      setConfig(next);
+      await save(next);
+      setMsg("All featured tokens cleared from homepage.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   function addFeatured() {
     if (!featDraft.address.trim()) return;
     const item: FeaturedToken = {
@@ -383,11 +446,21 @@ export function AdminDashboard() {
     });
   }
 
-  function removeFeatured(i: number) {
-    setConfig((c) => ({
-      ...c,
-      featured: c.featured.filter((_, idx) => idx !== i),
-    }));
+  async function removeFeatured(i: number) {
+    const next: SiteConfig = {
+      ...config,
+      featured: config.featured.filter((_, idx) => idx !== i),
+    };
+    // If we removed the last Official and none left, soft-reset section title
+    const stillOfficial = next.featured.some(
+      (f) => (f.note || "").toLowerCase() === "official"
+    );
+    if (!stillOfficial && next.featuredSectionTitle === "Official") {
+      next.featuredSectionTitle = "Featured";
+    }
+    setConfig(next);
+    await save(next);
+    setMsg("Removed from homepage featured.");
   }
 
   function moveFeatured(i: number, dir: -1 | 1) {
@@ -690,10 +763,32 @@ export function AdminDashboard() {
             />
           </div>
 
-          <Section title="Pin official token (one paste)">
+          <Section title="Official / homepage pin">
             <p className="text-[11px] text-white/40">
-              Sets Featured #1 + success announcement linking the token page.
+              Pin sets Featured #1 + announcement. Remove clears only the
+              Official pin (partners stay). Clear all wipes the whole featured
+              strip.
             </p>
+            {config.featured.some(
+              (f) => (f.note || "").toLowerCase() === "official"
+            ) && (
+              <div className="mt-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-100/90">
+                Official on homepage:{" "}
+                <strong>
+                  $
+                  {config.featured.find(
+                    (f) => (f.note || "").toLowerCase() === "official"
+                  )?.symbol || "TOKEN"}
+                </strong>{" "}
+                <span className="font-mono text-[10px] text-white/50">
+                  {
+                    config.featured.find(
+                      (f) => (f.note || "").toLowerCase() === "official"
+                    )?.address
+                  }
+                </span>
+              </div>
+            )}
             <div className="mt-2 flex flex-wrap gap-2">
               <input
                 value={pinCa}
@@ -708,6 +803,22 @@ export function AdminDashboard() {
                 className="rounded-xl bg-[#00c805] px-4 py-2 text-sm font-bold text-black"
               >
                 Pin official
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={clearOfficial}
+                className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-2 text-sm font-bold text-rose-200"
+              >
+                Remove official
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={clearAllFeatured}
+                className="rounded-xl border border-white/15 px-4 py-2 text-sm font-semibold text-white/70"
+              >
+                Clear all featured
               </button>
             </div>
           </Section>
@@ -1036,6 +1147,26 @@ export function AdminDashboard() {
       {tab === "featured" && (
         <div className="space-y-4">
           <Section title="Featured tokens (homepage top)">
+            <div className="mb-3 flex flex-wrap gap-2">
+              <button
+                type="button"
+                disabled={busy || !config.featured.some(
+                  (f) => (f.note || "").toLowerCase() === "official"
+                )}
+                onClick={clearOfficial}
+                className="rounded-lg border border-rose-500/40 bg-rose-500/10 px-3 py-1.5 text-xs font-bold text-rose-200 disabled:opacity-40"
+              >
+                Remove official
+              </button>
+              <button
+                type="button"
+                disabled={busy || config.featured.length === 0}
+                onClick={clearAllFeatured}
+                className="rounded-lg border border-white/15 px-3 py-1.5 text-xs text-white/70 disabled:opacity-40"
+              >
+                Clear all featured
+              </button>
+            </div>
             {config.featured.length === 0 && (
               <p className="text-xs text-white/35">No featured tokens yet.</p>
             )}
@@ -1051,6 +1182,11 @@ export function AdminDashboard() {
                       <span className="text-sm font-normal text-white/40">
                         {f.name}
                       </span>
+                      {(f.note || "").toLowerCase() === "official" && (
+                        <span className="ml-2 rounded-full bg-[#00c805]/20 px-2 py-0.5 text-[10px] font-bold text-[#00c805]">
+                          OFFICIAL
+                        </span>
+                      )}
                     </div>
                     <div className="truncate font-mono text-[10px] text-white/35">
                       {f.address}

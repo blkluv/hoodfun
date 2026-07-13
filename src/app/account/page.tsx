@@ -148,10 +148,9 @@ function AccountInner() {
             Import private key as quick wallet
           </div>
           <p className="text-[11px] text-white/40">
-            Paste the key from Desktop{" "}
-            <code className="text-white/55">HOODMEMES-WALLET-SECRET.txt</code>{" "}
-            (or ~/.hoodmemes-wallet) to use{" "}
-            <code className="text-white/55">0x016F…44d6</code> here.
+            Pastes into <strong className="text-white/60">this browser only</strong>{" "}
+            (localStorage). Other visitors never see your key or file — only you
+            have the Desktop / ~/.hoodmemes-wallet copy on this laptop.
           </p>
           <div className="flex gap-2">
             <input
