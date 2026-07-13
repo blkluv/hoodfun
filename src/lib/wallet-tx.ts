@@ -219,25 +219,33 @@ export async function sendRawTransaction(
     const { privateKey } = getOrCreateSessionWallet();
     const account = privateKeyToAccount(privateKey);
     // Session key is the same EOA on all EVM chains
+    const rpcFor = (id: number): string => {
+      const map: Record<number, string> = {
+        1: "https://ethereum.publicnode.com",
+        10: "https://optimism.publicnode.com",
+        56: "https://bsc-rpc.publicnode.com",
+        137: "https://polygon-bor-rpc.publicnode.com",
+        8453: "https://base.publicnode.com",
+        42161: "https://arbitrum-one.publicnode.com",
+        43114: "https://avalanche-c-chain-rpc.publicnode.com",
+        4663: ROBINHOOD_CHAIN.rpcUrls.default.http[0],
+        81457: "https://rpc.blast.io",
+        534352: "https://rpc.scroll.io",
+        59144: "https://rpc.linea.build",
+        324: "https://mainnet.era.zksync.io",
+        5000: "https://rpc.mantle.xyz",
+        34443: "https://mainnet.mode.network",
+        7777777: "https://rpc.zora.energy",
+      };
+      return map[id] || "https://ethereum.publicnode.com";
+    };
     const chain = {
       id: tx.chainId,
       name: `chain-${tx.chainId}`,
       nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
       rpcUrls: {
         default: {
-          http: [
-            tx.chainId === 4663
-              ? ROBINHOOD_CHAIN.rpcUrls.default.http[0]
-              : tx.chainId === 1
-                ? "https://ethereum.publicnode.com"
-                : tx.chainId === 8453
-                  ? "https://base.publicnode.com"
-                  : tx.chainId === 42161
-                    ? "https://arbitrum-one.publicnode.com"
-                    : tx.chainId === 10
-                      ? "https://optimism.publicnode.com"
-                      : "https://ethereum.publicnode.com",
-          ],
+          http: [rpcFor(tx.chainId)],
         },
       },
     } as const;

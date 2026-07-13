@@ -49,8 +49,9 @@ export default function BridgePage() {
             <ol className="mt-3 list-decimal space-y-2 pl-4 leading-relaxed">
               <li>Connect the wallet that will receive ETH on Robinhood.</li>
               <li>
-                Pick a <strong className="text-white/70">from</strong> chain
-                (Base, Ethereum, Arbitrum, or Optimism) and an ETH amount.
+                Pick any supported <strong className="text-white/70">from</strong>{" "}
+                chain (full Relay list — Base, Ethereum, Arbitrum, and many more)
+                and an ETH amount.
               </li>
               <li>
                 Confirm the Relay deposit in your wallet. Solver fills on RH —

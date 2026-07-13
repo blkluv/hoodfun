@@ -9,13 +9,93 @@ export const RELAY_API = "https://api.relay.link";
 export const RELAY_ZERO =
   "0x0000000000000000000000000000000000000000" as const;
 
-/** Popular source chains for onboarding to RH */
-export const RELAY_FROM_CHAINS = [
+/** Popular sources pinned to the top of the from-chain list */
+export const RELAY_POPULAR_FROM_IDS = [1, 8453, 42161, 10, 137, 56, 43114] as const;
+
+/** Fallback if Relay chains API is unreachable */
+export const RELAY_FROM_CHAINS_FALLBACK: RelayOriginChain[] = [
   { id: 1, name: "Ethereum", short: "ETH" },
   { id: 8453, name: "Base", short: "Base" },
   { id: 42161, name: "Arbitrum", short: "Arb" },
   { id: 10, name: "Optimism", short: "OP" },
-] as const;
+  { id: 137, name: "Polygon", short: "Polygon" },
+  { id: 56, name: "BNB", short: "BNB" },
+  { id: 43114, name: "Avalanche", short: "AVAX" },
+];
+
+/** @deprecated use RELAY_FROM_CHAINS_FALLBACK or fetchRelayOriginChains() */
+export const RELAY_FROM_CHAINS = RELAY_FROM_CHAINS_FALLBACK;
+
+export type RelayOriginChain = {
+  id: number;
+  name: string;
+  short: string;
+  rpcUrl?: string;
+  depositEnabled?: boolean;
+};
+
+/**
+ * All Relay EVM chains that can deposit ETH → Robinhood (4663).
+ * Live from https://api.relay.link/chains
+ */
+export async function fetchRelayOriginChains(): Promise<RelayOriginChain[]> {
+  try {
+    const res = await fetch(`${RELAY_API}/chains`, { cache: "no-store" });
+    if (!res.ok) throw new Error(`chains ${res.status}`);
+    const data = (await res.json()) as {
+      chains?: Array<{
+        id?: number;
+        name?: string;
+        displayName?: string;
+        disabled?: boolean;
+        depositEnabled?: boolean;
+        vmType?: string;
+        httpRpcUrl?: string;
+        currency?: { supportsBridging?: boolean; symbol?: string };
+      }>;
+    };
+    const list = data.chains || [];
+    const out: RelayOriginChain[] = [];
+
+    for (const c of list) {
+      const id = Number(c.id);
+      if (!Number.isFinite(id) || id === 4663) continue; // not RH itself
+      if (c.disabled) continue;
+      if (c.depositEnabled === false) continue;
+      if (c.vmType && c.vmType !== "evm") continue;
+      // Need native ETH-style bridging support when possible
+      if (c.currency?.supportsBridging === false) continue;
+
+      const name = c.displayName || c.name || `Chain ${id}`;
+      out.push({
+        id,
+        name,
+        short: name.length > 14 ? name.slice(0, 12) + "…" : name,
+        rpcUrl: c.httpRpcUrl,
+        depositEnabled: c.depositEnabled !== false,
+      });
+    }
+
+    // Popular first, then A–Z
+    const popular = new Set<number>(RELAY_POPULAR_FROM_IDS as unknown as number[]);
+    out.sort((a, b) => {
+      const ap = popular.has(a.id) ? 0 : 1;
+      const bp = popular.has(b.id) ? 0 : 1;
+      if (ap !== bp) return ap - bp;
+      if (ap === 0) {
+        return (
+          (RELAY_POPULAR_FROM_IDS as readonly number[]).indexOf(a.id) -
+          (RELAY_POPULAR_FROM_IDS as readonly number[]).indexOf(b.id)
+        );
+      }
+      return a.name.localeCompare(b.name);
+    });
+
+    return out.length ? out : RELAY_FROM_CHAINS_FALLBACK;
+  } catch {
+    return RELAY_FROM_CHAINS_FALLBACK;
+  }
+}
 
 export type RelayQuoteStepItem = {
   status?: string;

@@ -7,10 +7,12 @@ import { ConnectModal } from "./ConnectModal";
 import {
   extractRelayRequestId,
   extractRelayTransactions,
+  fetchRelayOriginChains,
   getRelayBridgeQuote,
   getRelayStatus,
-  RELAY_FROM_CHAINS,
+  RELAY_FROM_CHAINS_FALLBACK,
   relayBridgeUrl,
+  type RelayOriginChain,
   type RelayQuote,
 } from "@/lib/relay";
 import {
@@ -50,6 +52,9 @@ export function SwapBridgePanel({
   const [tokenIn, setTokenIn] = useState("");
   const [tokenBal, setTokenBal] = useState<bigint | null>(null);
   const [fromChainId, setFromChainId] = useState(8453);
+  const [fromChains, setFromChains] = useState<RelayOriginChain[]>(
+    RELAY_FROM_CHAINS_FALLBACK
+  );
   const [bridgeAmount, setBridgeAmount] = useState("0.05");
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
@@ -92,6 +97,22 @@ export function SwapBridgePanel({
   useEffect(() => {
     refreshTokenBal();
   }, [refreshTokenBal]);
+
+  // Load full Relay origin chain list (not just 4 hard-coded)
+  useEffect(() => {
+    let cancelled = false;
+    fetchRelayOriginChains().then((list) => {
+      if (cancelled || !list.length) return;
+      setFromChains(list);
+      // Keep current selection if still valid; else default Base → ETH
+      setFromChainId((prev) =>
+        list.some((c) => c.id === prev) ? prev : list[0]?.id ?? 8453
+      );
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const relayLink = useMemo(() => {
     if (!address) return "https://relay.link/bridge/robinhood";
@@ -457,13 +478,18 @@ export function SwapBridgePanel({
           </p>
 
           <label className="block">
-            <span className="text-[11px] text-[#9aa3ab]">From chain</span>
+            <span className="text-[11px] text-[#9aa3ab]">
+              From chain{" "}
+              <span className="text-white/30">
+                ({fromChains.length} via Relay)
+              </span>
+            </span>
             <select
               value={fromChainId}
               onChange={(e) => setFromChainId(Number(e.target.value))}
               className="mt-1 w-full rounded-md border border-[#2a2f37] bg-[#0e1116] px-3 py-2.5 text-sm text-[#e8eaed] outline-none"
             >
-              {RELAY_FROM_CHAINS.map((c) => (
+              {fromChains.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
                 </option>
