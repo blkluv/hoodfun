@@ -72,7 +72,7 @@ export async function fetchRelayOriginChains(): Promise<RelayOriginChain[]> {
         name,
         short: name.length > 14 ? name.slice(0, 12) + "…" : name,
         rpcUrl: c.httpRpcUrl,
-        depositEnabled: c.depositEnabled !== false,
+        depositEnabled: Boolean(c.depositEnabled ?? true),
       });
     }
 
