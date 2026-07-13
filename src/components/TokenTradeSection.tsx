@@ -66,22 +66,25 @@ export function TokenTradeSection({
       }
     }
 
+    // Instant factory uses pairOfToken — curve markets use market query param / localStorage
     if (!isFactoryConfigured()) return;
 
     (async () => {
       try {
         const pc = getPublicClient();
-        const m = (await pc.readContract({
+        const pair = (await pc.readContract({
           address: FACTORY_ADDRESS as Address,
           abi: factoryAbi,
-          functionName: "marketOfToken",
+          functionName: "pairOfToken",
           args: [tokenAddress as Address],
         })) as string;
-        if (m && m !== "0x0000000000000000000000000000000000000000") {
-          setMarket(m);
+        // Instant launches trade on Uniswap, not in-app curve market
+        if (pair && pair !== "0x0000000000000000000000000000000000000000") {
+          // leave market null — TokenPageClient handles Uni trade UI
+          return;
         }
       } catch {
-        /* factory not live */
+        /* factory not live or legacy ABI */
       }
     })();
   }, [tokenAddress, market, config]);
