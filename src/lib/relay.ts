@@ -61,7 +61,7 @@ export async function fetchRelayOriginChains(): Promise<RelayOriginChain[]> {
       const id = Number(c.id);
       if (!Number.isFinite(id) || id === 4663) continue; // not RH itself
       if (c.disabled) continue;
-      if (c.depositEnabled === false) continue;
+      if (c.depositEnabled != null && !c.depositEnabled) continue;
       if (c.vmType && c.vmType !== "evm") continue;
       // Need native ETH-style bridging support when possible
       if (c.currency?.supportsBridging === false) continue;
