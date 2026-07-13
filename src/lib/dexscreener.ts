@@ -13,7 +13,8 @@ interface DsPair {
   fdv?: number;
   volume?: { h24?: number; h6?: number; h1?: number; m5?: number };
   priceChange?: { h24?: number; h6?: number; h1?: number; m5?: number };
-  liquidity?: { usd?: number };
+  liquidity?: { usd?: number; base?: number; quote?: number };
+  priceNative?: string;
   pairCreatedAt?: number;
   txns?: {
     h24?: { buys?: number; sells?: number };
@@ -66,21 +67,31 @@ function pairToToken(p: DsPair): TokenCardData {
     liquidity,
   };
 
+  const buys1h = p.txns?.h1?.buys ?? 0;
+  const sells1h = p.txns?.h1?.sells ?? 0;
+  const buys5m = p.txns?.m5?.buys ?? 0;
+  const sells5m = p.txns?.m5?.sells ?? 0;
+
   return {
     address: p.baseToken.address,
     name: p.baseToken.name,
     symbol: p.baseToken.symbol,
     pairAddress: p.pairAddress,
     priceUsd: toNum(p.priceUsd),
+    priceNative: toNum(p.priceNative),
     marketCap: toNum(p.marketCap ?? p.fdv),
+    fdv: toNum(p.fdv),
     volume24h,
     volume1h,
     volume6h: toNum(p.volume?.h6),
+    volume5m: toNum(p.volume?.m5),
     priceChange5m,
     priceChange1h,
     priceChange6h: toNum(p.priceChange?.h6),
     priceChange24h: toNum(p.priceChange?.h24),
     liquidity,
+    liquidityBase: toNum(p.liquidity?.base),
+    liquidityQuote: toNum(p.liquidity?.quote),
     imageUrl: p.info?.imageUrl ?? null,
     dexscreenerUrl: p.url ?? null,
     createdAt: p.pairCreatedAt ?? null,
@@ -89,6 +100,12 @@ function pairToToken(p: DsPair): TokenCardData {
     txns24h,
     buys24h: buys || null,
     sells24h: sells || null,
+    buys1h: buys1h || null,
+    sells1h: sells1h || null,
+    buys5m: buys5m || null,
+    sells5m: sells5m || null,
+    dexId: p.dexId ?? null,
+    quoteSymbol: p.quoteToken?.symbol ?? null,
     trendScore: trendScore(partial),
   };
 }

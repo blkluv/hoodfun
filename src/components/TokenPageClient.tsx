@@ -32,7 +32,12 @@ type InstantLaunch = {
   symbol: string;
 };
 
-type LiveStats = TokenCardData | null;
+type Related = Pick<
+  TokenCardData,
+  "address" | "symbol" | "name" | "marketCap" | "priceChange24h" | "imageUrl"
+>;
+
+const QUICK_ETH = ["0.01", "0.05", "0.1", "0.25"] as const;
 
 export function TokenPageClient({
   address,
@@ -51,7 +56,8 @@ export function TokenPageClient({
 }) {
   const [curve, setCurve] = useState<CurveSnapshot | null>(null);
   const [instant, setInstant] = useState<InstantLaunch | null>(null);
-  const [live, setLive] = useState<LiveStats>(dexToken);
+  const [live, setLive] = useState<TokenCardData | null>(dexToken);
+  const [related, setRelated] = useState<Related[]>([]);
   const [meta, setMeta] = useState<{
     description?: string;
     website?: string;
@@ -72,8 +78,10 @@ export function TokenPageClient({
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-  const [chartTab, setChartTab] = useState<"chart" | "txns">("chart");
+  const [copied, setCopied] = useState<"ca" | "pair" | "share" | null>(null);
+  const [mainTab, setMainTab] = useState<"chart" | "trades" | "info">("chart");
+  const [ethIn, setEthIn] = useState("0.05");
+  const [lastRefresh, setLastRefresh] = useState<number>(Date.now());
 
   const loadLauncherVerify = useCallback(
     async (creatorAddr: string | undefined | null) => {
@@ -89,9 +97,7 @@ export function TokenPageClient({
             handle: data.handle,
             profileUrl: data.profileUrl || `https://x.com/${data.handle}`,
           });
-        } else {
-          setLauncherX(null);
-        }
+        } else setLauncherX(null);
       } catch {
         setLauncherX(null);
       }
@@ -108,12 +114,36 @@ export function TokenPageClient({
       if (res.ok) {
         const data = await res.json();
         if (data?.token) setLive(data.token as TokenCardData);
-        else if (data?.address) setLive(data as TokenCardData);
       }
+      setLastRefresh(Date.now());
     } catch {
-      /* keep last */
+      /* keep */
     }
   }, [address, pairHint]);
+
+  const loadRelated = useCallback(async () => {
+    try {
+      const res = await fetch("/api/tokens?tab=trending");
+      if (!res.ok) return;
+      const data = await res.json();
+      const list = (data.tokens || data || []) as TokenCardData[];
+      setRelated(
+        list
+          .filter((t) => t.address?.toLowerCase() !== address.toLowerCase())
+          .slice(0, 6)
+          .map((t) => ({
+            address: t.address,
+            symbol: t.symbol,
+            name: t.name,
+            marketCap: t.marketCap,
+            priceChange24h: t.priceChange24h,
+            imageUrl: t.imageUrl,
+          }))
+      );
+    } catch {
+      /* ignore */
+    }
+  }, [address]);
 
   const load = useCallback(async () => {
     try {
@@ -163,12 +193,13 @@ export function TokenPageClient({
   useEffect(() => {
     load();
     refreshDex();
+    loadRelated();
     const id = setInterval(() => {
       load();
       refreshDex();
-    }, 15_000);
+    }, 12_000);
     return () => clearInterval(id);
-  }, [load, refreshDex]);
+  }, [load, refreshDex, loadRelated]);
 
   const isCurve = !!curve && !instant;
   const isInstant = !!instant;
@@ -191,7 +222,6 @@ export function TokenPageClient({
     curve?.name ||
     shortAddr(address);
 
-  // Keep Chrome tab in sync when client resolves ticker
   useEffect(() => {
     if (symbol && symbol !== "TOKEN") {
       document.title = `$${symbol}${name && name !== symbol ? ` · ${name}` : ""} | HoodMemes`;
@@ -199,7 +229,8 @@ export function TokenPageClient({
   }, [symbol, name]);
 
   const explorer = `${ROBINHOOD_CHAIN.blockExplorers.default.url}/token/${address}`;
-  const tradeUrl = `${UNISWAP_APP}/swap?chain=robinhood&inputCurrency=NATIVE&outputCurrency=${address}`;
+  const creatorExplorer = (c: string) =>
+    `${ROBINHOOD_CHAIN.blockExplorers.default.url}/address/${c}`;
 
   const pairAddress =
     pairHint ||
@@ -212,21 +243,37 @@ export function TokenPageClient({
   const chartSrc = pairAddress
     ? `https://dexscreener.com/robinhood/${pairAddress}?embed=1&theme=dark&trades=0&info=0`
     : null;
+  const tradesSrc = pairAddress
+    ? `https://dexscreener.com/robinhood/${pairAddress}?embed=1&theme=dark&trades=1&info=0&chartLeftToolbar=0`
+    : null;
 
   const dexscreenerUrl = pairAddress
     ? `https://dexscreener.com/robinhood/${pairAddress}`
     : stats?.dexscreenerUrl;
 
-  const chg24 = stats?.priceChange24h ?? null;
-  const chg1h = stats?.priceChange1h ?? null;
-  const chg5m = stats?.priceChange5m ?? null;
-  const up24 = (chg24 ?? 0) >= 0;
-  const up1h = (chg1h ?? 0) >= 0;
+  const tradeUrl = (eth?: string) => {
+    const base = `${UNISWAP_APP}/swap?chain=robinhood&inputCurrency=NATIVE&outputCurrency=${address}`;
+    if (eth) return `${base}&value=${eth}`;
+    return base;
+  };
 
-  const buys = stats?.buys24h ?? 0;
-  const sells = stats?.sells24h ?? 0;
-  const totalTx = buys + sells || 1;
-  const buyPct = Math.round((buys / totalTx) * 100);
+  const chg = {
+    m5: stats?.priceChange5m ?? null,
+    h1: stats?.priceChange1h ?? null,
+    h6: stats?.priceChange6h ?? null,
+    h24: stats?.priceChange24h ?? null,
+  };
+  const up24 = (chg.h24 ?? 0) >= 0;
+
+  const buys24 = stats?.buys24h ?? 0;
+  const sells24 = stats?.sells24h ?? 0;
+  const total24 = buys24 + sells24 || 1;
+  const buyPct24 = Math.round((buys24 / total24) * 100);
+
+  const buys1h = stats?.buys1h ?? 0;
+  const sells1h = stats?.sells1h ?? 0;
+  const total1h = buys1h + sells1h || 1;
+  const buyPct1h = Math.round((buys1h / total1h) * 100);
 
   const creatorBps =
     typeof instant?.creatorBps === "number"
@@ -235,486 +282,766 @@ export function TokenPageClient({
         ? meta.creatorBps
         : null;
 
-  const shareUrl =
-    typeof window !== "undefined"
-      ? window.location.href
-      : `https://hoodmemes.fun/token/${address}`;
+  const lpPoolPct = creatorBps != null ? 100 - creatorBps / 100 : null;
 
-  async function copyCa() {
+  async function copy(text: string, kind: "ca" | "pair" | "share") {
     try {
-      await navigator.clipboard.writeText(address);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
+      await navigator.clipboard.writeText(text);
+      setCopied(kind);
+      setTimeout(() => setCopied(null), 1400);
     } catch {
       /* ignore */
     }
   }
 
-  async function share() {
-    const text = `$${symbol} on Robinhood Chain · HoodMemes\n${shareUrl}`;
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: `$${symbol}`, text, url: shareUrl });
-      } else {
-        await navigator.clipboard.writeText(text);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1500);
-      }
-    } catch {
-      /* ignore */
-    }
-  }
+  const socials = useMemo(() => {
+    const items: { href: string; label: string; tone?: "sky" }[] = [];
+    if (launcherX)
+      items.push({
+        href: launcherX.profileUrl,
+        label: `@${launcherX.handle}`,
+        tone: "sky",
+      });
+    if (meta?.website) items.push({ href: meta.website, label: "Website" });
+    if (meta?.twitter && !launcherX)
+      items.push({ href: meta.twitter, label: "X / Twitter" });
+    if (meta?.tweet) items.push({ href: meta.tweet, label: "Launch tweet" });
+    if (meta?.telegram) items.push({ href: meta.telegram, label: "Telegram" });
+    if (meta?.discord) items.push({ href: meta.discord, label: "Discord" });
+    if (meta?.github) items.push({ href: meta.github, label: "GitHub" });
+    if (meta?.farcaster)
+      items.push({ href: meta.farcaster, label: "Farcaster" });
+    return items;
+  }, [meta, launcherX]);
 
-  const launchedAgo = useMemo(() => {
-    if (instant?.createdAt) return timeAgo(instant.createdAt);
-    if (stats?.createdAt) return timeAgo(stats.createdAt);
-    return null;
-  }, [instant?.createdAt, stats?.createdAt]);
+  const age = instant?.createdAt
+    ? timeAgo(instant.createdAt)
+    : stats?.createdAt
+      ? timeAgo(stats.createdAt)
+      : null;
 
   return (
-    <div className="relative pb-24 sm:pb-8">
-      {/* Ambient */}
-      <div className="pointer-events-none absolute -left-20 -top-10 h-56 w-56 rounded-full bg-[#00c805]/10 blur-3xl" />
-      <div className="pointer-events-none absolute -right-10 top-40 h-40 w-40 rounded-full bg-emerald-500/10 blur-3xl" />
-
-      <div className="relative space-y-5 py-4 sm:py-6">
-        <div className="flex items-center justify-between gap-3">
+    <div className="relative -mx-4 min-h-[70vh] bg-[#050806] sm:mx-0">
+      {/* ═══ TOP TICKER BAR ═══ */}
+      <div className="sticky top-14 z-30 border-b border-white/10 bg-[#070b08]/95 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2.5">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-sm text-white/45 transition hover:text-[#00c805]"
+            className="text-xs text-white/40 hover:text-[#00c805]"
           >
-            <span aria-hidden>←</span> Board
+            ← Board
           </Link>
-          <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-white/30">
-            {launchedAgo && <span>Launched {launchedAgo}</span>}
-            {isInstant && (
-              <>
-                <span className="text-white/15">·</span>
-                <span className="text-[#00c805]/80">Uniswap live</span>
-              </>
+          <div className="flex min-w-0 items-center gap-2">
+            {stats?.imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={stats.imageUrl}
+                alt=""
+                className="h-7 w-7 rounded-lg object-cover ring-1 ring-white/15"
+              />
+            ) : (
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#00c805]/20 text-xs font-black text-[#00c805]">
+                {symbol[0]}
+              </div>
+            )}
+            <span className="text-sm font-black text-white">${symbol}</span>
+            {name !== symbol && (
+              <span className="hidden truncate text-xs text-white/35 sm:inline max-w-[120px]">
+                {name}
+              </span>
             )}
           </div>
+          <div className="font-mono text-sm font-black tabular-nums text-white">
+            {formatPrice(stats?.priceUsd)}
+          </div>
+          <span
+            className={`rounded-md px-1.5 py-0.5 text-[11px] font-bold tabular-nums ${
+              up24
+                ? "bg-[#00c805]/15 text-[#00c805]"
+                : "bg-rose-500/15 text-rose-400"
+            }`}
+          >
+            24h {formatPct(chg.h24)}
+          </span>
+          <div className="hidden items-center gap-3 text-[11px] text-white/40 md:flex">
+            <span>
+              MCap{" "}
+              <strong className="text-white/75">
+                {formatUsd(stats?.marketCap)}
+              </strong>
+            </span>
+            <span>
+              Liq{" "}
+              <strong className="text-white/75">
+                {formatUsd(stats?.liquidity)}
+              </strong>
+            </span>
+            <span>
+              Vol{" "}
+              <strong className="text-white/75">
+                {formatUsd(stats?.volume24h)}
+              </strong>
+            </span>
+          </div>
+          <div className="ml-auto flex items-center gap-2">
+            <span className="hidden text-[10px] text-white/25 sm:inline">
+              live · {new Date(lastRefresh).toLocaleTimeString()}
+            </span>
+            <a
+              href={tradeUrl()}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-lg bg-[#00c805] px-3 py-1.5 text-xs font-black text-black hover:bg-[#00e006]"
+            >
+              Buy ${symbol}
+            </a>
+          </div>
         </div>
+      </div>
 
-        {/* ── Hero ── */}
-        <section className="hm-glass overflow-hidden rounded-3xl p-4 sm:p-6">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-            <div className="flex min-w-0 flex-1 gap-4">
-              <div className="relative shrink-0">
-                {stats?.imageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={stats.imageUrl}
-                    alt={symbol}
-                    className="h-16 w-16 rounded-2xl object-cover ring-2 ring-[#00c805]/30 sm:h-20 sm:w-20"
-                  />
-                ) : (
-                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#00c805]/35 to-emerald-950 text-3xl font-black text-[#00c805] ring-2 ring-[#00c805]/30 sm:h-20 sm:w-20">
-                    {symbol[0] || "?"}
-                  </div>
-                )}
-                <span className="hm-live-dot absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-[#0a0f0c] bg-[#00c805]" />
-              </div>
-
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl">
-                    ${symbol}
-                  </h1>
-                  {name && name !== symbol && (
-                    <span className="truncate text-sm text-white/40 sm:text-base">
-                      {name}
-                    </span>
-                  )}
+      <div className="mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-5">
+        {/* ═══ HEADER ═══ */}
+        <header className="mb-4 grid gap-4 lg:grid-cols-[1fr_auto]">
+          <div className="flex gap-4">
+            <div className="relative shrink-0">
+              {stats?.imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={stats.imageUrl}
+                  alt={symbol}
+                  className="h-[72px] w-[72px] rounded-2xl object-cover shadow-[0_0_40px_rgba(0,200,5,0.2)] ring-2 ring-[#00c805]/35 sm:h-20 sm:w-20"
+                />
+              ) : (
+                <div className="flex h-[72px] w-[72px] items-center justify-center rounded-2xl bg-gradient-to-br from-[#00c805]/40 via-emerald-900 to-black text-3xl font-black text-[#00c805] ring-2 ring-[#00c805]/35 sm:h-20 sm:w-20">
+                  {symbol[0]}
                 </div>
-
-                <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                  {isInstant && (
-                    <Pill tone="green">Uniswap V2</Pill>
-                  )}
-                  {isCurve && <Pill tone="green">Bonding curve</Pill>}
-                  {instant?.lpBurned && <Pill tone="muted">LP burned 🔥</Pill>}
-                  {creatorBps != null && creatorBps > 0 && (
-                    <Pill tone="amber">Creator {creatorBps / 100}%</Pill>
-                  )}
-                  {creatorBps === 0 && <Pill tone="muted">Fair launch</Pill>}
-                  {launcherX && (
-                    <VerifiedBadge
-                      handle={launcherX.handle}
-                      href={launcherX.profileUrl}
-                      size="sm"
-                    />
-                  )}
-                </div>
-
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={copyCa}
-                    className="group inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-black/40 px-2.5 py-1.5 font-mono text-[11px] text-white/55 transition hover:border-[#00c805]/40 hover:text-white"
-                    title="Copy contract address"
-                  >
-                    {shortAddr(address, 6)}
-                    <span className="text-[10px] font-sans font-bold text-[#00c805]/80">
-                      {copied ? "Copied" : "CA"}
-                    </span>
-                  </button>
-                  {pairAddress && (
-                    <span className="hidden font-mono text-[10px] text-white/25 sm:inline">
-                      pair {shortAddr(pairAddress, 4)}
-                    </span>
-                  )}
-                </div>
-
-                {(meta?.description || launcherX) && (
-                  <p className="mt-3 max-w-xl text-sm leading-relaxed text-white/45">
-                    {meta?.description}
-                    {launcherX && !meta?.description && (
-                      <>
-                        Verified launcher{" "}
-                        <a
-                          href={launcherX.profileUrl}
-                          className="font-semibold text-sky-300 hover:underline"
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          @{launcherX.handle}
-                        </a>
-                      </>
-                    )}
-                  </p>
-                )}
-
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {launcherX && (
-                    <SocialChip
-                      href={launcherX.profileUrl}
-                      label={`@${launcherX.handle}`}
-                      tone="sky"
-                    />
-                  )}
-                  {meta?.website && (
-                    <SocialChip href={meta.website} label="Website" />
-                  )}
-                  {meta?.twitter && !launcherX && (
-                    <SocialChip href={meta.twitter} label="X" />
-                  )}
-                  {meta?.tweet && (
-                    <SocialChip href={meta.tweet} label="Launch tweet" />
-                  )}
-                  {meta?.telegram && (
-                    <SocialChip href={meta.telegram} label="Telegram" />
-                  )}
-                  {meta?.discord && (
-                    <SocialChip href={meta.discord} label="Discord" />
-                  )}
-                  {meta?.github && (
-                    <SocialChip href={meta.github} label="GitHub" />
-                  )}
-                  {meta?.farcaster && (
-                    <SocialChip href={meta.farcaster} label="Farcaster" />
-                  )}
-                </div>
-              </div>
+              )}
+              <span className="hm-live-dot absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-[#050806] bg-[#00c805]" />
             </div>
-
-            {/* Price block */}
-            <div className="shrink-0 rounded-2xl border border-white/8 bg-black/35 px-4 py-3 sm:min-w-[200px] sm:px-5 sm:py-4">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-white/35">
-                Price
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                <h1 className="text-3xl font-black tracking-tight text-white sm:text-4xl">
+                  ${symbol}
+                </h1>
+                <span className="text-base text-white/40">{name}</span>
               </div>
-              <div className="mt-1 text-2xl font-black tabular-nums text-white sm:text-3xl">
-                {formatPrice(stats?.priceUsd)}
+              <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                {isInstant && <Badge green>Uniswap V2</Badge>}
+                {isCurve && <Badge green>Bonding curve</Badge>}
+                {instant?.lpBurned && <Badge>LP burned 🔥</Badge>}
+                {!instant?.lpBurned && isInstant && (
+                  <Badge warn>LP not burned</Badge>
+                )}
+                {creatorBps === 0 && <Badge>Fair launch</Badge>}
+                {creatorBps != null && creatorBps > 0 && (
+                  <Badge warn>Creator {creatorBps / 100}%</Badge>
+                )}
+                {age && <Badge>Age {age}</Badge>}
+                {stats?.dexId && <Badge>{stats.dexId}</Badge>}
+                {launcherX && (
+                  <VerifiedBadge
+                    handle={launcherX.handle}
+                    href={launcherX.profileUrl}
+                    size="sm"
+                  />
+                )}
               </div>
-              <div className="mt-2 flex flex-wrap gap-2 text-xs font-bold tabular-nums">
-                <span className={up1h ? "text-[#00c805]" : "text-rose-400"}>
-                  1h {formatPct(chg1h)}
-                </span>
-                <span className="text-white/20">·</span>
-                <span className={up24 ? "text-[#00c805]" : "text-rose-400"}>
-                  24h {formatPct(chg24)}
-                </span>
-              </div>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <a
-                  href={tradeUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex flex-1 items-center justify-center rounded-xl bg-[#00c805] px-4 py-2.5 text-sm font-black text-black shadow-[0_0_24px_rgba(0,200,5,0.25)] hover:bg-[#00e006]"
-                >
-                  Buy
-                </a>
+              <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                <CopyBtn
+                  label={copied === "ca" ? "Copied CA" : shortAddr(address, 6)}
+                  onClick={() => copy(address, "ca")}
+                />
+                {pairAddress && (
+                  <CopyBtn
+                    label={
+                      copied === "pair"
+                        ? "Copied pair"
+                        : `pair ${shortAddr(pairAddress, 4)}`
+                    }
+                    onClick={() => copy(pairAddress, "pair")}
+                  />
+                )}
                 <button
                   type="button"
-                  onClick={share}
-                  className="rounded-xl border border-white/15 px-3 py-2.5 text-sm font-semibold text-white/70 hover:bg-white/5"
+                  onClick={() =>
+                    copy(
+                      `$${symbol} on Robinhood · https://hoodmemes.fun/token/${address}`,
+                      "share"
+                    )
+                  }
+                  className="rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[11px] font-semibold text-white/55 hover:border-[#00c805]/40 hover:text-white"
                 >
-                  Share
+                  {copied === "share" ? "Link copied" : "Share"}
                 </button>
               </div>
+              {meta?.description && (
+                <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/50">
+                  {meta.description}
+                </p>
+              )}
+              {socials.length > 0 && (
+                <div className="mt-2.5 flex flex-wrap gap-1.5">
+                  {socials.map((s) => (
+                    <a
+                      key={s.href + s.label}
+                      href={s.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={
+                        s.tone === "sky"
+                          ? "rounded-lg border border-sky-500/35 bg-sky-500/10 px-2.5 py-1 text-[11px] font-semibold text-sky-200"
+                          : "rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[11px] font-semibold text-white/65 hover:border-[#00c805]/40 hover:text-[#00c805]"
+                      }
+                    >
+                      {s.label} ↗
+                    </a>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
-        </section>
 
-        {/* ── Stats strip ── */}
-        <section className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
-          <Stat
-            label="Market cap"
-            value={formatUsd(stats?.marketCap)}
-            big
+          {/* Price panel */}
+          <div className="flex flex-col justify-between rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.06] to-transparent px-5 py-4 sm:min-w-[240px]">
+            <div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-white/35">
+                Last price
+              </div>
+              <div className="mt-1 text-3xl font-black tabular-nums tracking-tight text-white">
+                {formatPrice(stats?.priceUsd)}
+              </div>
+              {stats?.priceNative != null && (
+                <div className="mt-0.5 font-mono text-[11px] text-white/35">
+                  {stats.priceNative < 1e-9
+                    ? stats.priceNative.toExponential(3)
+                    : stats.priceNative.toPrecision(4)}{" "}
+                  {stats.quoteSymbol || "ETH"}
+                </div>
+              )}
+            </div>
+            <div className="mt-3 grid grid-cols-4 gap-1">
+              {(
+                [
+                  ["5m", chg.m5],
+                  ["1h", chg.h1],
+                  ["6h", chg.h6],
+                  ["24h", chg.h24],
+                ] as const
+              ).map(([lab, v]) => (
+                <div
+                  key={lab}
+                  className="rounded-lg bg-black/40 px-1.5 py-1.5 text-center"
+                >
+                  <div className="text-[9px] text-white/35">{lab}</div>
+                  <div
+                    className={`text-[11px] font-bold tabular-nums ${
+                      (v ?? 0) >= 0 ? "text-[#00c805]" : "text-rose-400"
+                    }`}
+                  >
+                    {formatPct(v)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </header>
+
+        {/* ═══ KEY METRICS GRID ═══ */}
+        <section className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-8">
+          <MetricCard label="Market cap" value={formatUsd(stats?.marketCap)} />
+          <MetricCard
+            label="FDV"
+            value={formatUsd(stats?.fdv ?? stats?.marketCap)}
           />
-          <Stat label="Liquidity" value={formatUsd(stats?.liquidity)} />
-          <Stat label="Vol 24h" value={formatUsd(stats?.volume24h)} />
-          <Stat label="Vol 1h" value={formatUsd(stats?.volume1h)} />
-          <Stat
+          <MetricCard label="Liquidity" value={formatUsd(stats?.liquidity)} />
+          <MetricCard label="Vol 24h" value={formatUsd(stats?.volume24h)} />
+          <MetricCard label="Vol 1h" value={formatUsd(stats?.volume1h)} />
+          <MetricCard label="Vol 6h" value={formatUsd(stats?.volume6h)} />
+          <MetricCard
             label="Txns 24h"
             value={
               stats?.txns24h != null
                 ? String(stats.txns24h)
-                : buys || sells
-                  ? String(buys + sells)
+                : buys24 || sells24
+                  ? String(buys24 + sells24)
                   : "—"
             }
           />
-          <Stat
-            label="5m"
-            value={formatPct(chg5m)}
-            accent={(chg5m ?? 0) >= 0 ? "up" : "down"}
+          <MetricCard
+            label="Buy / sell 24h"
+            value={`${buys24} / ${sells24}`}
           />
         </section>
 
-        {/* Buy/sell pressure */}
-        {(buys > 0 || sells > 0) && (
-          <section className="hm-glass rounded-2xl px-4 py-3">
-            <div className="mb-2 flex items-center justify-between text-[11px] font-semibold">
-              <span className="text-white/40">24h flow</span>
-              <span className="tabular-nums text-white/60">
-                <span className="text-[#00c805]">{buys} buys</span>
-                <span className="mx-1.5 text-white/20">/</span>
-                <span className="text-rose-400">{sells} sells</span>
-              </span>
-            </div>
-            <div className="flex h-2 overflow-hidden rounded-full bg-rose-500/30">
-              <div
-                className="bg-[#00c805] transition-all"
-                style={{ width: `${buyPct}%` }}
-              />
-            </div>
-          </section>
+        {loading && !stats && !instant && (
+          <div className="hm-shimmer mb-4 h-40 rounded-2xl" />
         )}
-
-        {loading && !stats && !instant && !curve && (
-          <div className="hm-shimmer h-48 rounded-3xl" />
-        )}
-
         {err && !instant && (
-          <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs text-amber-100">
+          <div className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs text-amber-100">
             {err}
           </div>
         )}
 
-        {/* ── Main grid ── */}
-        <div className="grid gap-5 lg:grid-cols-[1fr_340px]">
-          <div className="space-y-4">
-            {/* Chart */}
-            <div className="overflow-hidden rounded-3xl border border-white/10 bg-black/40 shadow-[0_0_40px_rgba(0,0,0,0.35)]">
-              <div className="flex items-center justify-between border-b border-white/8 px-3 py-2 sm:px-4">
-                <div className="flex gap-1 rounded-lg bg-black/40 p-0.5">
-                  <TabBtn
-                    active={chartTab === "chart"}
-                    onClick={() => setChartTab("chart")}
-                  >
-                    Chart
-                  </TabBtn>
-                  <TabBtn
-                    active={chartTab === "txns"}
-                    onClick={() => setChartTab("txns")}
-                  >
-                    Activity
-                  </TabBtn>
+        {/* ═══ MAIN 3-COL TERMINAL ═══ */}
+        <div className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)_320px]">
+          {/* LEFT rail */}
+          <aside className="order-2 space-y-3 xl:order-1">
+            {/* Flow */}
+            <Panel title="Order flow">
+              <FlowBar
+                label="1h"
+                buys={buys1h}
+                sells={sells1h}
+                pct={buyPct1h}
+              />
+              <FlowBar
+                label="24h"
+                buys={buys24}
+                sells={sells24}
+                pct={buyPct24}
+              />
+              <div className="mt-3 grid grid-cols-2 gap-2 text-[11px]">
+                <MiniStat label="Buys 5m" value={String(stats?.buys5m ?? 0)} up />
+                <MiniStat
+                  label="Sells 5m"
+                  value={String(stats?.sells5m ?? 0)}
+                  down
+                />
+                <MiniStat label="Vol 5m" value={formatUsd(stats?.volume5m)} />
+                <MiniStat
+                  label="Vol 1h"
+                  value={formatUsd(stats?.volume1h)}
+                />
+              </div>
+            </Panel>
+
+            {/* Liquidity */}
+            <Panel title="Liquidity pool">
+              <Row k="USD value" v={formatUsd(stats?.liquidity)} />
+              <Row
+                k={`Base ($${symbol})`}
+                v={
+                  stats?.liquidityBase != null
+                    ? compactQty(stats.liquidityBase)
+                    : "—"
+                }
+              />
+              <Row
+                k={`Quote (${stats?.quoteSymbol || "WETH"})`}
+                v={
+                  stats?.liquidityQuote != null
+                    ? `${Number(stats.liquidityQuote).toPrecision(4)}`
+                    : "—"
+                }
+              />
+              <Row k="DEX" v={stats?.dexId ? stats.dexId.toUpperCase() : "—"} />
+              <Row
+                k="Pair"
+                v={pairAddress ? shortAddr(pairAddress, 5) : "—"}
+                mono
+              />
+              {instant?.lpBurned != null && (
+                <Row
+                  k="LP ownership"
+                  v={instant.lpBurned ? "Burned 🔥" : "Creator holds"}
+                  accent={instant.lpBurned ? "green" : "warn"}
+                />
+              )}
+            </Panel>
+
+            {/* Launch / tokenomics */}
+            <Panel title="Tokenomics">
+              {isInstant && instant ? (
+                <>
+                  <Row
+                    k="Total supply"
+                    v={formatSupply(instant.totalSupply)}
+                  />
+                  <Row
+                    k="Creator allocation"
+                    v={
+                      creatorBps == null
+                        ? "—"
+                        : creatorBps === 0
+                          ? "0% (fair)"
+                          : `${creatorBps / 100}%`
+                    }
+                    accent={
+                      creatorBps === 0
+                        ? "green"
+                        : creatorBps && creatorBps >= 500
+                          ? "warn"
+                          : undefined
+                    }
+                  />
+                  <Row
+                    k="In LP at launch"
+                    v={lpPoolPct != null ? `${lpPoolPct}%` : "—"}
+                  />
+                  <Row
+                    k="Seed LP"
+                    v={
+                      instant.lpEth
+                        ? `${(Number(instant.lpEth) / 1e18).toFixed(4)} ETH`
+                        : "—"
+                    }
+                  />
+                  <Row
+                    k="Creator wallet"
+                    v={shortAddr(instant.creator, 5)}
+                    mono
+                    href={creatorExplorer(instant.creator)}
+                  />
+                  <Row
+                    k="Launched"
+                    v={
+                      instant.createdAt
+                        ? new Date(instant.createdAt).toLocaleString()
+                        : "—"
+                    }
+                  />
+                </>
+              ) : isCurve && curve ? (
+                <div className="-mx-1">
+                  <CurveStats curve={curve} />
                 </div>
-                <div className="flex gap-2">
+              ) : (
+                <>
+                  <Row k="Supply" v="See explorer" />
+                  <Row k="Type" v="External / indexed pair" />
+                </>
+              )}
+              {creatorBps != null && (
+                <p className="mt-2 text-[10px] leading-relaxed text-white/35">
+                  {creatorBps === 0
+                    ? "Fair launch: 100% of supply went into the Uniswap pool at mint. No free creator bag."
+                    : `${creatorBps / 100}% of supply was sent to the creator wallet; ${lpPoolPct}% paired with ETH.`}
+                </p>
+              )}
+            </Panel>
+
+            {/* Contracts */}
+            <Panel title="Contracts">
+              <ContractRow
+                label="Token"
+                addr={address}
+                href={explorer}
+                onCopy={() => copy(address, "ca")}
+              />
+              {pairAddress && (
+                <ContractRow
+                  label="Pair"
+                  addr={pairAddress}
+                  href={`${ROBINHOOD_CHAIN.blockExplorers.default.url}/address/${pairAddress}`}
+                  onCopy={() => copy(pairAddress, "pair")}
+                />
+              )}
+              {instant?.creator && (
+                <ContractRow
+                  label="Creator"
+                  addr={instant.creator}
+                  href={creatorExplorer(instant.creator)}
+                />
+              )}
+              <div className="mt-2 rounded-lg border border-white/8 bg-black/30 px-2.5 py-2 text-[10px] leading-relaxed text-white/35">
+                Chain: Robinhood ({ROBINHOOD_CHAIN.id}) · Always verify CA
+                before buying. HoodMemes is not financial advice.
+              </div>
+            </Panel>
+          </aside>
+
+          {/* CENTER — chart */}
+          <section className="order-1 min-w-0 xl:order-2">
+            <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#0a0f0c] shadow-[0_20px_60px_rgba(0,0,0,0.45)]">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/8 px-3 py-2">
+                <div className="flex gap-0.5 rounded-lg bg-black/50 p-0.5">
+                  {(
+                    [
+                      ["chart", "Chart"],
+                      ["trades", "Trades"],
+                      ["info", "About"],
+                    ] as const
+                  ).map(([id, lab]) => (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => setMainTab(id)}
+                      className={`rounded-md px-3 py-1.5 text-[11px] font-bold transition ${
+                        mainTab === id
+                          ? "bg-[#00c805] text-black"
+                          : "text-white/40 hover:text-white/75"
+                      }`}
+                    >
+                      {lab}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex flex-wrap items-center gap-3 text-[10px] font-semibold uppercase tracking-wide text-white/35">
                   {dexscreenerUrl && (
                     <a
                       href={dexscreenerUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-[10px] font-bold uppercase tracking-wider text-white/40 hover:text-[#00c805]"
+                      className="hover:text-[#00c805]"
                     >
                       DexScreener ↗
                     </a>
                   )}
+                  <a
+                    href={explorer}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:text-[#00c805]"
+                  >
+                    Explorer ↗
+                  </a>
                 </div>
               </div>
 
-              {chartTab === "chart" ? (
-                chartSrc ? (
-                  <iframe
-                    title={`${symbol} chart`}
-                    src={chartSrc}
-                    className="h-[380px] w-full sm:h-[480px] lg:h-[520px]"
-                  />
-                ) : isCurve && curve ? (
-                  <div className="p-3">
-                    <CurveChart curve={curve} />
+              {mainTab === "chart" && (
+                <>
+                  {chartSrc ? (
+                    <iframe
+                      title={`${symbol} chart`}
+                      src={chartSrc}
+                      className="h-[420px] w-full sm:h-[520px] xl:h-[560px]"
+                    />
+                  ) : isCurve && curve ? (
+                    <div className="p-3">
+                      <CurveChart curve={curve} />
+                    </div>
+                  ) : (
+                    <EmptyChart
+                      loading={loading}
+                      pairAddress={pairAddress}
+                      dexscreenerUrl={dexscreenerUrl}
+                    />
+                  )}
+                </>
+              )}
+
+              {mainTab === "trades" && (
+                <>
+                  {tradesSrc ? (
+                    <iframe
+                      title={`${symbol} trades`}
+                      src={tradesSrc}
+                      className="h-[420px] w-full sm:h-[520px] xl:h-[560px]"
+                    />
+                  ) : isCurve && curve ? (
+                    <div className="p-3">
+                      <RecentTrades curve={curve} />
+                    </div>
+                  ) : (
+                    <div className="flex h-[320px] items-center justify-center text-sm text-white/40">
+                      Trade tape loads when the pair is indexed.
+                    </div>
+                  )}
+                </>
+              )}
+
+              {mainTab === "info" && (
+                <div className="space-y-4 p-5 sm:p-6">
+                  <div>
+                    <h3 className="text-sm font-black text-white">
+                      About ${symbol}
+                    </h3>
+                    <p className="mt-2 text-sm leading-relaxed text-white/50">
+                      {meta?.description ||
+                        `${name} ($${symbol}) trades on Robinhood Chain via Uniswap V2. Data refreshes from DexScreener every few seconds.`}
+                    </p>
                   </div>
-                ) : (
-                  <div className="flex h-[280px] flex-col items-center justify-center gap-2 px-6 text-center text-sm text-white/40">
-                    {loading
-                      ? "Loading chart…"
-                      : "Waiting for DexScreener index — pair is live on Uniswap."}
-                    {pairAddress && (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <InfoBlock title="How to buy">
+                      <ol className="list-decimal space-y-1.5 pl-4 text-[12px] leading-relaxed text-white/50">
+                        <li>Connect a wallet on Robinhood Chain (4663)</li>
+                        <li>Fund with ETH on RH (bridge if needed)</li>
+                        <li>Use Buy on Uniswap or quick amounts on the right</li>
+                        <li>Always double-check the contract address</li>
+                      </ol>
+                    </InfoBlock>
+                    <InfoBlock title="Safety checklist">
+                      <ul className="space-y-1.5 text-[12px] leading-relaxed text-white/50">
+                        <li>
+                          · LP{" "}
+                          {instant?.lpBurned
+                            ? "burned — stronger lock signal"
+                            : "may be removable if not burned"}
+                        </li>
+                        <li>
+                          · Creator bag:{" "}
+                          {creatorBps == null
+                            ? "unknown"
+                            : creatorBps === 0
+                              ? "0% fair launch"
+                              : `${creatorBps / 100}% at launch`}
+                        </li>
+                        <li>
+                          · Verified X:{" "}
+                          {launcherX ? `@${launcherX.handle}` : "not linked"}
+                        </li>
+                        <li>· Memecoins can go to zero. DYOR.</li>
+                      </ul>
+                    </InfoBlock>
+                  </div>
+                  {launcherX && (
+                    <div className="rounded-xl border border-sky-500/25 bg-sky-500/10 px-4 py-3 text-xs text-sky-100/90">
+                      Launcher verified ownership of{" "}
                       <a
-                        href={`https://dexscreener.com/robinhood/${pairAddress}`}
-                        className="text-xs font-semibold text-[#00c805]"
+                        href={launcherX.profileUrl}
+                        className="font-bold underline-offset-2 hover:underline"
                         target="_blank"
                         rel="noreferrer"
                       >
-                        Open pair on DexScreener ↗
-                      </a>
-                    )}
-                  </div>
-                )
-              ) : isCurve && curve ? (
-                <div className="p-3">
-                  <RecentTrades curve={curve} />
-                </div>
-              ) : (
-                <div className="space-y-3 p-4">
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                    <Mini label="5m" value={formatPct(stats?.priceChange5m)} />
-                    <Mini label="1h" value={formatPct(stats?.priceChange1h)} />
-                    <Mini label="6h" value={formatPct(stats?.priceChange6h)} />
-                    <Mini label="24h" value={formatPct(stats?.priceChange24h)} />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Mini
-                      label="Buys 24h"
-                      value={stats?.buys24h != null ? String(stats.buys24h) : "—"}
-                    />
-                    <Mini
-                      label="Sells 24h"
-                      value={
-                        stats?.sells24h != null ? String(stats.sells24h) : "—"
-                      }
-                    />
-                  </div>
-                  <p className="text-[11px] text-white/35">
-                    Live trade tape is on DexScreener. Stats refresh every 15s.
-                  </p>
+                        @{launcherX.handle}
+                      </a>{" "}
+                      via wallet signature + public tweet on HoodMemes.
+                    </div>
+                  )}
                 </div>
               )}
             </div>
 
-            {/* Launch details */}
-            {(isInstant || isCurve) && (
-              <section className="hm-glass rounded-3xl p-4 sm:p-5">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-white/40">
-                  Launch details
-                </h2>
-                {isInstant && instant && (
-                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                    <Detail
-                      k="Supply"
-                      v={formatSupply(instant.totalSupply)}
-                    />
-                    <Detail
-                      k="LP ETH"
-                      v={
-                        instant.lpEth
-                          ? `${(Number(instant.lpEth) / 1e18).toFixed(4)} ETH`
-                          : "—"
-                      }
-                    />
-                    <Detail
-                      k="Creator alloc"
-                      v={
-                        creatorBps == null
-                          ? "—"
-                          : creatorBps === 0
-                            ? "0% fair launch"
-                            : `${creatorBps / 100}% to creator`
-                      }
-                    />
-                    <Detail
-                      k="LP tokens"
-                      v={instant.lpBurned ? "Burned (locked)" : "Creator holds"}
-                    />
-                    <Detail
-                      k="Creator"
-                      v={shortAddr(instant.creator, 6)}
-                      mono
-                      href={`${ROBINHOOD_CHAIN.blockExplorers.default.url}/address/${instant.creator}`}
-                    />
-                    <Detail
-                      k="Pair"
-                      v={shortAddr(instant.pair, 6)}
-                      mono
-                      href={
-                        dexscreenerUrl ||
-                        `${ROBINHOOD_CHAIN.blockExplorers.default.url}/address/${instant.pair}`
-                      }
-                    />
-                  </div>
-                )}
-                {isCurve && curve && (
-                  <div className="mt-3">
-                    <CurveStats curve={curve} />
-                  </div>
-                )}
-                {isInstant && creatorBps != null && (
-                  <p className="mt-3 text-[11px] leading-relaxed text-white/35">
-                    {creatorBps === 0
-                      ? "Fair launch: 100% of supply seeded the Uniswap pool. Creator got no free tokens at mint."
-                      : `At launch, ${creatorBps / 100}% of supply went to the creator wallet. ${100 - creatorBps / 100}% was paired with ETH on Uniswap.`}
-                  </p>
-                )}
-              </section>
-            )}
-          </div>
-
-          {/* ── Sidebar ── */}
-          <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
-            {isInstant ? (
-              <div className="hm-glass-green rounded-3xl p-5">
-                <div className="text-[10px] font-bold uppercase tracking-widest text-[#00c805]/80">
-                  Trade ${symbol}
+            {/* Related */}
+            {related.length > 0 && (
+              <div className="mt-4">
+                <div className="mb-2 flex items-center justify-between">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-white/40">
+                    Trending on HoodMemes
+                  </h3>
+                  <Link
+                    href="/"
+                    className="text-[11px] font-semibold text-[#00c805] hover:underline"
+                  >
+                    Full board →
+                  </Link>
                 </div>
-                <p className="mt-2 text-xs leading-relaxed text-white/50">
-                  Instant Uniswap V2 pool — swap ETH for ${symbol} on Robinhood
-                  Chain.
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+                  {related.map((t) => {
+                    const up = (t.priceChange24h ?? 0) >= 0;
+                    return (
+                      <Link
+                        key={t.address}
+                        href={`/token/${t.address}`}
+                        className="rounded-xl border border-white/8 bg-white/[0.03] p-2.5 transition hover:border-[#00c805]/40 hover:bg-[#00c805]/5"
+                      >
+                        <div className="flex items-center gap-2">
+                          {t.imageUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={t.imageUrl}
+                              alt=""
+                              className="h-7 w-7 rounded-lg object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#00c805]/15 text-[10px] font-black text-[#00c805]">
+                              {(t.symbol || "?")[0]}
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <div className="truncate text-xs font-black text-white">
+                              ${t.symbol}
+                            </div>
+                            <div className="flex gap-1 text-[10px] tabular-nums">
+                              <span className="text-white/40">
+                                {formatUsd(t.marketCap)}
+                              </span>
+                              <span
+                                className={
+                                  up ? "text-[#00c805]" : "text-rose-400"
+                                }
+                              >
+                                {formatPct(t.priceChange24h)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </section>
+
+          {/* RIGHT — trade desk */}
+          <aside className="order-3 space-y-3">
+            {isInstant ? (
+              <div className="rounded-2xl border border-[#00c805]/30 bg-gradient-to-b from-[#00c805]/12 to-transparent p-4 shadow-[0_0_40px_rgba(0,200,5,0.12)]">
+                <div className="flex items-center justify-between">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-[#00c805]">
+                    Trade desk
+                  </div>
+                  <span className="rounded bg-black/40 px-1.5 py-0.5 text-[9px] font-bold text-white/40">
+                    UNISWAP V2
+                  </span>
+                </div>
+                <p className="mt-2 text-[11px] leading-relaxed text-white/45">
+                  Instant pool — swap RH ETH for ${symbol}. You&apos;ll confirm
+                  in your wallet on Uniswap.
                 </p>
+
+                <label className="mt-4 block">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-white/40">
+                    Amount (ETH)
+                  </span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="any"
+                    value={ethIn}
+                    onChange={(e) => setEthIn(e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-white/10 bg-black/50 px-3 py-2.5 font-mono text-sm text-white outline-none focus:border-[#00c805]/50"
+                  />
+                </label>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {QUICK_ETH.map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => setEthIn(v)}
+                      className={`rounded-lg px-2.5 py-1 text-[11px] font-bold ${
+                        ethIn === v
+                          ? "bg-[#00c805] text-black"
+                          : "border border-white/10 text-white/55 hover:text-white"
+                      }`}
+                    >
+                      {v}
+                    </button>
+                  ))}
+                </div>
+
                 <a
-                  href={tradeUrl}
+                  href={tradeUrl(ethIn)}
                   target="_blank"
                   rel="noreferrer"
                   className="mt-4 flex w-full items-center justify-center rounded-xl bg-[#00c805] py-3.5 text-sm font-black text-black shadow-[0_0_28px_rgba(0,200,5,0.35)] hover:bg-[#00e006]"
                 >
-                  Open Uniswap
+                  Buy ${symbol} with {ethIn || "—"} ETH
+                </a>
+                <a
+                  href={tradeUrl()}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-2 flex w-full items-center justify-center rounded-xl border border-white/15 py-2.5 text-xs font-semibold text-white/70 hover:bg-white/5"
+                >
+                  Open full Uniswap UI
                 </a>
                 {dexscreenerUrl && (
                   <a
                     href={dexscreenerUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="mt-2 flex w-full items-center justify-center rounded-xl border border-white/15 py-3 text-sm font-semibold text-white/80 hover:bg-white/5"
+                    className="mt-1.5 flex w-full items-center justify-center rounded-xl border border-white/10 py-2.5 text-xs font-semibold text-white/45 hover:text-white/70"
                   >
-                    DexScreener
+                    Advanced chart · DexScreener
                   </a>
                 )}
-                <a
-                  href={explorer}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-2 flex w-full items-center justify-center rounded-xl border border-white/10 py-2.5 text-xs font-semibold text-white/45 hover:text-white/70"
-                >
-                  Block explorer
-                </a>
               </div>
             ) : (
               <Suspense
                 fallback={
-                  <div className="h-64 animate-pulse rounded-3xl bg-white/5" />
+                  <div className="h-72 animate-pulse rounded-2xl bg-white/5" />
                 }
               >
                 <TokenTradeSection
@@ -727,30 +1054,50 @@ export function TokenPageClient({
               </Suspense>
             )}
 
-            <div className="hm-glass rounded-3xl p-4">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-white/35">
-                Quick links
-              </div>
-              <div className="mt-3 space-y-1.5">
-                <QuickLink href={tradeUrl} label="Uniswap swap" />
-                {dexscreenerUrl && (
-                  <QuickLink href={dexscreenerUrl} label="DexScreener chart" />
-                )}
-                <QuickLink href={explorer} label="Token on explorer" />
-                {pairAddress && (
-                  <QuickLink
-                    href={`${ROBINHOOD_CHAIN.blockExplorers.default.url}/address/${pairAddress}`}
-                    label="Pair contract"
-                  />
-                )}
-              </div>
+            <Panel title="Market snapshot">
+              <Row k="Price USD" v={formatPrice(stats?.priceUsd)} />
+              <Row k="Market cap" v={formatUsd(stats?.marketCap)} />
+              <Row k="Liquidity" v={formatUsd(stats?.liquidity)} />
+              <Row k="24h volume" v={formatUsd(stats?.volume24h)} />
+              <Row
+                k="24h change"
+                v={formatPct(chg.h24)}
+                accent={(chg.h24 ?? 0) >= 0 ? "green" : "down"}
+              />
+              <Row k="Age" v={age || "—"} />
+            </Panel>
+
+            <Panel title="Quick links">
+              <QLink href={tradeUrl()} label="Uniswap swap" />
+              {dexscreenerUrl && (
+                <QLink href={dexscreenerUrl} label="DexScreener" />
+              )}
+              <QLink href={explorer} label="Token explorer" />
+              {pairAddress && (
+                <QLink
+                  href={`${ROBINHOOD_CHAIN.blockExplorers.default.url}/address/${pairAddress}`}
+                  label="Pair explorer"
+                />
+              )}
+              {instant?.creator && (
+                <QLink
+                  href={creatorExplorer(instant.creator)}
+                  label="Creator wallet"
+                />
+              )}
+            </Panel>
+
+            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 px-3.5 py-3 text-[10px] leading-relaxed text-amber-100/60">
+              <strong className="text-amber-100/80">Risk</strong> — Memecoins
+              are extremely volatile. Liquidity can be thin. LP may not be
+              burned. Never buy more than you can lose. Not financial advice.
             </div>
           </aside>
         </div>
       </div>
 
-      {/* Mobile sticky buy bar */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#050806]/95 p-3 backdrop-blur-xl sm:hidden">
+      {/* Mobile sticky */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#050806]/96 p-2.5 backdrop-blur-xl xl:hidden">
         <div className="mx-auto flex max-w-lg items-center gap-2">
           <div className="min-w-0 flex-1">
             <div className="truncate text-xs font-black text-white">
@@ -759,19 +1106,19 @@ export function TokenPageClient({
             <div className="truncate text-[11px] tabular-nums text-white/50">
               {formatPrice(stats?.priceUsd)}{" "}
               <span className={up24 ? "text-[#00c805]" : "text-rose-400"}>
-                {formatPct(chg24)}
+                {formatPct(chg.h24)}
               </span>
             </div>
           </div>
           <button
             type="button"
-            onClick={copyCa}
+            onClick={() => copy(address, "ca")}
             className="rounded-xl border border-white/15 px-3 py-2.5 text-xs font-bold text-white/70"
           >
-            {copied ? "✓" : "CA"}
+            {copied === "ca" ? "✓" : "CA"}
           </button>
           <a
-            href={tradeUrl}
+            href={tradeUrl(ethIn)}
             target="_blank"
             rel="noreferrer"
             className="rounded-xl bg-[#00c805] px-5 py-2.5 text-sm font-black text-black"
@@ -780,57 +1127,156 @@ export function TokenPageClient({
           </a>
         </div>
       </div>
+      <div className="h-16 xl:hidden" />
     </div>
   );
 }
 
-function Pill({
+/* ───────── UI atoms ───────── */
+
+function Badge({
   children,
-  tone,
+  green,
+  warn,
 }: {
   children: React.ReactNode;
-  tone: "green" | "amber" | "muted";
+  green?: boolean;
+  warn?: boolean;
 }) {
-  const cls =
-    tone === "green"
-      ? "bg-[#00c805]/15 text-[#00c805] ring-[#00c805]/25"
-      : tone === "amber"
-        ? "bg-amber-500/15 text-amber-200 ring-amber-500/30"
-        : "bg-white/8 text-white/55 ring-white/10";
+  const cls = green
+    ? "bg-[#00c805]/15 text-[#00c805] ring-[#00c805]/25"
+    : warn
+      ? "bg-amber-500/15 text-amber-200 ring-amber-500/30"
+      : "bg-white/8 text-white/55 ring-white/10";
   return (
     <span
-      className={`rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ring-1 ${cls}`}
+      className={`rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ring-1 ${cls}`}
     >
       {children}
     </span>
   );
 }
 
-function Stat({
-  label,
-  value,
-  accent,
-  big,
-}: {
-  label: string;
-  value: string;
-  accent?: "up" | "down";
-  big?: boolean;
-}) {
-  const color =
-    accent === "up"
-      ? "text-[#00c805]"
-      : accent === "down"
-        ? "text-rose-400"
-        : "text-white";
+function MetricCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-3 py-3 sm:px-4">
+    <div className="rounded-xl border border-white/8 bg-white/[0.03] px-3 py-2.5">
       <div className="text-[9px] font-semibold uppercase tracking-wider text-white/35">
         {label}
       </div>
+      <div className="mt-0.5 truncate text-sm font-black tabular-nums text-white">
+        {value}
+      </div>
+    </div>
+  );
+}
+
+function Panel({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-3.5">
+      <div className="mb-2.5 text-[10px] font-bold uppercase tracking-wider text-white/40">
+        {title}
+      </div>
+      <div className="space-y-1">{children}</div>
+    </div>
+  );
+}
+
+function Row({
+  k,
+  v,
+  mono,
+  href,
+  accent,
+}: {
+  k: string;
+  v: string;
+  mono?: boolean;
+  href?: string;
+  accent?: "green" | "warn" | "down";
+}) {
+  const color =
+    accent === "green"
+      ? "text-[#00c805]"
+      : accent === "warn"
+        ? "text-amber-200"
+        : accent === "down"
+          ? "text-rose-400"
+          : "text-white/85";
+  const val = href ? (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      className={`${color} font-semibold hover:underline ${mono ? "font-mono text-[10px]" : "text-xs"}`}
+    >
+      {v}
+    </a>
+  ) : (
+    <span
+      className={`${color} font-semibold ${mono ? "font-mono text-[10px]" : "text-xs"}`}
+    >
+      {v}
+    </span>
+  );
+  return (
+    <div className="flex items-center justify-between gap-2 rounded-lg px-1 py-1.5">
+      <span className="text-[11px] text-white/40">{k}</span>
+      {val}
+    </div>
+  );
+}
+
+function FlowBar({
+  label,
+  buys,
+  sells,
+  pct,
+}: {
+  label: string;
+  buys: number;
+  sells: number;
+  pct: number;
+}) {
+  return (
+    <div className="mb-2.5">
+      <div className="mb-1 flex justify-between text-[10px] font-semibold">
+        <span className="text-white/40">{label}</span>
+        <span className="tabular-nums">
+          <span className="text-[#00c805]">{buys}B</span>
+          <span className="text-white/20"> · </span>
+          <span className="text-rose-400">{sells}S</span>
+        </span>
+      </div>
+      <div className="flex h-1.5 overflow-hidden rounded-full bg-rose-500/35">
+        <div className="bg-[#00c805]" style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
+}
+
+function MiniStat({
+  label,
+  value,
+  up,
+  down,
+}: {
+  label: string;
+  value: string;
+  up?: boolean;
+  down?: boolean;
+}) {
+  return (
+    <div className="rounded-lg bg-black/35 px-2 py-1.5">
+      <div className="text-[9px] text-white/35">{label}</div>
       <div
-        className={`mt-0.5 font-black tabular-nums ${color} ${
-          big ? "text-base sm:text-lg" : "text-sm sm:text-base"
+        className={`text-xs font-bold tabular-nums ${
+          up ? "text-[#00c805]" : down ? "text-rose-400" : "text-white/80"
         }`}
       >
         {value}
@@ -839,82 +1285,64 @@ function Stat({
   );
 }
 
-function Mini({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl bg-white/[0.04] px-3 py-2">
-      <div className="text-[9px] uppercase tracking-wider text-white/35">
-        {label}
-      </div>
-      <div className="text-sm font-bold tabular-nums text-white/90">{value}</div>
-    </div>
-  );
-}
-
-function Detail({
-  k,
-  v,
-  mono,
-  href,
-}: {
-  k: string;
-  v: string;
-  mono?: boolean;
-  href?: string;
-}) {
-  const val = href ? (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer"
-      className={`font-semibold text-[#00c805]/90 hover:underline ${mono ? "font-mono text-xs" : ""}`}
-    >
-      {v}
-    </a>
-  ) : (
-    <span className={`font-semibold text-white/85 ${mono ? "font-mono text-xs" : ""}`}>
-      {v}
-    </span>
-  );
-  return (
-    <div className="flex items-center justify-between gap-3 rounded-xl bg-black/30 px-3 py-2.5 text-sm">
-      <span className="text-white/40">{k}</span>
-      {val}
-    </div>
-  );
-}
-
-function SocialChip({
-  href,
+function ContractRow({
   label,
-  tone,
+  addr,
+  href,
+  onCopy,
 }: {
-  href: string;
   label: string;
-  tone?: "sky";
+  addr: string;
+  href: string;
+  onCopy?: () => void;
 }) {
   return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer"
-      className={
-        tone === "sky"
-          ? "rounded-lg border border-sky-500/35 bg-sky-500/15 px-2.5 py-1 text-[11px] font-semibold text-sky-200 hover:border-sky-400/50"
-          : "rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-semibold text-white/70 hover:border-[#00c805]/40 hover:text-[#00c805]"
-      }
-    >
-      {label} ↗
-    </a>
+    <div className="flex items-center gap-2 rounded-lg bg-black/30 px-2 py-2">
+      <div className="min-w-0 flex-1">
+        <div className="text-[9px] font-semibold uppercase text-white/35">
+          {label}
+        </div>
+        <a
+          href={href}
+          target="_blank"
+          rel="noreferrer"
+          className="block truncate font-mono text-[10px] text-white/70 hover:text-[#00c805]"
+        >
+          {shortAddr(addr, 6)}
+        </a>
+      </div>
+      {onCopy && (
+        <button
+          type="button"
+          onClick={onCopy}
+          className="rounded-md border border-white/10 px-2 py-1 text-[10px] font-bold text-white/50 hover:text-white"
+        >
+          Copy
+        </button>
+      )}
+    </div>
   );
 }
 
-function QuickLink({ href, label }: { href: string; label: string }) {
+function CopyBtn({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="rounded-lg border border-white/10 bg-black/40 px-2.5 py-1 font-mono text-[11px] text-white/55 hover:border-[#00c805]/40 hover:text-white"
+    >
+      {label}
+    </button>
+  );
+}
+
+function QLink({ href, label }: { href: string; label: string }) {
   return (
     <a
       href={href}
       target="_blank"
       rel="noreferrer"
-      className="flex items-center justify-between rounded-xl px-3 py-2 text-sm text-white/65 transition hover:bg-white/5 hover:text-white"
+      className="flex items-center justify-between rounded-lg px-1 py-1.5 text-[12px] text-white/60 hover:bg-white/5 hover:text-white"
     >
       <span>{label}</span>
       <span className="text-white/25">↗</span>
@@ -922,26 +1350,59 @@ function QuickLink({ href, label }: { href: string; label: string }) {
   );
 }
 
-function TabBtn({
-  active,
-  onClick,
+function InfoBlock({
+  title,
   children,
 }: {
-  active: boolean;
-  onClick: () => void;
+  title: string;
   children: React.ReactNode;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`rounded-md px-3 py-1.5 text-[11px] font-bold transition ${
-        active
-          ? "bg-[#00c805] text-black"
-          : "text-white/40 hover:text-white/70"
-      }`}
-    >
-      {children}
-    </button>
+    <div className="rounded-xl border border-white/8 bg-black/30 p-3.5">
+      <div className="text-[11px] font-bold text-white/70">{title}</div>
+      <div className="mt-2">{children}</div>
+    </div>
+  );
+}
+
+function compactQty(n: number): string {
+  if (!Number.isFinite(n)) return "—";
+  if (n >= 1e12) return `${(n / 1e12).toFixed(2)}T`;
+  if (n >= 1e9) return `${(n / 1e9).toFixed(2)}B`;
+  if (n >= 1e6) return `${(n / 1e6).toFixed(2)}M`;
+  if (n >= 1e3) return `${(n / 1e3).toFixed(1)}K`;
+  return n.toLocaleString(undefined, { maximumFractionDigits: 4 });
+}
+
+function EmptyChart({
+  loading,
+  pairAddress,
+  dexscreenerUrl,
+}: {
+  loading: boolean;
+  pairAddress: string | null;
+  dexscreenerUrl: string | null | undefined;
+}) {
+  return (
+    <div className="flex h-[360px] flex-col items-center justify-center gap-2 px-6 text-center">
+      <div className="text-sm text-white/40">
+        {loading
+          ? "Loading market data…"
+          : "Chart appears once DexScreener indexes the pair."}
+      </div>
+      {(dexscreenerUrl || pairAddress) && (
+        <a
+          href={
+            dexscreenerUrl ||
+            `https://dexscreener.com/robinhood/${pairAddress}`
+          }
+          target="_blank"
+          rel="noreferrer"
+          className="text-xs font-bold text-[#00c805]"
+        >
+          Open on DexScreener ↗
+        </a>
+      )}
+    </div>
   );
 }
