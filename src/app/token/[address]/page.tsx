@@ -8,7 +8,7 @@ export default async function TokenPage({
   searchParams,
 }: {
   params: Promise<{ address: string }>;
-  searchParams: Promise<{ market?: string }>;
+  searchParams: Promise<{ market?: string; pair?: string }>;
 }) {
   const { address } = await params;
   const sp = await searchParams;
@@ -18,6 +18,7 @@ export default async function TokenPage({
     <TokenPageClient
       address={address}
       marketHint={sp.market ?? null}
+      pairHint={sp.pair ?? null}
       dexToken={dexToken}
     />
   );

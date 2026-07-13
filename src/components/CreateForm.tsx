@@ -5,13 +5,6 @@ import { parseEther, decodeEventLog, type Hex } from "viem";
 import { ROBINHOOD_CHAIN } from "@/lib/chain";
 import { factoryAbi } from "@/lib/abis";
 import { FACTORY_ADDRESS, isFactoryConfigured } from "@/lib/contracts";
-import {
-  FEE_PRESETS,
-  type FeeConfig,
-  type FeePresetId,
-  feeSplitOk,
-  bpsToPct,
-} from "@/lib/feePresets";
 import { getPublicClient } from "@/lib/wallet-tx";
 import { useAuth } from "./AuthProvider";
 import Link from "next/link";
@@ -19,9 +12,9 @@ import Link from "next/link";
 const inputCls =
   "w-full rounded-xl border border-white/10 bg-black/35 px-3.5 py-2.5 text-sm text-white placeholder:text-white/30 outline-none focus:border-[#00c805]/45 focus:ring-1 focus:ring-[#00c805]/25";
 
-const CREATE_FEE_FALLBACK = "0.0005";
+const CREATE_FEE = "0.0005";
+const MIN_LP = "0.01";
 
-/** Fixed total supply presets (wei with 18 decimals) */
 export const SUPPLY_PRESETS = [
   { label: "1 Billion", value: 1_000_000_000n * 10n ** 18n },
   { label: "5 Billion", value: 5_000_000_000n * 10n ** 18n },
@@ -30,41 +23,32 @@ export const SUPPLY_PRESETS = [
   { label: "1 Trillion", value: 1_000_000_000_000n * 10n ** 18n },
 ] as const;
 
+const LP_PRESETS = ["0.05", "0.1", "0.2", "0.5"] as const;
+
 export function CreateForm() {
   const { address, mode, ethBalance, writeContract, refreshBalance } = useAuth();
   const [name, setName] = useState("");
   const [symbol, setSymbol] = useState("");
   const [desc, setDesc] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [creatorBuy, setCreatorBuy] = useState("0.05");
   const [totalSupply, setTotalSupply] = useState<bigint>(SUPPLY_PRESETS[0].value);
-  const [preset, setPreset] = useState<FeePresetId>("balanced");
-  const [fees, setFees] = useState<FeeConfig>(FEE_PRESETS.balanced.fees);
+  const [lpEth, setLpEth] = useState("0.05");
+  const [burnLp, setBurnLp] = useState(true);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [launched, setLaunched] = useState<{
     token: string;
-    market: string;
+    pair: string;
   } | null>(null);
 
   const configured = isFactoryConfigured();
 
   const totalEth = useMemo(() => {
-    const buy = Number(creatorBuy) || 0;
-    const fee = Number(CREATE_FEE_FALLBACK);
-    return (buy + fee).toFixed(4);
-  }, [creatorBuy]);
-
-  function applyPreset(id: FeePresetId) {
-    setPreset(id);
-    if (id !== "custom") setFees(FEE_PRESETS[id].fees);
-  }
-
-  function patchFee<K extends keyof FeeConfig>(key: K, value: number) {
-    setPreset("custom");
-    setFees((f) => ({ ...f, [key]: value }));
-  }
+    const lp = Number(lpEth) || 0;
+    const fee = Number(CREATE_FEE);
+    return (lp + fee).toFixed(4);
+  }, [lpEth]);
 
   function onImage(file: File | null) {
     if (!file) {
@@ -80,44 +64,31 @@ export function CreateForm() {
     setMsg(null);
     setLaunched(null);
 
-    if (!feeSplitOk(fees)) {
+    if (!configured) {
       setErr(
-        "Fee split must sum to 100% (creator + protocol + buyback-burn = 10000 bps)."
+        "Instant factory not deployed yet. Deploy HoodInstantFactory and set NEXT_PUBLIC_FACTORY_ADDRESS."
       );
       return;
     }
-    if (!configured) {
-      setErr(
-        "Factory not deployed yet. Set NEXT_PUBLIC_FACTORY_ADDRESS after forge script deploy."
-      );
+
+    const lp = Number(lpEth);
+    if (!Number.isFinite(lp) || lp < Number(MIN_LP)) {
+      setErr(`LP ETH must be at least ${MIN_LP} ETH`);
       return;
     }
 
     setBusy(true);
     try {
       const publicClient = getPublicClient();
-      const createFee = parseEther(CREATE_FEE_FALLBACK);
-      const buyWei = parseEther(creatorBuy || "0");
-      const value = createFee + buyWei;
+      const createFee = parseEther(CREATE_FEE);
+      const lpWei = parseEther(lpEth || "0");
+      const value = createFee + lpWei;
 
       const hash = await writeContract({
         address: FACTORY_ADDRESS as `0x${string}`,
         abi: factoryAbi,
         functionName: "createToken",
-        args: [
-          name,
-          symbol,
-          {
-            buyFeeBps: fees.buyFeeBps,
-            sellFeeBps: fees.sellFeeBps,
-            feeCreatorBps: fees.feeCreatorBps,
-            feeProtocolBps: fees.feeProtocolBps,
-            feeBuybackBurnBps: fees.feeBuybackBurnBps,
-            tokenBurnOnBuyBps: fees.tokenBurnOnBuyBps,
-          },
-          totalSupply,
-          0n,
-        ],
+        args: [name, symbol, totalSupply, burnLp],
         value,
       });
 
@@ -127,7 +98,7 @@ export function CreateForm() {
       });
 
       let token = "";
-      let market = "";
+      let pair = "";
       for (const log of receipt.logs) {
         try {
           const ev = decodeEventLog({
@@ -135,39 +106,45 @@ export function CreateForm() {
             data: log.data,
             topics: log.topics,
           });
-          if (ev.eventName === "TokenCreated") {
-            const args = ev.args as { token: string; market: string };
+          if (ev.eventName === "TokenLaunched") {
+            const args = ev.args as { token: string; pair: string };
             token = args.token;
-            market = args.market;
+            pair = args.pair;
           }
         } catch {
           /* not our event */
         }
       }
 
-      if (token && market) {
-        setLaunched({ token, market });
+      if (token) {
+        setLaunched({ token, pair });
         try {
           const key = "hoodmemes_launches";
           const prev = JSON.parse(localStorage.getItem(key) || "[]");
           prev.unshift({
             token,
-            market,
+            pair,
             name,
             symbol,
             desc,
             image: imagePreview,
             createdAt: Date.now(),
             creator: address,
+            burnLp,
+            lpEth,
+            totalSupply: totalSupply.toString(),
+            instant: true,
           });
           localStorage.setItem(key, JSON.stringify(prev.slice(0, 100)));
         } catch {
           /* ignore */
         }
-        setMsg(`$${symbol} live on bonding curve.`);
+        setMsg(
+          `$${symbol} live on Uniswap${burnLp ? " (LP burned)" : " (you hold LP)"}. DexScreener can index the pair shortly.`
+        );
         await refreshBalance();
       } else {
-        setMsg("Confirmed — check explorer if token not decoded.");
+        setMsg("Confirmed — check explorer if event not decoded.");
       }
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Create failed");
@@ -180,10 +157,9 @@ export function CreateForm() {
     <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[1fr_320px]">
       <form onSubmit={onSubmit} className="space-y-5">
         <div className="rounded-2xl border border-[#00c805]/25 bg-[#00c805]/5 px-4 py-3 text-sm text-[#b8f5b8]">
-          <strong className="text-[#00c805]">Creator buy is real.</strong> Set
-          ETH below to snipe your own supply at launch (like Pump). Fees can go
-          to you, the protocol, and/or buyback-burn — plus optional token burn on
-          every buy.
+          <strong className="text-[#00c805]">Instant Uniswap launch.</strong>{" "}
+          Fixed supply + LP in one transaction. Live on Uni immediately —
+          DexScreener can pick it up without a bonding-curve wait.
         </div>
 
         <div className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
@@ -193,7 +169,7 @@ export function CreateForm() {
               maxLength={32}
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Cash Cat"
+              placeholder="HoodMemes"
               className={inputCls}
             />
           </Field>
@@ -203,11 +179,11 @@ export function CreateForm() {
               maxLength={12}
               value={symbol}
               onChange={(e) => setSymbol(e.target.value.toUpperCase())}
-              placeholder="CASHCAT"
+              placeholder="HOODMEMES"
               className={`${inputCls} uppercase`}
             />
           </Field>
-          <Field label="Description">
+          <Field label="Description (optional)">
             <textarea
               maxLength={280}
               value={desc}
@@ -245,9 +221,7 @@ export function CreateForm() {
         <div className="space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
           <h3 className="text-sm font-bold text-white">1 · Total supply (fixed)</h3>
           <p className="text-xs text-white/45">
-            Entire supply is minted once into the curve. No unlimited minting.
-            When ~0.25 ETH is raised, the market auto-graduates to Uniswap →
-            DexScreener.
+            Entire supply goes into the Uniswap pool. No unlimited minting.
           </p>
           <div className="flex flex-wrap gap-2">
             {SUPPLY_PRESETS.map((p) => (
@@ -268,120 +242,74 @@ export function CreateForm() {
         </div>
 
         <div className="space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-          <h3 className="text-sm font-bold text-white">2 · Creator buy at launch</h3>
+          <h3 className="text-sm font-bold text-white">2 · Initial LP (ETH)</h3>
           <p className="text-xs text-white/45">
-            ETH spent on the bonding curve at create (you receive tokens from the
-            fixed supply). Set 0 to skip. Plus create fee (~{CREATE_FEE_FALLBACK}{" "}
-            ETH).
+            Your ETH seeds the TOKEN/WETH Uniswap pool. Min {MIN_LP} ETH. Plus
+            launch fee ~{CREATE_FEE} ETH to protocol.
           </p>
-          <Field label="Initial buy (ETH)">
+          <div className="flex flex-wrap gap-2">
+            {LP_PRESETS.map((v) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() => setLpEth(v)}
+                className={`rounded-lg px-3 py-2 text-xs font-bold ${
+                  lpEth === v
+                    ? "bg-[#00c805] text-black"
+                    : "bg-white/5 text-white/60 hover:bg-white/10"
+                }`}
+              >
+                {v} ETH
+              </button>
+            ))}
+          </div>
+          <Field label="Custom LP ETH">
             <input
               type="number"
-              min="0"
+              min={MIN_LP}
               step="any"
-              value={creatorBuy}
-              onChange={(e) => setCreatorBuy(e.target.value)}
+              value={lpEth}
+              onChange={(e) => setLpEth(e.target.value)}
               className={inputCls}
             />
           </Field>
           <p className="text-xs text-white/50">
-            Total from quick wallet ≈{" "}
+            Total from wallet ≈{" "}
             <strong className="text-white">{totalEth} ETH</strong>
           </p>
         </div>
 
         <div className="space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-          <h3 className="text-sm font-bold text-white">
-            3 · Fees & burns
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {(Object.keys(FEE_PRESETS) as Array<keyof typeof FEE_PRESETS>).map(
-              (id) => (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => applyPreset(id)}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-medium ${
-                    preset === id
-                      ? "bg-[#00c805] text-black"
-                      : "bg-white/5 text-white/60 hover:bg-white/10"
-                  }`}
-                >
-                  {FEE_PRESETS[id].label}
-                </button>
-              )
-            )}
+          <h3 className="text-sm font-bold text-white">3 · LP ownership</h3>
+          <div className="grid gap-2 sm:grid-cols-2">
             <button
               type="button"
-              onClick={() => setPreset("custom")}
-              className={`rounded-lg px-3 py-1.5 text-xs font-medium ${
-                preset === "custom"
-                  ? "bg-[#00c805] text-black"
-                  : "bg-white/5 text-white/60"
+              onClick={() => setBurnLp(true)}
+              className={`rounded-xl border p-3 text-left text-xs transition ${
+                burnLp
+                  ? "border-[#00c805]/50 bg-[#00c805]/10 text-white"
+                  : "border-white/10 bg-black/20 text-white/50"
               }`}
             >
-              Custom
+              <div className="font-bold text-sm">Burn LP (recommended)</div>
+              <div className="mt-1 text-white/45">
+                Liquidity locked forever. Stronger trust / anti-rug signal.
+              </div>
             </button>
-          </div>
-          {preset !== "custom" && (
-            <p className="text-[11px] text-white/40">
-              {FEE_PRESETS[preset].blurb}
-            </p>
-          )}
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            <BpsField
-              label="Buy fee"
-              value={fees.buyFeeBps}
-              onChange={(v) => patchFee("buyFeeBps", v)}
-              max={1000}
-            />
-            <BpsField
-              label="Sell fee"
-              value={fees.sellFeeBps}
-              onChange={(v) => patchFee("sellFeeBps", v)}
-              max={1000}
-            />
-            <BpsField
-              label="Fee → creator"
-              value={fees.feeCreatorBps}
-              onChange={(v) => patchFee("feeCreatorBps", v)}
-              max={10000}
-            />
-            <BpsField
-              label="Fee → protocol"
-              value={fees.feeProtocolBps}
-              onChange={(v) => patchFee("feeProtocolBps", v)}
-              max={10000}
-            />
-            <BpsField
-              label="Fee → buyback & burn"
-              value={fees.feeBuybackBurnBps}
-              onChange={(v) => patchFee("feeBuybackBurnBps", v)}
-              max={10000}
-            />
-            <BpsField
-              label="Token burn on buy"
-              value={fees.tokenBurnOnBuyBps}
-              onChange={(v) => patchFee("tokenBurnOnBuyBps", v)}
-              max={2000}
-            />
-          </div>
-
-          <div
-            className={`rounded-xl px-3 py-2 text-xs ${
-              feeSplitOk(fees)
-                ? "bg-[#00c805]/10 text-[#00c805]"
-                : "bg-rose-500/10 text-rose-300"
-            }`}
-          >
-            Fee split: creator {bpsToPct(fees.feeCreatorBps)} + protocol{" "}
-            {bpsToPct(fees.feeProtocolBps)} + buyback-burn{" "}
-            {bpsToPct(fees.feeBuybackBurnBps)} ={" "}
-            {bpsToPct(
-              fees.feeCreatorBps + fees.feeProtocolBps + fees.feeBuybackBurnBps
-            )}{" "}
-            {feeSplitOk(fees) ? "✓" : "(must be 100%)"}
+            <button
+              type="button"
+              onClick={() => setBurnLp(false)}
+              className={`rounded-xl border p-3 text-left text-xs transition ${
+                !burnLp
+                  ? "border-amber-500/50 bg-amber-500/10 text-white"
+                  : "border-white/10 bg-black/20 text-white/50"
+              }`}
+            >
+              <div className="font-bold text-sm">Keep LP</div>
+              <div className="mt-1 text-white/45">
+                LP tokens go to you. You can earn fees or remove liquidity later.
+              </div>
+            </button>
           </div>
         </div>
 
@@ -392,23 +320,53 @@ export function CreateForm() {
 
         <button
           type="submit"
-          disabled={busy || !name || !symbol || !feeSplitOk(fees)}
+          disabled={busy || !name || !symbol}
           className="w-full rounded-xl bg-[#00c805] py-3 text-sm font-bold text-black transition hover:bg-[#00e006] disabled:cursor-not-allowed disabled:opacity-40"
         >
-          {busy ? "Launching…" : `Launch $${symbol || "TOKEN"}`}
+          {busy
+            ? "Launching on Uniswap…"
+            : `Launch $${symbol || "TOKEN"} on Uniswap`}
         </button>
 
         {msg && <p className="text-sm text-white/70">{msg}</p>}
         {err && <p className="text-sm text-rose-300">{err}</p>}
         {launched && (
-          <div className="rounded-xl border border-[#00c805]/30 bg-[#00c805]/10 p-4 text-sm">
-            <p className="font-semibold text-[#00c805]">Launched</p>
-            <Link
-              href={`/token/${launched.token}?market=${launched.market}`}
-              className="mt-2 inline-block text-white underline"
-            >
-              Trade ${symbol} now →
-            </Link>
+          <div className="rounded-xl border border-[#00c805]/30 bg-[#00c805]/10 p-4 text-sm space-y-2">
+            <p className="font-semibold text-[#00c805]">Live on Uniswap</p>
+            <p className="font-mono text-[11px] text-white/50 break-all">
+              Token {launched.token}
+            </p>
+            {launched.pair && (
+              <p className="font-mono text-[11px] text-white/50 break-all">
+                Pair {launched.pair}
+              </p>
+            )}
+            <div className="flex flex-wrap gap-3 pt-1">
+              <Link
+                href={`/token/${launched.token}${launched.pair ? `?pair=${launched.pair}` : ""}`}
+                className="text-white underline"
+              >
+                Open token page →
+              </Link>
+              {launched.pair && (
+                <a
+                  href={`https://dexscreener.com/robinhood/${launched.pair}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[#00c805] underline"
+                >
+                  DexScreener ↗
+                </a>
+              )}
+              <a
+                href={`https://app.uniswap.org/swap?chain=robinhood&inputCurrency=NATIVE&outputCurrency=${launched.token}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-[#00c805] underline"
+              >
+                Trade on Uniswap ↗
+              </a>
+            </div>
           </div>
         )}
       </form>
@@ -432,29 +390,18 @@ export function CreateForm() {
           </Link>
         </div>
         <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-[11px] leading-relaxed text-white/40">
-          <p className="font-semibold text-white/60">How fees work</p>
-          <ul className="mt-2 list-disc space-y-1 pl-4">
-            <li>
-              <strong className="text-white/55">Trade fee</strong> — % of ETH on
-              buy/sell
-            </li>
-            <li>
-              <strong className="text-white/55">Creator</strong> — ETH to your
-              wallet
-            </li>
-            <li>
-              <strong className="text-white/55">Buyback & burn</strong> — fee ETH
-              buys tokens off the curve and destroys them
-            </li>
-            <li>
-              <strong className="text-white/55">Token burn on buy</strong> — % of
-              purchased tokens never minted (deflation)
-            </li>
-            <li>
-              <strong className="text-white/55">Manual burn</strong> — any holder
-              can burn their bag on the trade page
-            </li>
-          </ul>
+          <p className="font-semibold text-white/60">How it works</p>
+          <ol className="mt-2 list-decimal space-y-1.5 pl-4">
+            <li>You pick fixed supply + LP ETH</li>
+            <li>One tx mints supply and seeds Uniswap V2</li>
+            <li>Optional: burn LP so liquidity can&apos;t be pulled</li>
+            <li>Token is tradeable on Uni immediately</li>
+            <li>DexScreener indexes the pair (often minutes)</li>
+          </ol>
+          <p className="mt-3 text-white/35">
+            Launch fee (~{CREATE_FEE} ETH) → protocol. LP ETH → pool. You profit
+            from tokens you buy on Uni after, or from LP fees if you keep LP.
+          </p>
         </div>
       </div>
     </div>
@@ -474,34 +421,6 @@ function Field({
         {label}
       </span>
       {children}
-    </label>
-  );
-}
-
-function BpsField({
-  label,
-  value,
-  onChange,
-  max,
-}: {
-  label: string;
-  value: number;
-  onChange: (v: number) => void;
-  max: number;
-}) {
-  return (
-    <label className="block space-y-1">
-      <span className="text-[10px] uppercase tracking-wider text-white/40">
-        {label} <span className="text-white/60">({bpsToPct(value)})</span>
-      </span>
-      <input
-        type="number"
-        min={0}
-        max={max}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value) || 0)}
-        className={inputCls}
-      />
     </label>
   );
 }

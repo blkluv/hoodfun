@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-/// @title HoodToken — fixed-supply ERC-20; entire supply minted once to the market
+/// @title HoodToken — fixed-supply ERC-20 minted once to the launcher
 contract HoodToken {
     string public name;
     string public symbol;
@@ -12,21 +12,21 @@ contract HoodToken {
     mapping(address => uint256) public balanceOf;
     mapping(address => mapping(address => uint256)) public allowance;
 
-    address public immutable market;
+    address public immutable launcher;
     address public immutable creator;
     bool public initialMintDone;
 
     event Transfer(address indexed from, address indexed to, uint256 value);
     event Approval(address indexed owner, address indexed spender, uint256 value);
 
-    error OnlyMarket();
+    error OnlyLauncher();
     error InsufficientBalance();
     error InsufficientAllowance();
     error AlreadyMinted();
     error CapExceeded();
 
-    modifier onlyMarket() {
-        if (msg.sender != market) revert OnlyMarket();
+    modifier onlyLauncher() {
+        if (msg.sender != launcher) revert OnlyLauncher();
         _;
     }
 
@@ -40,12 +40,11 @@ contract HoodToken {
         name = name_;
         symbol = symbol_;
         maxSupply = maxSupply_;
-        market = msg.sender;
+        launcher = msg.sender;
         creator = creator_;
     }
 
-    /// @notice One-shot mint of entire fixed supply to market (bonding curve inventory)
-    function mintInitial(uint256 amount) external onlyMarket {
+    function mintInitial(uint256 amount) external onlyLauncher {
         if (initialMintDone) revert AlreadyMinted();
         if (amount > maxSupply) revert CapExceeded();
         initialMintDone = true;
@@ -58,7 +57,8 @@ contract HoodToken {
         _burn(msg.sender, amount);
     }
 
-    function burnFrom(address from, uint256 amount) external onlyMarket {
+    /// @notice Launcher/market may burn from any address (inventory burns)
+    function burnFrom(address from, uint256 amount) external onlyLauncher {
         _burn(from, amount);
     }
 

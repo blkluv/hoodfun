@@ -1,3 +1,4 @@
+/** HoodInstantFactory — NOXA-style instant Uniswap launch */
 export const factoryAbi = [
   {
     type: "function",
@@ -6,24 +7,12 @@ export const factoryAbi = [
     inputs: [
       { name: "name", type: "string" },
       { name: "symbol", type: "string" },
-      {
-        name: "fees",
-        type: "tuple",
-        components: [
-          { name: "buyFeeBps", type: "uint16" },
-          { name: "sellFeeBps", type: "uint16" },
-          { name: "feeCreatorBps", type: "uint16" },
-          { name: "feeProtocolBps", type: "uint16" },
-          { name: "feeBuybackBurnBps", type: "uint16" },
-          { name: "tokenBurnOnBuyBps", type: "uint16" },
-        ],
-      },
       { name: "totalSupply", type: "uint256" },
-      { name: "initialBuyMinTokens", type: "uint256" },
+      { name: "burnLp", type: "bool" },
     ],
     outputs: [
-      { name: "market", type: "address" },
       { name: "token", type: "address" },
+      { name: "pair", type: "address" },
     ],
   },
   {
@@ -35,49 +24,65 @@ export const factoryAbi = [
   },
   {
     type: "function",
-    name: "graduateThreshold",
+    name: "minLpEth",
     stateMutability: "view",
     inputs: [],
     outputs: [{ type: "uint256" }],
   },
   {
     type: "function",
-    name: "allMarketsLength",
-    stateMutability: "view",
-    inputs: [],
-    outputs: [{ type: "uint256" }],
-  },
-  {
-    type: "function",
-    name: "allMarkets",
-    stateMutability: "view",
-    inputs: [{ name: "index", type: "uint256" }],
-    outputs: [{ type: "address" }],
-  },
-  {
-    type: "function",
-    name: "marketOfToken",
+    name: "pairOfToken",
     stateMutability: "view",
     inputs: [{ name: "token", type: "address" }],
     outputs: [{ type: "address" }],
   },
   {
+    type: "function",
+    name: "launches",
+    stateMutability: "view",
+    inputs: [{ name: "token", type: "address" }],
+    outputs: [
+      { name: "token", type: "address" },
+      { name: "pair", type: "address" },
+      { name: "creator", type: "address" },
+      { name: "totalSupply", type: "uint256" },
+      { name: "lpEth", type: "uint256" },
+      { name: "lpBurned", type: "bool" },
+      { name: "createdAt", type: "uint64" },
+    ],
+  },
+  {
+    type: "function",
+    name: "allTokensLength",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "allTokens",
+    stateMutability: "view",
+    inputs: [{ name: "index", type: "uint256" }],
+    outputs: [{ type: "address" }],
+  },
+  {
     type: "event",
-    name: "TokenCreated",
+    name: "TokenLaunched",
     inputs: [
-      { name: "market", type: "address", indexed: true },
       { name: "token", type: "address", indexed: true },
+      { name: "pair", type: "address", indexed: true },
       { name: "creator", type: "address", indexed: true },
       { name: "name", type: "string", indexed: false },
       { name: "symbol", type: "string", indexed: false },
       { name: "totalSupply", type: "uint256", indexed: false },
-      { name: "initialBuyEth", type: "uint256", indexed: false },
+      { name: "lpEth", type: "uint256", indexed: false },
       { name: "createFeePaid", type: "uint256", indexed: false },
-      { name: "graduateThreshold", type: "uint256", indexed: false },
+      { name: "lpBurned", type: "bool", indexed: false },
     ],
   },
 ] as const;
 
+/** Legacy bonding market (v1/v2 curve) — still used for old tokens */
 export const marketAbi = [
   {
     type: "function",
