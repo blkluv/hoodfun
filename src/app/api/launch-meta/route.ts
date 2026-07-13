@@ -57,6 +57,7 @@ export async function POST(req: NextRequest) {
         [0, 100, 500, 1000].includes(body.creatorBps)
           ? body.creatorBps
           : undefined,
+      imageUrl: body.imageUrl?.trim() || undefined,
       createdAt: body.createdAt ?? Date.now(),
     });
 

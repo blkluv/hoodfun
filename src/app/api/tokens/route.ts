@@ -4,6 +4,7 @@ import {
   fetchTokenByAddress,
   fetchTokenByPair,
 } from "@/lib/dexscreener";
+import { getAllLaunchMeta, getLaunchMeta } from "@/lib/launch-meta";
 import type { BoardTab, SortKey, TokenCardData } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -76,8 +77,45 @@ export async function GET(req: NextRequest) {
       const token =
         (await fetchTokenByAddress(address)) ||
         (pair ? await fetchTokenByPair(pair) : null);
-      if (!token) {
+      const meta = await getLaunchMeta(address).catch(() => null);
+      if (!token && !meta) {
         return NextResponse.json({ error: "not found" }, { status: 404 });
+      }
+      if (!token) {
+        // Meta-only (brand new, not on Dex yet) — still return logo/name
+        return NextResponse.json({
+          token: {
+            address,
+            name: meta!.name,
+            symbol: meta!.symbol,
+            pairAddress: meta!.pair || pair || null,
+            priceUsd: null,
+            marketCap: null,
+            volume24h: null,
+            volume1h: null,
+            volume6h: null,
+            priceChange5m: null,
+            priceChange1h: null,
+            priceChange6h: null,
+            priceChange24h: null,
+            liquidity: null,
+            imageUrl: meta!.imageUrl || null,
+            dexscreenerUrl: null,
+            createdAt: meta!.createdAt || null,
+            source: "hoodfun",
+            isNative: true,
+            txns24h: null,
+            buys24h: null,
+            sells24h: null,
+            trendScore: 0,
+          } satisfies TokenCardData,
+        });
+      }
+      if (meta?.imageUrl && !token.imageUrl) {
+        token.imageUrl = meta.imageUrl;
+      } else if (meta?.imageUrl) {
+        // Prefer HoodMemes logo
+        token.imageUrl = meta.imageUrl;
       }
       return NextResponse.json({ token });
     }
@@ -110,6 +148,17 @@ export async function GET(req: NextRequest) {
     }
 
     tokens = sort ? sortTokens(tokens, sort) : applyTab(tokens, tab);
+
+    // Merge HoodMemes logos from launch-meta
+    try {
+      const metaMap = await getAllLaunchMeta();
+      for (const t of tokens) {
+        const m = metaMap[t.address.toLowerCase()];
+        if (m?.imageUrl) t.imageUrl = m.imageUrl;
+      }
+    } catch {
+      /* optional */
+    }
 
     const movers = [...tokens]
       .filter((t) => t.priceChange1h != null)

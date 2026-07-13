@@ -25,6 +25,8 @@ export type LaunchMeta = {
   totalSupply?: string;
   /** 0 | 100 | 500 | 1000 — creator allocation at launch */
   creatorBps?: number;
+  /** Public logo URL (/api/logo/0x… or external blob) */
+  imageUrl?: string;
   createdAt: number;
   updatedAt: number;
 };

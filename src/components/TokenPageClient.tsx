@@ -71,6 +71,7 @@ export function TokenPageClient({
     creator?: string;
     name?: string;
     symbol?: string;
+    imageUrl?: string;
   } | null>(null);
   const [launcherX, setLauncherX] = useState<{
     handle: string;
@@ -204,6 +205,9 @@ export function TokenPageClient({
   const isCurve = !!curve && !instant;
   const isInstant = !!instant;
   const stats = live ?? dexToken;
+  /** HoodMemes logo wins over Dex until Dex has one */
+  const displayImage =
+    meta?.imageUrl || stats?.imageUrl || dexToken?.imageUrl || null;
 
   const symbol = (
     instant?.symbol ||
@@ -332,10 +336,10 @@ export function TokenPageClient({
             ← Board
           </Link>
           <div className="flex min-w-0 items-center gap-2">
-            {stats?.imageUrl ? (
+            {displayImage ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={stats.imageUrl}
+                src={displayImage}
                 alt=""
                 className="h-7 w-7 rounded-lg object-cover ring-1 ring-white/15"
               />
@@ -422,10 +426,10 @@ export function TokenPageClient({
         <header className="mb-4 grid gap-4 lg:grid-cols-[1fr_auto]">
           <div className="flex gap-4">
             <div className="relative shrink-0">
-              {stats?.imageUrl ? (
+              {displayImage ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={stats.imageUrl}
+                  src={displayImage}
                   alt={symbol}
                   className="h-[72px] w-[72px] rounded-2xl object-cover shadow-[0_0_40px_rgba(0,200,5,0.2)] ring-2 ring-[#00c805]/35 sm:h-20 sm:w-20"
                 />
@@ -514,7 +518,7 @@ export function TokenPageClient({
                             address,
                             symbol: symbol.slice(0, 11),
                             decimals: 18,
-                            image: stats?.imageUrl || undefined,
+                            image: displayImage || undefined,
                           },
                         },
                       });

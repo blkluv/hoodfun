@@ -9,6 +9,7 @@ import { getPublicClient } from "@/lib/wallet-tx";
 import { useAuth } from "./AuthProvider";
 import Link from "next/link";
 import { VerifyXPanel, VerifiedBadge, type XVerification } from "./VerifyXPanel";
+import { compressImageFile } from "@/lib/image-compress";
 
 const inputCls =
   "w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-sm text-white placeholder:text-white/28 outline-none transition focus:border-[#00c805]/50 focus:ring-1 focus:ring-[#00c805]/25";
@@ -70,6 +71,10 @@ export function CreateForm() {
   const [symbol, setSymbol] = useState("");
   const [desc, setDesc] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  /** Compressed base64 (no data: prefix) ready to upload after launch */
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const [imageContentType, setImageContentType] = useState("image/jpeg");
+  const [imageBusy, setImageBusy] = useState(false);
 
   const [website, setWebsite] = useState("");
   const [twitter, setTwitter] = useState("");
@@ -139,12 +144,26 @@ export function CreateForm() {
     farcaster,
   ].filter((s) => s.trim()).length;
 
-  function onImage(file: File | null) {
+  async function onImage(file: File | null) {
     if (!file) {
       setImagePreview(null);
+      setImageBase64(null);
       return;
     }
-    setImagePreview(URL.createObjectURL(file));
+    setImageBusy(true);
+    setErr(null);
+    try {
+      const { dataUrl, base64, contentType } = await compressImageFile(file);
+      setImagePreview(dataUrl);
+      setImageBase64(base64);
+      setImageContentType(contentType);
+    } catch (e) {
+      setImagePreview(null);
+      setImageBase64(null);
+      setErr(e instanceof Error ? e.message : "Image failed");
+    } finally {
+      setImageBusy(false);
+    }
   }
 
   function validateStep(s: number): string | null {
@@ -239,6 +258,28 @@ export function CreateForm() {
 
       if (token) {
         setLaunched({ token, pair });
+
+        // Upload logo first so meta can reference it
+        let imageUrl: string | undefined;
+        if (imageBase64) {
+          try {
+            setMsg("Saving logo…");
+            const up = await fetch("/api/upload-logo", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                token,
+                imageBase64,
+                contentType: imageContentType,
+              }),
+            });
+            const uj = await up.json();
+            if (up.ok && uj.url) imageUrl = uj.url as string;
+          } catch {
+            /* non-fatal — token still live */
+          }
+        }
+
         // persist social meta (Upstash / file)
         try {
           await fetch("/api/launch-meta", {
@@ -262,6 +303,7 @@ export function CreateForm() {
               lpEth,
               totalSupply: totalSupply.toString(),
               creatorBps,
+              imageUrl,
               createdAt: Date.now(),
             }),
           });
@@ -282,6 +324,7 @@ export function CreateForm() {
             tweet,
             telegram,
             discord,
+            imageUrl,
             createdAt: Date.now(),
             creator: address,
             burnLp,
@@ -314,6 +357,7 @@ export function CreateForm() {
         pair={launched.pair}
         burnLp={burnLp}
         creatorBps={creatorBps}
+        imagePreview={imagePreview}
         socials={{ website, twitter, tweet, telegram, discord }}
       />
     );
@@ -368,19 +412,22 @@ export function CreateForm() {
                     />
                   ) : (
                     <span className="px-2 text-center text-[11px] text-white/35">
-                      Logo
+                      {imageBusy ? "…" : "Logo"}
                       <br />
-                      upload
+                      {imageBusy ? "compress" : "upload"}
                     </span>
                   )}
                   <input
                     type="file"
                     accept="image/*"
                     className="hidden"
+                    disabled={imageBusy}
                     onChange={(e) => onImage(e.target.files?.[0] ?? null)}
                   />
                 </label>
-                <span className="text-[10px] text-white/30">Optional</span>
+                <span className="text-[10px] text-white/30">
+                  {imageBase64 ? "Saved on launch" : "Optional · max 8MB"}
+                </span>
               </div>
               <div className="min-w-0 flex-1 space-y-3">
                 <Field label="Name">
@@ -976,6 +1023,7 @@ function SuccessPanel({
   pair,
   burnLp,
   creatorBps,
+  imagePreview,
   socials,
 }: {
   symbol: string;
@@ -983,6 +1031,7 @@ function SuccessPanel({
   pair: string;
   burnLp: boolean;
   creatorBps: number;
+  imagePreview?: string | null;
   socials: {
     website?: string;
     twitter?: string;
@@ -999,9 +1048,18 @@ function SuccessPanel({
   return (
     <div className="mx-auto max-w-lg space-y-5 py-4 text-center">
       <div className="hm-glass-green rounded-3xl p-8">
-        <div className="text-[10px] font-bold uppercase tracking-widest text-[#00c805]">
-          Launch complete
-        </div>
+        {imagePreview ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={imagePreview}
+            alt=""
+            className="mx-auto h-20 w-20 rounded-2xl object-cover ring-2 ring-[#00c805]/40"
+          />
+        ) : (
+          <div className="text-[10px] font-bold uppercase tracking-widest text-[#00c805]">
+            Launch complete
+          </div>
+        )}
         <h2 className="mt-3 text-3xl font-black text-white">
           ${symbol} is live
         </h2>

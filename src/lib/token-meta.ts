@@ -134,7 +134,8 @@ export async function resolveTokenIdentity(
     symbol: symbol.toUpperCase(),
     name,
     pair: pairHint || factoryPair || dexToken?.pairAddress || null,
-    imageUrl: dexToken?.imageUrl ?? null,
+    // Prefer HoodMemes-stored logo, then DexScreener
+    imageUrl: meta?.imageUrl || dexToken?.imageUrl || null,
     dexToken,
     creator: factoryCreator || meta?.creator || null,
     description: meta?.description ?? null,
