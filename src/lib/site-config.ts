@@ -59,7 +59,11 @@ export const DEFAULT_SITE_CONFIG: SiteConfig = {
   featured: [],
   hiddenTokens: [],
   blockedCreators: [],
-  social: { twitter: "", telegram: "", discord: "" },
+  social: {
+    twitter: "https://x.com/hoodmemesdotfun",
+    telegram: "",
+    discord: "",
+  },
   minLiquidityUsd: 0,
   showDexBoard: true,
   requireLoginToTrade: true,

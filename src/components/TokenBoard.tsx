@@ -482,42 +482,38 @@ export function TokenBoard() {
           </>
         )}
 
-        {(config?.social.twitter ||
-          config?.social.telegram ||
-          config?.social.discord) && (
-          <div className="flex flex-wrap gap-4 border-t border-white/5 pt-6 text-xs text-white/40">
-            {config.social.twitter && (
-              <a
-                href={config.social.twitter}
-                target="_blank"
-                rel="noreferrer"
-                className="hover:text-[#00c805]"
-              >
-                Twitter / X
-              </a>
-            )}
-            {config.social.telegram && (
-              <a
-                href={config.social.telegram}
-                target="_blank"
-                rel="noreferrer"
-                className="hover:text-[#00c805]"
-              >
-                Telegram
-              </a>
-            )}
-            {config.social.discord && (
-              <a
-                href={config.social.discord}
-                target="_blank"
-                rel="noreferrer"
-                className="hover:text-[#00c805]"
-              >
-                Discord
-              </a>
-            )}
-          </div>
-        )}
+        <div className="flex flex-wrap items-center gap-4 border-t border-white/5 pt-6 text-xs text-white/40">
+          <a
+            href={
+              config?.social.twitter || "https://x.com/hoodmemesdotfun"
+            }
+            target="_blank"
+            rel="noreferrer"
+            className="font-semibold hover:text-[#00c805]"
+          >
+            𝕏 @hoodmemesdotfun
+          </a>
+          {config?.social.telegram && (
+            <a
+              href={config.social.telegram}
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-[#00c805]"
+            >
+              Telegram
+            </a>
+          )}
+          {config?.social.discord && (
+            <a
+              href={config.social.discord}
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-[#00c805]"
+            >
+              Discord
+            </a>
+          )}
+        </div>
       </div>
     </div>
   );

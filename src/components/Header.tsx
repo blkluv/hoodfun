@@ -43,6 +43,15 @@ export function Header() {
             >
               Board
             </Link>
+            <a
+              href="https://x.com/hoodmemesdotfun"
+              target="_blank"
+              rel="noreferrer"
+              className="hidden rounded-lg px-2.5 py-1.5 text-sm font-medium text-white/50 transition hover:bg-white/5 hover:text-[#00c805] sm:inline"
+              title="@hoodmemesdotfun"
+            >
+              𝕏
+            </a>
             <Link
               href="/create"
               className="rounded-xl bg-[#00c805] px-3.5 py-1.5 text-sm font-black text-black shadow-[0_0_20px_rgba(0,200,5,0.3)] transition hover:bg-[#00e006]"

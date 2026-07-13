@@ -67,7 +67,8 @@ export const metadata: Metadata = {
     title: "HoodMemes — Robinhood Chain Trenches",
     description: siteDescription,
     images: ["/og.png"],
-    creator: "@hoodmemes",
+    creator: "@hoodmemesdotfun",
+    site: "@hoodmemesdotfun",
   },
   robots: {
     index: true,
@@ -92,8 +93,23 @@ export default function RootLayout({
             {children}
           </main>
           <footer className="border-t border-white/5 py-8 text-center text-[11px] text-white/25">
-            <div className="font-semibold text-white/40">hoodmemes.fun</div>
-            <div className="mt-1">
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              <a
+                href="https://hoodmemes.fun"
+                className="font-semibold text-white/50 hover:text-[#00c805]"
+              >
+                hoodmemes.fun
+              </a>
+              <a
+                href="https://x.com/hoodmemesdotfun"
+                target="_blank"
+                rel="noreferrer"
+                className="font-semibold text-white/50 hover:text-[#00c805]"
+              >
+                𝕏 @hoodmemesdotfun
+              </a>
+            </div>
+            <div className="mt-2">
               Independent · not affiliated with Robinhood Markets, Inc. · Not
               financial advice · DYOR
             </div>
