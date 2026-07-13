@@ -19,10 +19,18 @@ forge script script/DeployInstant.s.sol:DeployInstant \
   --chain 4663
 ```
 
+## Live deployment (2026-07-13)
+
+| | |
+|--|--|
+| **HoodInstantFactory** | `0x2C8D3F42e440068C032eAa8d9695c98e7d642820` |
+| Tx | `0x85c7aea0bb18a29739c7de68fe08338b4d22c7d53bbd7fb8a5f826c5f58050c2` |
+| Explorer | https://robinhoodchain.blockscout.com/address/0x2C8D3F42e440068C032eAa8d9695c98e7d642820 |
+
 ## Vercel
 
 ```
-NEXT_PUBLIC_FACTORY_ADDRESS=0xNEW_INSTANT_FACTORY
+NEXT_PUBLIC_FACTORY_ADDRESS=0x2C8D3F42e440068C032eAa8d9695c98e7d642820
 NEXT_PUBLIC_RPC_URL=https://rpc.mainnet.chain.robinhood.com
 ```
 

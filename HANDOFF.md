@@ -33,13 +33,14 @@ User rejected long bonding-curve graduation as the main UX. Desired flow:
 **Docs:** `contracts/DEPLOY_INSTANT.md`  
 **Tests:** `contracts/test/HoodInstantFactory.t.sol` (4/4 passing last run)
 
-### NOT yet done (blocker for live instant launches)
+### Instant factory — DEPLOYED ✅
 
-- [ ] **Deploy `HoodInstantFactory` to RH mainnet**
-- [ ] Set Vercel `NEXT_PUBLIC_FACTORY_ADDRESS` to the **new** instant factory
-- [ ] Redeploy site
+- [x] **Deploy `HoodInstantFactory` to RH mainnet** (2026-07-13)
+- [ ] Set Vercel `NEXT_PUBLIC_FACTORY_ADDRESS` if not already (repo default updated)
+- [ ] Redeploy site / confirm Production uses latest main
+- [ ] Smoke-test first launch (1B + 0.05 ETH LP + burn LP)
 
-Until then, default code still points at the **old bonding-curve factory** (see addresses below). Create UI expects **instant** factory ABI (`createToken(name, symbol, totalSupply, burnLp)`).
+Create UI uses instant factory ABI: `createToken(name, symbol, totalSupply, burnLp)`.
 
 ---
 
@@ -59,8 +60,11 @@ Until then, default code still points at the **old bonding-curve factory** (see 
 
 | Contract | Address | Notes |
 |----------|---------|--------|
-| **HoodFactory v1** (bonding curve) | `0xD0F7f28C32e111C2367aB08B289d66Ab3DeFf8Eb` | Live; mint-on-buy; **no Uni** |
-| **HoodInstantFactory** | **NOT DEPLOYED YET** | Code ready |
+| **HoodInstantFactory** (primary) | `0x2C8D3F42e440068C032eAa8d9695c98e7d642820` | Instant Uni V2; createFee 0.0005; minLp 0.01 ETH |
+| Deploy tx | `0x85c7aea0bb18a29739c7de68fe08338b4d22c7d53bbd7fb8a5f826c5f58050c2` | Block 8472192 |
+| Protocol | `0x426E924063cD9F8B1cd659B0A55639Eaf630A17D` | Receives create fees |
+| Router | `0x89e5DB8B5aA49aA85AC63f691524311AEB649eba` | Uni V2 on RH |
+| **HoodFactory v1** (legacy curve) | `0xD0F7f28C32e111C2367aB08B289d66Ab3DeFf8Eb` | Old mint-on-buy; keep for history |
 
 ### Example v1 token (legacy beta)
 
@@ -225,13 +229,12 @@ CREATE_FEE_WEI / MIN_LP_ETH_WEI     # deploy-time only
 
 ## Immediate next steps (priority order)
 
-1. **Deploy `HoodInstantFactory`** (user has low ETH sometimes — needs ~0.01+ on RH for gas).
-2. **Point Vercel** `NEXT_PUBLIC_FACTORY_ADDRESS` at new factory → redeploy.
-3. Smoke test: launch 1B token with 0.05 ETH LP, burn LP, confirm pair on explorer + DexScreener.
-4. Optional: hardcode new factory in `src/lib/contracts.ts` fallback.
-5. Optional: list recent instant launches on homepage (not only DexScreener scrape).
-6. Optional: deprecate UI paths for bonding-curve create (legacy still works if factory is old address).
-7. Official `$HOODMEMES` relaunch announcement once instant is live.
+1. [x] Deploy `HoodInstantFactory` → `0x2C8D3F42e440068C032eAa8d9695c98e7d642820`
+2. **Vercel:** set `NEXT_PUBLIC_FACTORY_ADDRESS=0x2C8D3F42e440068C032eAa8d9695c98e7d642820` (if env overrides repo default) → Redeploy Production.
+3. Smoke test: `/create` → 1B + 0.05 ETH LP + burn LP → confirm pair on explorer + Uniswap + DexScreener.
+4. Official `$HOODMEMES` relaunch when ready.
+5. Optional: list recent instant launches on homepage (from factory `allTokens` / events).
+6. Optional: deprecate curve-only UX copy leftover in docs.
 
 ### Deploy commands (copy-paste)
 
@@ -286,4 +289,4 @@ Until InstantFactory is **deployed and wired**, create may fail or hit wrong ABI
 
 ---
 
-*End of handoff. On new session: read this file first, then check whether `HoodInstantFactory` is deployed and whether `NEXT_PUBLIC_FACTORY_ADDRESS` matches it.*
+*End of handoff. On new session: read this file first. Instant factory is live at `0x2C8D3F42e440068C032eAa8d9695c98e7d642820` — confirm Vercel env + smoke-test a launch.*
