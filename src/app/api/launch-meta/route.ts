@@ -52,6 +52,11 @@ export async function POST(req: NextRequest) {
       lpBurned: body.lpBurned,
       lpEth: body.lpEth,
       totalSupply: body.totalSupply,
+      creatorBps:
+        typeof body.creatorBps === "number" &&
+        [0, 100, 500, 1000].includes(body.creatorBps)
+          ? body.creatorBps
+          : undefined,
       createdAt: body.createdAt ?? Date.now(),
     });
 

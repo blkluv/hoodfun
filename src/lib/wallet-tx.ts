@@ -161,3 +161,22 @@ export async function writeWithActive(
     chain: robinhoodChain,
   } as never) as Promise<Hex>;
 }
+
+/** EIP-191 personal_sign for launcher X verification */
+export async function signMessageWithActive(
+  mode: ActiveWalletMode,
+  externalAddress: Address | null | undefined,
+  message: string
+): Promise<Hex> {
+  const clients = await getActiveClients(mode, externalAddress);
+  if (mode === "session") {
+    return clients.walletClient.signMessage({
+      account: clients.account,
+      message,
+    }) as Promise<Hex>;
+  }
+  return clients.walletClient.signMessage({
+    account: externalAddress!,
+    message,
+  }) as Promise<Hex>;
+}

@@ -31,16 +31,16 @@ User rejected long bonding-curve graduation as the main UX. Desired flow:
 **Contract:** `contracts/src/HoodInstantFactory.sol`  
 **Deploy script:** `contracts/script/DeployInstant.s.sol`  
 **Docs:** `contracts/DEPLOY_INSTANT.md`  
-**Tests:** `contracts/test/HoodInstantFactory.t.sol` (4/4 passing last run)
+**Tests:** `contracts/test/HoodInstantFactory.t.sol` (creatorBps tests included)
 
-### Instant factory — DEPLOYED ✅
+### Instant factory v2 — DEPLOYED ✅ (creator allocation)
 
-- [x] **Deploy `HoodInstantFactory` to RH mainnet** (2026-07-13)
-- [ ] Set Vercel `NEXT_PUBLIC_FACTORY_ADDRESS` if not already (repo default updated)
-- [ ] Redeploy site / confirm Production uses latest main
-- [ ] Smoke-test first launch (1B + 0.05 ETH LP + burn LP)
+- [x] **Deploy `HoodInstantFactory` v2** (2026-07-13) — `creatorBps` 0/1/5/10%
+- [x] Repo default + `.env.local` updated to new address
+- [ ] Set Vercel `NEXT_PUBLIC_FACTORY_ADDRESS` to v2 + redeploy site
+- [ ] Smoke-test first launch (1B + 0.05 ETH LP + burn LP + creator %)
 
-Create UI uses instant factory ABI: `createToken(name, symbol, totalSupply, burnLp)`.
+Create UI ABI: `createToken(name, symbol, totalSupply, burnLp, creatorBps)`.
 
 ---
 
@@ -60,8 +60,8 @@ Create UI uses instant factory ABI: `createToken(name, symbol, totalSupply, burn
 
 | Contract | Address | Notes |
 |----------|---------|--------|
-| **HoodInstantFactory** (primary) | `0x2C8D3F42e440068C032eAa8d9695c98e7d642820` | Instant Uni V2; createFee 0.0005; minLp 0.01 ETH |
-| Deploy tx | `0x85c7aea0bb18a29739c7de68fe08338b4d22c7d53bbd7fb8a5f826c5f58050c2` | Block 8472192 |
+| **HoodInstantFactory v2** (primary) | `0x1E89C3EbEa4059D8B1aefc3a2A7e97caF180Ed33` | Instant Uni + creatorBps; createFee 0.0005; minLp 0.01 |
+| HoodInstantFactory v1 (legacy) | `0x2C8D3F42e440068C032eAa8d9695c98e7d642820` | No creatorBps — do not use for new launches |
 | Protocol | `0x426E924063cD9F8B1cd659B0A55639Eaf630A17D` | Receives create fees |
 | Router | `0x89e5DB8B5aA49aA85AC63f691524311AEB649eba` | Uni V2 on RH |
 | **HoodFactory v1** (legacy curve) | `0xD0F7f28C32e111C2367aB08B289d66Ab3DeFf8Eb` | Old mint-on-buy; keep for history |

@@ -1,6 +1,6 @@
 # Deploy HoodInstantFactory (NOXA-style)
 
-Instant Uniswap V2 launch: fixed supply + LP in one tx.
+Instant Uniswap V2 launch: fixed supply + optional creator allocation + LP in one tx.
 
 ## Deploy
 
@@ -19,29 +19,41 @@ forge script script/DeployInstant.s.sol:DeployInstant \
   --chain 4663
 ```
 
-## Live deployment (2026-07-13)
+## Live deployment (v2 — creator allocation)
 
 | | |
 |--|--|
-| **HoodInstantFactory** | `0x2C8D3F42e440068C032eAa8d9695c98e7d642820` |
-| Tx | `0x85c7aea0bb18a29739c7de68fe08338b4d22c7d53bbd7fb8a5f826c5f58050c2` |
-| Explorer | https://robinhoodchain.blockscout.com/address/0x2C8D3F42e440068C032eAa8d9695c98e7d642820 |
+| **HoodInstantFactory** | `0x1E89C3EbEa4059D8B1aefc3a2A7e97caF180Ed33` |
+| ABI | `createToken(name, symbol, totalSupply, burnLp, creatorBps)` |
+| Creator bps | `0` / `100` (1%) / `500` (5%) / `1000` (10%) |
+| createFee | 0.0005 ETH |
+| minLpEth | 0.01 ETH |
+| Protocol | `0x426E924063cD9F8B1cd659B0A55639Eaf630A17D` |
+| Explorer | https://robinhoodchain.blockscout.com/address/0x1E89C3EbEa4059D8B1aefc3a2A7e97caF180Ed33 |
+
+### Legacy (v1 — no creatorBps)
+
+| | |
+|--|--|
+| Address | `0x2C8D3F42e440068C032eAa8d9695c98e7d642820` |
+| Note | Do not use for new launches |
 
 ## Vercel
 
 ```
-NEXT_PUBLIC_FACTORY_ADDRESS=0x2C8D3F42e440068C032eAa8d9695c98e7d642820
+NEXT_PUBLIC_FACTORY_ADDRESS=0x1E89C3EbEa4059D8B1aefc3a2A7e97caF180Ed33
 NEXT_PUBLIC_RPC_URL=https://rpc.mainnet.chain.robinhood.com
 ```
 
-Redeploy the site.
+Redeploy the site after updating env.
 
 ## Flow for users
 
 1. Pick supply (1B / 5B / 10B / 100B / 1T)
-2. Pick LP ETH (e.g. 0.05)
-3. Toggle burn LP vs keep LP
-4. One tx → Uniswap pair live → DexScreener can index
+2. Pick creator allocation (0% / 1% / 5% / 10%)
+3. Pick LP ETH (e.g. 0.05)
+4. Toggle burn LP vs keep LP
+5. One tx → Uniswap pair live → DexScreener can index
 
 ## Addresses
 

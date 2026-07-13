@@ -20,6 +20,7 @@ import {
   getActiveClients,
   type ActiveWalletMode,
   writeWithActive,
+  signMessageWithActive,
   type WriteArgs,
   getPublicClient,
 } from "@/lib/wallet-tx";
@@ -37,6 +38,7 @@ type AuthContextValue = {
   setMode: (m: ActiveWalletMode) => void;
   refreshBalance: () => Promise<void>;
   writeContract: (args: WriteArgs) => Promise<Hex>;
+  signMessage: (message: string) => Promise<Hex>;
   getClients: () => ReturnType<typeof getActiveClients>;
 };
 
@@ -152,6 +154,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [loggedIn, mode, address]
   );
 
+  const signMessage = useCallback(
+    async (message: string) => {
+      if (!loggedIn || !mode) throw new Error("Log in first");
+      return signMessageWithActive(mode, address, message);
+    },
+    [loggedIn, mode, address]
+  );
+
   const getClients = useCallback(() => {
     if (!mode) throw new Error("Not logged in");
     return getActiveClients(mode, address);
@@ -170,6 +180,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setMode,
       refreshBalance,
       writeContract,
+      signMessage,
       getClients,
     }),
     [
@@ -184,6 +195,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setMode,
       refreshBalance,
       writeContract,
+      signMessage,
       getClients,
     ]
   );

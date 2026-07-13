@@ -7,6 +7,7 @@ import { shortAddr } from "@/lib/format";
 import { ROBINHOOD_CHAIN } from "@/lib/chain";
 import { useState } from "react";
 import { ConnectModal } from "@/components/ConnectModal";
+import { VerifyXPanel } from "@/components/VerifyXPanel";
 
 export default function AccountPage() {
   return (
@@ -87,6 +88,15 @@ function AccountInner() {
             Log out
           </button>
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <h2 className="text-sm font-bold text-white/70">Launcher verification</h2>
+        <p className="text-xs text-white/40">
+          Link your X account once. Every coin you launch shows a verified badge
+          on the token page.
+        </p>
+        <VerifyXPanel variant="full" />
       </div>
 
       {mode === "session" && (

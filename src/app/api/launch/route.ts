@@ -56,6 +56,10 @@ export async function GET(req: NextRequest) {
         const lpEth = launch[4];
         const lpBurned = launch[5];
         const createdAt = launch[6];
+        // New factory ABI: index 7 = creatorBps. Old live factory may omit it.
+        const creatorBpsRaw = (launch as readonly unknown[])[7];
+        const creatorBps =
+          creatorBpsRaw != null ? Number(creatorBpsRaw as number | bigint) : undefined;
 
         let name = "Token";
         let symbol = "TOKEN";
@@ -84,6 +88,10 @@ export async function GET(req: NextRequest) {
           totalSupply: totalSupply?.toString(),
           lpEth: lpEth?.toString(),
           lpBurned,
+          creatorBps:
+            creatorBps != null && Number.isFinite(creatorBps)
+              ? creatorBps
+              : undefined,
           createdAt: Number(createdAt) * 1000,
           name,
           symbol,

@@ -9,6 +9,7 @@ import { CurveChart, CurveStats, RecentTrades } from "./CurveChart";
 import { TokenTradeSection } from "./TokenTradeSection";
 import { formatPct, formatUsd, shortAddr, timeAgo } from "@/lib/format";
 import { ROBINHOOD_CHAIN, UNISWAP_APP } from "@/lib/chain";
+import { VerifiedBadge } from "./VerifyXPanel";
 
 type InstantLaunch = {
   kind: "instant";
@@ -18,6 +19,8 @@ type InstantLaunch = {
   totalSupply?: string;
   lpEth?: string;
   lpBurned?: boolean;
+  /** basis points: 0 / 100 / 500 / 1000 → Creator X% badge */
+  creatorBps?: number;
   createdAt?: number;
   name: string;
   symbol: string;
@@ -45,9 +48,36 @@ export function TokenPageClient({
     discord?: string;
     github?: string;
     farcaster?: string;
+    creatorBps?: number;
+    creator?: string;
+  } | null>(null);
+  const [launcherX, setLauncherX] = useState<{
+    handle: string;
+    profileUrl: string;
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
+
+  const loadLauncherVerify = useCallback(async (creatorAddr: string | undefined | null) => {
+    if (!creatorAddr || !/^0x[a-fA-F0-9]{40}$/.test(creatorAddr)) {
+      setLauncherX(null);
+      return;
+    }
+    try {
+      const res = await fetch(`/api/verify-x?address=${creatorAddr}`);
+      const data = await res.json();
+      if (data?.verified && data.handle) {
+        setLauncherX({
+          handle: data.handle,
+          profileUrl: data.profileUrl || `https://x.com/${data.handle}`,
+        });
+      } else {
+        setLauncherX(null);
+      }
+    } catch {
+      setLauncherX(null);
+    }
+  }, []);
 
   const load = useCallback(async () => {
     try {
@@ -55,7 +85,10 @@ export function TokenPageClient({
       fetch(`/api/launch-meta?token=${address}`)
         .then((r) => (r.ok ? r.json() : null))
         .then((d) => {
-          if (d?.meta) setMeta(d.meta);
+          if (d?.meta) {
+            setMeta(d.meta);
+            if (d.meta.creator) loadLauncherVerify(d.meta.creator);
+          }
         })
         .catch(() => null);
 
@@ -67,6 +100,7 @@ export function TokenPageClient({
         setCurve(null);
         setErr(null);
         setLoading(false);
+        if (data.creator) loadLauncherVerify(data.creator);
         return;
       }
 
@@ -79,6 +113,7 @@ export function TokenPageClient({
         setCurve(data.curve);
         setInstant(null);
         setErr(null);
+        if (data.curve?.creator) loadLauncherVerify(data.curve.creator);
       } else if (res.status === 404) {
         setCurve(null);
       } else {
@@ -90,7 +125,7 @@ export function TokenPageClient({
     } finally {
       setLoading(false);
     }
-  }, [address, marketHint]);
+  }, [address, marketHint, loadLauncherVerify]);
 
   useEffect(() => {
     load();
@@ -171,6 +206,39 @@ export function TokenPageClient({
                   LP burned
                 </span>
               )}
+              {(() => {
+                const bps =
+                  typeof instant?.creatorBps === "number"
+                    ? instant.creatorBps
+                    : typeof meta?.creatorBps === "number"
+                      ? meta.creatorBps
+                      : null;
+                if (bps == null) return null;
+                if (bps > 0) {
+                  return (
+                    <span
+                      className="rounded-md bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-200"
+                      title={`${bps / 100}% of total supply was sent to the creator wallet at launch. The rest seeded Uniswap LP.`}
+                    >
+                      Creator: {bps / 100}%
+                    </span>
+                  );
+                }
+                return (
+                  <span
+                    className="rounded-md bg-white/10 px-2 py-0.5 text-[10px] font-bold uppercase text-white/55"
+                    title="0% creator allocation — 100% of supply went into the Uniswap pool."
+                  >
+                    Fair launch
+                  </span>
+                );
+              })()}
+              {launcherX && (
+                <VerifiedBadge
+                  handle={launcherX.handle}
+                  href={launcherX.profileUrl}
+                />
+              )}
             </div>
             <p className="font-mono text-xs text-white/35 break-all">{address}</p>
             {instant?.createdAt && (
@@ -194,30 +262,52 @@ export function TokenPageClient({
               meta?.telegram ||
               meta?.discord ||
               meta?.github ||
-              meta?.farcaster) && (
+              meta?.farcaster ||
+              launcherX) && (
               <div className="mt-3 flex flex-wrap gap-2">
-                {meta.website && (
+                {launcherX && (
+                  <SocialLink
+                    href={launcherX.profileUrl}
+                    label={`Verified @${launcherX.handle}`}
+                    verified
+                  />
+                )}
+                {meta?.website && (
                   <SocialLink href={meta.website} label="Website" />
                 )}
-                {meta.twitter && (
+                {meta?.twitter && !launcherX && (
                   <SocialLink href={meta.twitter} label="X / Twitter" />
                 )}
-                {meta.tweet && (
+                {meta?.tweet && (
                   <SocialLink href={meta.tweet} label="Launch tweet" />
                 )}
-                {meta.telegram && (
+                {meta?.telegram && (
                   <SocialLink href={meta.telegram} label="Telegram" />
                 )}
-                {meta.discord && (
+                {meta?.discord && (
                   <SocialLink href={meta.discord} label="Discord" />
                 )}
-                {meta.github && (
+                {meta?.github && (
                   <SocialLink href={meta.github} label="GitHub" />
                 )}
-                {meta.farcaster && (
+                {meta?.farcaster && (
                   <SocialLink href={meta.farcaster} label="Farcaster" />
                 )}
               </div>
+            )}
+            {launcherX && (
+              <p className="mt-2 text-[11px] text-sky-300/70">
+                Launcher verified ownership of{" "}
+                <a
+                  href={launcherX.profileUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-semibold underline-offset-2 hover:underline"
+                >
+                  @{launcherX.handle}
+                </a>{" "}
+                via wallet signature + public tweet.
+              </p>
             )}
           </div>
         </div>
@@ -263,31 +353,51 @@ export function TokenPageClient({
       )}
 
       {isInstant && instant && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <Metric
-            label="LP ETH"
-            value={
-              instant.lpEth
-                ? `${(Number(instant.lpEth) / 1e18).toFixed(4)} ETH`
-                : "—"
-            }
-          />
-          <Metric
-            label="Max supply"
-            value={
-              instant.totalSupply
-                ? Number(instant.totalSupply) / 1e18 >= 1e9
-                  ? `${(Number(instant.totalSupply) / 1e18 / 1e9).toFixed(0)}B`
-                  : (Number(instant.totalSupply) / 1e18).toLocaleString()
-                : "—"
-            }
-          />
-          <Metric label="LP" value={instant.lpBurned ? "Burned 🔥" : "Creator holds"} />
-          <Metric
-            label="Pair"
-            value={shortAddr(instant.pair)}
-          />
-        </div>
+        <>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <Metric
+              label="LP ETH"
+              value={
+                instant.lpEth
+                  ? `${(Number(instant.lpEth) / 1e18).toFixed(4)} ETH`
+                  : "—"
+              }
+            />
+            <Metric
+              label="Max supply"
+              value={
+                instant.totalSupply
+                  ? Number(instant.totalSupply) / 1e18 >= 1e9
+                    ? `${(Number(instant.totalSupply) / 1e18 / 1e9).toFixed(0)}B`
+                    : (Number(instant.totalSupply) / 1e18).toLocaleString()
+                  : "—"
+              }
+            />
+            <Metric
+              label="Creator alloc"
+              value={
+                typeof instant.creatorBps === "number"
+                  ? instant.creatorBps === 0
+                    ? "0% fair"
+                    : `${instant.creatorBps / 100}%`
+                  : meta?.creatorBps != null
+                    ? `${meta.creatorBps / 100}%`
+                    : "—"
+              }
+            />
+            <Metric
+              label="LP"
+              value={instant.lpBurned ? "Burned 🔥" : "Creator holds"}
+            />
+          </div>
+          {typeof instant.creatorBps === "number" && (
+            <p className="text-[11px] leading-relaxed text-white/35">
+              {instant.creatorBps === 0
+                ? "Fair launch: 100% of supply seeded the Uniswap pool. Creator received no free tokens at launch."
+                : `At launch, ${instant.creatorBps / 100}% of supply went to the creator wallet. The remaining ${100 - instant.creatorBps / 100}% was paired with ETH on Uniswap.`}
+            </p>
+          )}
+        </>
       )}
 
       {isCurve && curve ? (
@@ -415,13 +525,25 @@ function Metric({
   );
 }
 
-function SocialLink({ href, label }: { href: string; label: string }) {
+function SocialLink({
+  href,
+  label,
+  verified,
+}: {
+  href: string;
+  label: string;
+  verified?: boolean;
+}) {
   return (
     <a
       href={href}
       target="_blank"
       rel="noreferrer"
-      className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-semibold text-white/70 transition hover:border-[#00c805]/40 hover:text-[#00c805]"
+      className={
+        verified
+          ? "rounded-lg border border-sky-500/35 bg-sky-500/15 px-2.5 py-1 text-[11px] font-semibold text-sky-200 transition hover:border-sky-400/50"
+          : "rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-semibold text-white/70 transition hover:border-[#00c805]/40 hover:text-[#00c805]"
+      }
     >
       {label} ↗
     </a>

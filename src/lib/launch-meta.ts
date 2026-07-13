@@ -23,6 +23,8 @@ export type LaunchMeta = {
   lpBurned?: boolean;
   lpEth?: string;
   totalSupply?: string;
+  /** 0 | 100 | 500 | 1000 — creator allocation at launch */
+  creatorBps?: number;
   createdAt: number;
   updatedAt: number;
 };

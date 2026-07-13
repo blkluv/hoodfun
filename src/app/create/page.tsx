@@ -57,41 +57,90 @@ export default function CreatePage() {
   return (
     <div className="relative -mx-4 sm:mx-0">
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-white/5 px-4 pb-10 pt-4 sm:px-0">
+      <section className="relative overflow-hidden border-b border-white/5 px-4 pb-12 pt-6 sm:px-0">
         <div className="hm-grid pointer-events-none absolute inset-0 opacity-50" />
-        <div className="pointer-events-none absolute -left-20 top-0 h-64 w-64 rounded-full bg-[#00c805]/15 blur-3xl" />
-        <div className="pointer-events-none absolute -right-10 bottom-0 h-48 w-48 rounded-full bg-emerald-500/10 blur-3xl" />
+        <div className="pointer-events-none absolute -left-24 -top-10 h-72 w-72 rounded-full bg-[#00c805]/18 blur-3xl" />
+        <div className="pointer-events-none absolute -right-16 top-10 h-56 w-56 rounded-full bg-emerald-400/10 blur-3xl" />
+        <div className="pointer-events-none absolute bottom-0 left-1/2 h-40 w-[80%] -translate-x-1/2 rounded-full bg-[#00c805]/5 blur-3xl" />
 
         <div className="relative mx-auto max-w-3xl text-center">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#00c805]/30 bg-[#00c805]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-[#00c805]">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#00c805]/35 bg-[#00c805]/12 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[#00c805] shadow-[0_0_24px_rgba(0,200,5,0.15)]">
             <span className="hm-live-dot h-2 w-2 rounded-full bg-[#00c805]" />
             Instant Uniswap · Robinhood Chain
           </div>
-          <h1 className="text-4xl font-black leading-[1.05] tracking-tight text-white sm:text-5xl md:text-6xl">
-            <span className="bg-gradient-to-r from-white via-white to-[#00c805] bg-clip-text text-transparent">
-              Launch your coin
+
+          <h1 className="text-4xl font-black leading-[1.02] tracking-tight text-white sm:text-5xl md:text-6xl">
+            <span className="bg-gradient-to-br from-white via-white to-[#00c805] bg-clip-text text-transparent">
+              Launch a coin
+            </span>
+            <br />
+            <span className="bg-gradient-to-r from-[#00c805] via-[#6dff70] to-white bg-clip-text text-transparent">
+              that actually trades
             </span>
           </h1>
-          <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-white/45 sm:text-base">
-            Fixed supply. Seed liquidity. Live on Uniswap in one transaction.
-            Add your socials so the trenches know you&apos;re real.
+
+          <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-white/50 sm:text-base">
+            Fixed supply. Pick a creator cut (0–10%). Seed Uniswap with your ETH.
+            Live pool in one tx — socials on the token page so degens trust the
+            launch.
           </p>
 
-          <div className="mx-auto mt-8 grid max-w-lg grid-cols-3 gap-2 text-left sm:gap-3">
+          <div className="mx-auto mt-8 grid max-w-2xl grid-cols-2 gap-2 text-left sm:grid-cols-4 sm:gap-3">
             {[
-              { n: "01", t: "Identity", d: "Name, ticker, socials" },
-              { n: "02", t: "Supply & LP", d: "1B–1T · your ETH" },
-              { n: "03", t: "Go live", d: "Uni pool · DexScreener" },
+              {
+                n: "01",
+                t: "Identity",
+                d: "Name, ticker, logo",
+              },
+              {
+                n: "02",
+                t: "Authority",
+                d: "X, TG, site links",
+              },
+              {
+                n: "03",
+                t: "Split & LP",
+                d: "0–10% you · rest pool",
+              },
+              {
+                n: "04",
+                t: "Go live",
+                d: "Uni + DexScreener",
+              },
             ].map((s) => (
               <div
                 key={s.n}
-                className="rounded-2xl border border-white/8 bg-black/30 px-3 py-3"
+                className="group rounded-2xl border border-white/10 bg-black/35 px-3 py-3.5 transition hover:border-[#00c805]/35 hover:bg-[#00c805]/5"
               >
-                <div className="text-[10px] font-bold text-[#00c805]">{s.n}</div>
-                <div className="mt-0.5 text-xs font-bold text-white">{s.t}</div>
-                <div className="mt-0.5 text-[10px] text-white/35">{s.d}</div>
+                <div className="text-[10px] font-black tracking-wider text-[#00c805]">
+                  {s.n}
+                </div>
+                <div className="mt-1 text-xs font-black text-white sm:text-sm">
+                  {s.t}
+                </div>
+                <div className="mt-0.5 text-[10px] leading-snug text-white/40">
+                  {s.d}
+                </div>
               </div>
             ))}
+          </div>
+
+          {/* Trust strip */}
+          <div className="mx-auto mt-8 flex max-w-xl flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[11px] text-white/35">
+            <span className="inline-flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#00c805]" />
+              Creator max 10%
+            </span>
+            <span className="hidden text-white/15 sm:inline">·</span>
+            <span className="inline-flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#00c805]" />
+              Rest → Uniswap LP
+            </span>
+            <span className="hidden text-white/15 sm:inline">·</span>
+            <span className="inline-flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#00c805]" />
+              Badge on token page
+            </span>
           </div>
         </div>
       </section>

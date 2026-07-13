@@ -2,10 +2,10 @@
 pragma solidity ^0.8.24;
 
 import {HoodToken} from "./HoodToken.sol";
-import {IUniswapV2Router02, IUniswapV2Factory, IUniswapV2Pair} from "./IUniswapV2.sol";
+import {IUniswapV2Router02, IUniswapV2Factory} from "./IUniswapV2.sol";
 
-/// @title HoodInstantFactory — NOXA-style: fixed supply + instant Uniswap V2 LP
-/// @notice One tx: mint fixed supply → seed TOKEN/WETH pool → optional LP burn
+/// @title HoodInstantFactory — fixed supply + creator allocation + instant Uniswap V2 LP
+/// @notice One tx: mint → send creator % to launcher → seed rest as TOKEN/WETH LP → optional LP burn
 contract HoodInstantFactory {
     uint256 public constant SUPPLY_1B = 1_000_000_000 ether;
     uint256 public constant SUPPLY_5B = 5_000_000_000 ether;
@@ -13,13 +13,16 @@ contract HoodInstantFactory {
     uint256 public constant SUPPLY_100B = 100_000_000_000 ether;
     uint256 public constant SUPPLY_1T = 1_000_000_000_000 ether;
 
+    uint256 public constant BPS = 10_000;
+    uint256 public constant MAX_CREATOR_BPS = 1_000; // 10%
+
     address public constant DEAD = 0x000000000000000000000000000000000000dEaD;
 
     address public owner;
     address public protocol;
     address public uniswapRouter;
-    uint256 public createFee; // ETH to protocol on each launch
-    uint256 public minLpEth; // minimum liquidity ETH
+    uint256 public createFee;
+    uint256 public minLpEth;
 
     struct Launch {
         address token;
@@ -29,10 +32,11 @@ contract HoodInstantFactory {
         uint256 lpEth;
         bool lpBurned;
         uint64 createdAt;
+        uint16 creatorBps; // e.g. 500 = 5%
     }
 
     address[] public allTokens;
-    mapping(address => Launch) public launches; // token => Launch
+    mapping(address => Launch) public launches;
     mapping(address => address) public pairOfToken;
     mapping(address => address[]) public tokensByCreator;
 
@@ -45,7 +49,9 @@ contract HoodInstantFactory {
         uint256 totalSupply,
         uint256 lpEth,
         uint256 createFeePaid,
-        bool lpBurned
+        bool lpBurned,
+        uint16 creatorBps,
+        uint256 creatorTokens
     );
     event CreateFeeUpdated(uint256 fee);
     event MinLpEthUpdated(uint256 minLp);
@@ -54,10 +60,10 @@ contract HoodInstantFactory {
     event OwnershipTransferred(address indexed prev, address indexed next);
 
     error OnlyOwner();
-    error InsufficientFee();
     error InsufficientLp();
     error ZeroAddress();
     error InvalidSupply();
+    error InvalidCreatorBps();
     error TransferFailed();
 
     modifier onlyOwner() {
@@ -83,48 +89,58 @@ contract HoodInstantFactory {
             || supply == SUPPLY_100B || supply == SUPPLY_1T;
     }
 
+    /// @notice Allowed: 0, 100 (1%), 500 (5%), 1000 (10%)
+    function isAllowedCreatorBps(uint16 bps) public pure returns (bool) {
+        return bps == 0 || bps == 100 || bps == 500 || bps == 1000;
+    }
+
     /**
-     * @param name Token name
-     * @param symbol Ticker
-     * @param totalSupply One of allowed presets
-     * @param burnLp If true, LP goes to dead address; if false, LP goes to creator
-     * @dev msg.value = createFee + LP ETH (rest after fee seeds the pool)
+     * @param totalSupply Fixed max supply (preset)
+     * @param burnLp LP to dead if true, else to creator
+     * @param creatorBps 0 / 100 / 500 / 1000 — % of supply sent to creator wallet; rest → Uni LP
+     * @dev msg.value = createFee + LP ETH
      */
     function createToken(
         string calldata name,
         string calldata symbol,
         uint256 totalSupply,
-        bool burnLp
+        bool burnLp,
+        uint16 creatorBps
     ) external payable returns (address token, address pair) {
         if (!isAllowedSupply(totalSupply)) revert InvalidSupply();
+        if (!isAllowedCreatorBps(creatorBps)) revert InvalidCreatorBps();
         if (uniswapRouter == address(0)) revert ZeroAddress();
         if (msg.value < createFee + minLpEth) revert InsufficientLp();
 
         uint256 lpEth = msg.value - createFee;
         if (lpEth < minLpEth) revert InsufficientLp();
 
-        // protocol fee
         if (createFee > 0) {
             (bool okFee,) = protocol.call{value: createFee}("");
             if (!okFee) revert TransferFailed();
         }
 
-        // mint fixed supply to this factory
         HoodToken t = new HoodToken(name, symbol, totalSupply, msg.sender);
         token = address(t);
         t.mintInitial(totalSupply);
+
+        uint256 creatorTokens = (totalSupply * uint256(creatorBps)) / BPS;
+        uint256 lpTokens = totalSupply - creatorTokens;
+
+        if (creatorTokens > 0) {
+            require(t.transfer(msg.sender, creatorTokens), "creator xfer");
+        }
 
         IUniswapV2Router02 router = IUniswapV2Router02(uniswapRouter);
         address weth = router.WETH();
         address uniFactory = router.factory();
 
-        // approve + add liquidity (100% of supply + lpEth)
-        t.approve(uniswapRouter, totalSupply);
+        t.approve(uniswapRouter, lpTokens);
         address lpRecipient = burnLp ? DEAD : msg.sender;
 
         (uint256 usedToken, uint256 usedEth,) = router.addLiquidityETH{value: lpEth}(
             token,
-            totalSupply,
+            lpTokens,
             0,
             0,
             lpRecipient,
@@ -134,12 +150,10 @@ contract HoodInstantFactory {
         pair = IUniswapV2Factory(uniFactory).getPair(token, weth);
         require(pair != address(0), "no pair");
 
-        // burn any dust tokens not used in LP
         uint256 dustTok = t.balanceOf(address(this));
         if (dustTok > 0) {
             t.burn(dustTok);
         }
-        // refund dust ETH to creator
         uint256 dustEth = address(this).balance;
         if (dustEth > 0) {
             (bool ok,) = msg.sender.call{value: dustEth}("");
@@ -153,7 +167,8 @@ contract HoodInstantFactory {
             totalSupply: totalSupply,
             lpEth: usedEth,
             lpBurned: burnLp,
-            createdAt: uint64(block.timestamp)
+            createdAt: uint64(block.timestamp),
+            creatorBps: creatorBps
         });
         allTokens.push(token);
         pairOfToken[token] = pair;
@@ -168,10 +183,11 @@ contract HoodInstantFactory {
             totalSupply,
             usedEth,
             createFee,
-            burnLp
+            burnLp,
+            creatorBps,
+            creatorTokens
         );
 
-        // silence unused warning if router returns unused amountToken edge case
         usedToken;
     }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { parseEther, decodeEventLog, type Hex } from "viem";
 import { ROBINHOOD_CHAIN } from "@/lib/chain";
 import { factoryAbi } from "@/lib/abis";
@@ -8,6 +8,7 @@ import { FACTORY_ADDRESS, isFactoryConfigured } from "@/lib/contracts";
 import { getPublicClient } from "@/lib/wallet-tx";
 import { useAuth } from "./AuthProvider";
 import Link from "next/link";
+import { VerifyXPanel, VerifiedBadge, type XVerification } from "./VerifyXPanel";
 
 const inputCls =
   "w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-sm text-white placeholder:text-white/28 outline-none transition focus:border-[#00c805]/50 focus:ring-1 focus:ring-[#00c805]/25";
@@ -24,6 +25,42 @@ export const SUPPLY_PRESETS = [
 ] as const;
 
 const LP_PRESETS = ["0.05", "0.1", "0.2", "0.5"] as const;
+
+/** Creator allocation: % of total supply sent to your wallet; rest → Uniswap LP */
+export const CREATOR_ALLOC_PRESETS = [
+  {
+    bps: 0,
+    pct: "0%",
+    title: "Fair launch",
+    tagline: "You get zero tokens",
+    body: "100% of supply goes into the Uniswap pool. Strongest trust signal — buy on Uni if you want a bag.",
+    badge: "Recommended",
+  },
+  {
+    bps: 100,
+    pct: "1%",
+    title: "Tiny bag",
+    tagline: "1% → your wallet",
+    body: "1% of supply lands in your wallet at launch. 99% seeds the Uniswap LP with your ETH.",
+    badge: null,
+  },
+  {
+    bps: 500,
+    pct: "5%",
+    title: "Standard",
+    tagline: "5% → your wallet",
+    body: "5% of supply to you. 95% into Uniswap LP. Shown on the token page as “Creator: 5%”.",
+    badge: "Popular",
+  },
+  {
+    bps: 1000,
+    pct: "10%",
+    title: "Max allotment",
+    tagline: "10% → your wallet",
+    body: "Maximum allowed. 10% to you, 90% to the pool. Higher allocation = more sell pressure risk for buyers.",
+    badge: "Cap",
+  },
+] as const;
 
 export function CreateForm() {
   const { address, mode, ethBalance, writeContract, refreshBalance } = useAuth();
@@ -42,10 +79,36 @@ export function CreateForm() {
   const [github, setGithub] = useState("");
   const [farcaster, setFarcaster] = useState("");
   const [showMoreSocial, setShowMoreSocial] = useState(false);
+  const [xVerified, setXVerified] = useState<XVerification | null>(null);
+
+  const onXVerified = useCallback((v: XVerification) => {
+    setXVerified(v.verified ? v : null);
+    if (v.verified && v.handle) {
+      setTwitter((prev) => prev.trim() || `@${v.handle}`);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!address) {
+      setXVerified(null);
+      return;
+    }
+    fetch(`/api/verify-x?address=${address}`)
+      .then((r) => r.json())
+      .then((d: XVerification) => {
+        if (d.verified) {
+          setXVerified(d);
+          if (d.handle) setTwitter((prev) => prev.trim() || `@${d.handle}`);
+        }
+      })
+      .catch(() => null);
+  }, [address]);
 
   const [totalSupply, setTotalSupply] = useState<bigint>(SUPPLY_PRESETS[0].value);
   const [lpEth, setLpEth] = useState("0.05");
   const [burnLp, setBurnLp] = useState(true);
+  /** 0 | 100 | 500 | 1000 — % of supply to creator wallet */
+  const [creatorBps, setCreatorBps] = useState<number>(0);
 
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
@@ -58,6 +121,8 @@ export function CreateForm() {
   const configured = isFactoryConfigured();
   const supplyLabel =
     SUPPLY_PRESETS.find((p) => p.value === totalSupply)?.full ?? "Custom";
+  const creatorPct = creatorBps / 100;
+  const lpPct = 100 - creatorPct;
 
   const totalEth = useMemo(() => {
     const lp = Number(lpEth) || 0;
@@ -138,7 +203,13 @@ export function CreateForm() {
         address: FACTORY_ADDRESS as `0x${string}`,
         abi: factoryAbi,
         functionName: "createToken",
-        args: [name.trim(), symbol.trim().toUpperCase(), totalSupply, burnLp],
+        args: [
+          name.trim(),
+          symbol.trim().toUpperCase(),
+          totalSupply,
+          burnLp,
+          creatorBps,
+        ],
         value,
       });
 
@@ -190,6 +261,7 @@ export function CreateForm() {
               lpBurned: burnLp,
               lpEth,
               totalSupply: totalSupply.toString(),
+              creatorBps,
               createdAt: Date.now(),
             }),
           });
@@ -214,6 +286,7 @@ export function CreateForm() {
             creator: address,
             burnLp,
             lpEth,
+            creatorBps,
             instant: true,
           });
           localStorage.setItem(key, JSON.stringify(prev.slice(0, 100)));
@@ -240,6 +313,7 @@ export function CreateForm() {
         token={launched.token}
         pair={launched.pair}
         burnLp={burnLp}
+        creatorBps={creatorBps}
         socials={{ website, twitter, tweet, telegram, discord }}
       />
     );
@@ -348,17 +422,27 @@ export function CreateForm() {
         {step === 1 && (
           <Section
             title="Launcher authority"
-            subtitle="Socials build trust. Shown on your token page."
+            subtitle="Verify X + add socials. Degens check this before they ape."
           >
-            <div className="mb-3 flex items-center justify-between text-xs">
+            <VerifyXPanel variant="compact" onVerified={onXVerified} />
+
+            <div className="mt-5 mb-3 flex items-center justify-between text-xs">
               <span className="text-white/40">
                 {socialCount === 0
-                  ? "No links yet — optional but recommended"
+                  ? "Extra links — optional but recommended"
                   : `${socialCount} link${socialCount > 1 ? "s" : ""} added`}
               </span>
-              <span className="rounded-full bg-[#00c805]/15 px-2 py-0.5 text-[10px] font-bold text-[#00c805]">
-                Builds credibility
-              </span>
+              {xVerified?.handle ? (
+                <VerifiedBadge
+                  handle={xVerified.handle}
+                  href={xVerified.profileUrl}
+                  size="sm"
+                />
+              ) : (
+                <span className="rounded-full bg-[#00c805]/15 px-2 py-0.5 text-[10px] font-bold text-[#00c805]">
+                  Builds credibility
+                </span>
+              )}
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <Field label="Website">
@@ -369,12 +453,19 @@ export function CreateForm() {
                   className={inputCls}
                 />
               </Field>
-              <Field label="X / Twitter">
+              <Field
+                label={
+                  xVerified?.handle
+                    ? "X / Twitter (verified)"
+                    : "X / Twitter"
+                }
+              >
                 <input
                   value={twitter}
                   onChange={(e) => setTwitter(e.target.value)}
                   placeholder="@handle or profile URL"
                   className={inputCls}
+                  readOnly={!!xVerified?.handle}
                 />
               </Field>
               <Field label="Launch tweet / thread">
@@ -439,12 +530,12 @@ export function CreateForm() {
           </Section>
         )}
 
-        {/* STEP 2 — Supply + LP */}
+        {/* STEP 2 — Supply + creator alloc + LP */}
         {step === 2 && (
           <>
             <Section
               title="Fixed total supply"
-              subtitle="Entire supply seeds the Uniswap pool"
+              subtitle="Hard-capped. Split between your wallet and Uniswap LP."
             >
               <div className="grid grid-cols-5 gap-2">
                 {SUPPLY_PRESETS.map((p) => (
@@ -468,8 +559,117 @@ export function CreateForm() {
             </Section>
 
             <Section
+              title="Creator allocation"
+              subtitle="How much of the supply goes to your wallet at launch (max 10%)"
+            >
+              <div className="grid gap-2 sm:grid-cols-2">
+                {CREATOR_ALLOC_PRESETS.map((opt) => {
+                  const active = creatorBps === opt.bps;
+                  return (
+                    <button
+                      key={opt.bps}
+                      type="button"
+                      onClick={() => setCreatorBps(opt.bps)}
+                      className={`rounded-2xl border p-4 text-left transition ${
+                        active
+                          ? "border-[#00c805]/55 bg-[#00c805]/12 shadow-[0_0_28px_rgba(0,200,5,0.18)]"
+                          : "border-white/10 bg-black/25 hover:border-white/20"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-2xl font-black tracking-tight text-white">
+                              {opt.pct}
+                            </span>
+                            <span className="text-xs font-bold text-white/55">
+                              {opt.title}
+                            </span>
+                          </div>
+                          <p className="mt-0.5 text-[11px] font-semibold text-[#00c805]/90">
+                            {opt.tagline}
+                          </p>
+                        </div>
+                        {opt.badge && (
+                          <span
+                            className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase ${
+                              active
+                                ? "bg-[#00c805] text-black"
+                                : "bg-white/10 text-white/45"
+                            }`}
+                          >
+                            {opt.badge}
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-2 text-[11px] leading-relaxed text-white/45">
+                        {opt.body}
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Visual split bar */}
+              <div className="mt-4 rounded-2xl border border-white/8 bg-black/40 p-4">
+                <div className="mb-2 flex items-center justify-between text-[11px] font-semibold">
+                  <span className="text-white/50">Supply split</span>
+                  <span className="text-white/70">
+                    {creatorPct > 0 ? (
+                      <>
+                        You {creatorPct}% · Pool {lpPct}%
+                      </>
+                    ) : (
+                      <>All to pool · fair launch</>
+                    )}
+                  </span>
+                </div>
+                <div className="flex h-3 overflow-hidden rounded-full bg-white/10">
+                  {creatorPct > 0 && (
+                    <div
+                      className="bg-amber-400 transition-all"
+                      style={{ width: `${Math.max(creatorPct, 2)}%` }}
+                      title={`Creator ${creatorPct}%`}
+                    />
+                  )}
+                  <div
+                    className="bg-[#00c805] transition-all"
+                    style={{ width: `${lpPct}%` }}
+                    title={`LP ${lpPct}%`}
+                  />
+                </div>
+                <div className="mt-3 grid gap-2 text-[11px] sm:grid-cols-2">
+                  <div className="flex items-start gap-2 rounded-xl bg-black/30 px-3 py-2">
+                    <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-amber-400" />
+                    <div>
+                      <div className="font-bold text-white/85">
+                        Your wallet · {creatorPct}%
+                      </div>
+                      <div className="text-white/40">
+                        {creatorPct === 0
+                          ? "No free tokens. Buy on Uniswap after launch if you want a bag."
+                          : "Minted to the wallet launching this token. Public on the token page."}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2 rounded-xl bg-black/30 px-3 py-2">
+                    <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-[#00c805]" />
+                    <div>
+                      <div className="font-bold text-white/85">
+                        Uniswap LP · {lpPct}%
+                      </div>
+                      <div className="text-white/40">
+                        Paired with your ETH. Tradable immediately on Uniswap V2.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Section>
+
+            <Section
               title="Initial liquidity (ETH)"
-              subtitle={`Min ${MIN_LP} ETH · plus ${CREATE_FEE} ETH launch fee`}
+              subtitle={`Your ETH seeds the pool with the LP share of tokens · min ${MIN_LP} ETH + ${CREATE_FEE} ETH fee`}
             >
               <div className="flex flex-wrap gap-2">
                 {LP_PRESETS.map((v) => (
@@ -549,14 +749,52 @@ export function CreateForm() {
             <div className="space-y-3 text-sm">
               <Row k="Token" v={`$${symbol || "—"} · ${name || "—"}`} />
               <Row k="Supply" v={supplyLabel} />
-              <Row k="LP" v={`${lpEth} ETH`} />
+              <Row
+                k="Creator allocation"
+                v={
+                  creatorBps === 0
+                    ? "0% · fair launch"
+                    : `${creatorPct}% → your wallet`
+                }
+              />
+              <Row k="Into Uniswap LP" v={`${lpPct}% of supply + ${lpEth} ETH`} />
               <Row k="LP mode" v={burnLp ? "Burned (locked)" : "Kept by you"} />
+              <Row
+                k="X badge"
+                v={
+                  xVerified?.handle
+                    ? `Verified @${xVerified.handle}`
+                    : "Not verified"
+                }
+              />
               <Row k="Socials" v={socialCount ? `${socialCount} linked` : "None"} />
               <Row k="You pay" v={`${totalEth} ETH + gas`} highlight />
             </div>
-            <div className="mt-4 rounded-xl border border-[#00c805]/25 bg-[#00c805]/5 px-4 py-3 text-xs text-[#b8f5b8]">
-              100% of supply goes into the Uniswap pool. You don&apos;t receive
-              free tokens — buy on Uni after if you want a bag.
+            <div className="mt-4 space-y-2">
+              {creatorBps === 0 ? (
+                <div className="rounded-xl border border-[#00c805]/25 bg-[#00c805]/5 px-4 py-3 text-xs text-[#b8f5b8]">
+                  <span className="font-bold">Fair launch.</span> 100% of supply
+                  seeds the Uniswap pool. You get no free tokens — buy on Uni
+                  after if you want a bag.
+                </div>
+              ) : (
+                <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs text-amber-100/90">
+                  <span className="font-bold">
+                    Creator: {creatorPct}%
+                  </span>{" "}
+                  of supply goes to{" "}
+                  <span className="font-mono">
+                    {address ? `${address.slice(0, 6)}…${address.slice(-4)}` : "your wallet"}
+                  </span>
+                  . The other {lpPct}% pairs with your {lpEth} ETH on Uniswap.
+                  Buyers will see this on the token page.
+                </div>
+              )}
+              <p className="px-1 text-[11px] leading-relaxed text-white/35">
+                Launch fee ({CREATE_FEE} ETH) goes to the protocol. LP ETH
+                becomes pool liquidity — not a fundraise you can withdraw unless
+                you keep LP tokens.
+              </p>
             </div>
           </Section>
         )}
@@ -645,20 +883,44 @@ export function CreateForm() {
           )}
           <div className="mt-4 grid grid-cols-2 gap-2 text-[11px]">
             <PreviewStat label="Supply" value={supplyLabel} />
-            <PreviewStat label="LP" value={`${lpEth} ETH`} />
+            <PreviewStat
+              label="Creator"
+              value={creatorBps === 0 ? "0% fair" : `${creatorPct}%`}
+            />
+            <PreviewStat label="Pool" value={`${lpPct}% + ${lpEth} ETH`} />
             <PreviewStat
               label="LP mode"
               value={burnLp ? "Burned" : "Kept"}
             />
-            <PreviewStat
-              label="Socials"
-              value={socialCount ? String(socialCount) : "—"}
-            />
           </div>
+          <div className="mt-3 rounded-xl border border-white/8 bg-black/35 px-3 py-2.5 text-[10px] leading-relaxed text-white/45">
+            {creatorBps === 0 ? (
+              <>Token page will show fair launch · 100% supply in LP</>
+            ) : (
+              <>
+                Token page badge:{" "}
+                <span className="font-bold text-amber-200/90">
+                  Creator: {creatorPct}%
+                </span>
+              </>
+            )}
+          </div>
+          {xVerified?.handle && (
+            <div className="mt-3">
+              <VerifiedBadge
+                handle={xVerified.handle}
+                href={xVerified.profileUrl}
+              />
+            </div>
+          )}
           {(website || twitter || telegram || tweet) && (
             <div className="mt-4 flex flex-wrap gap-1.5 border-t border-white/10 pt-3">
               {website && <Chip>🌐 Web</Chip>}
-              {twitter && <Chip>𝕏 Profile</Chip>}
+              {twitter && (
+                <Chip>
+                  {xVerified?.handle ? "𝕏 Verified" : "𝕏 Profile"}
+                </Chip>
+              )}
               {tweet && <Chip>🧵 Tweet</Chip>}
               {telegram && <Chip>✈️ TG</Chip>}
               {discord && <Chip>Discord</Chip>}
@@ -687,11 +949,21 @@ export function CreateForm() {
         </div>
 
         <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4 text-[11px] leading-relaxed text-white/40">
-          <p className="font-semibold text-white/60">Why authority matters</p>
-          <p className="mt-2">
-            Degens check socials before they ape. A website, X, or TG on the
-            token page signals you&apos;re not a hit-and-run deployer.
-          </p>
+          <p className="font-semibold text-white/60">Crystal clear rules</p>
+          <ul className="mt-2 space-y-1.5 list-none">
+            <li>
+              <span className="text-white/55">Creator %</span> — tokens sent to
+              your wallet at mint. Capped at 10%.
+            </li>
+            <li>
+              <span className="text-white/55">Rest of supply</span> — locked into
+              Uniswap with the ETH you pay as LP.
+            </li>
+            <li>
+              <span className="text-white/55">Socials</span> — off-chain on the
+              token page so buyers can verify you.
+            </li>
+          </ul>
         </div>
       </aside>
     </div>
@@ -703,12 +975,14 @@ function SuccessPanel({
   token,
   pair,
   burnLp,
+  creatorBps,
   socials,
 }: {
   symbol: string;
   token: string;
   pair: string;
   burnLp: boolean;
+  creatorBps: number;
   socials: {
     website?: string;
     twitter?: string;
@@ -717,6 +991,7 @@ function SuccessPanel({
     discord?: string;
   };
 }) {
+  const pct = creatorBps / 100;
   return (
     <div className="mx-auto max-w-lg space-y-5 py-4 text-center">
       <div className="hm-glass-green rounded-3xl p-8">
@@ -727,6 +1002,9 @@ function SuccessPanel({
         <p className="mt-2 text-sm text-white/50">
           Uniswap V2 pool seeded
           {burnLp ? " · LP burned" : " · you hold LP"}
+          {creatorBps > 0
+            ? ` · Creator ${pct}% in your wallet`
+            : " · fair launch"}
         </p>
         <p className="mt-4 break-all font-mono text-[11px] text-white/35">
           {token}
@@ -798,7 +1076,7 @@ function Field({
   label,
   children,
 }: {
-  label: string;
+  label: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (

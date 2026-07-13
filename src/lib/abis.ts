@@ -1,4 +1,4 @@
-/** HoodInstantFactory — NOXA-style instant Uniswap launch */
+/** HoodInstantFactory — instant Uniswap + creator allocation */
 export const factoryAbi = [
   {
     type: "function",
@@ -9,6 +9,7 @@ export const factoryAbi = [
       { name: "symbol", type: "string" },
       { name: "totalSupply", type: "uint256" },
       { name: "burnLp", type: "bool" },
+      { name: "creatorBps", type: "uint16" },
     ],
     outputs: [
       { name: "token", type: "address" },
@@ -49,6 +50,7 @@ export const factoryAbi = [
       { name: "lpEth", type: "uint256" },
       { name: "lpBurned", type: "bool" },
       { name: "createdAt", type: "uint64" },
+      { name: "creatorBps", type: "uint16" },
     ],
   },
   {
@@ -78,11 +80,13 @@ export const factoryAbi = [
       { name: "lpEth", type: "uint256", indexed: false },
       { name: "createFeePaid", type: "uint256", indexed: false },
       { name: "lpBurned", type: "bool", indexed: false },
+      { name: "creatorBps", type: "uint16", indexed: false },
+      { name: "creatorTokens", type: "uint256", indexed: false },
     ],
   },
 ] as const;
 
-/** Legacy bonding market (v1/v2 curve) — still used for old tokens */
+/** Legacy bonding market */
 export const marketAbi = [
   {
     type: "function",
@@ -109,13 +113,6 @@ export const marketAbi = [
     name: "graduate",
     stateMutability: "nonpayable",
     inputs: [],
-    outputs: [],
-  },
-  {
-    type: "function",
-    name: "burnTokens",
-    stateMutability: "nonpayable",
-    inputs: [{ name: "amount", type: "uint256" }],
     outputs: [],
   },
   {
@@ -238,23 +235,6 @@ export const erc20Abi = [
   },
   {
     type: "function",
-    name: "allowance",
-    stateMutability: "view",
-    inputs: [
-      { name: "owner", type: "address" },
-      { name: "spender", type: "address" },
-    ],
-    outputs: [{ type: "uint256" }],
-  },
-  {
-    type: "function",
-    name: "burn",
-    stateMutability: "nonpayable",
-    inputs: [{ name: "amount", type: "uint256" }],
-    outputs: [],
-  },
-  {
-    type: "function",
     name: "symbol",
     stateMutability: "view",
     inputs: [],
@@ -269,13 +249,6 @@ export const erc20Abi = [
   },
   {
     type: "function",
-    name: "decimals",
-    stateMutability: "view",
-    inputs: [],
-    outputs: [{ type: "uint8" }],
-  },
-  {
-    type: "function",
     name: "totalSupply",
     stateMutability: "view",
     inputs: [],
@@ -287,5 +260,12 @@ export const erc20Abi = [
     stateMutability: "view",
     inputs: [],
     outputs: [{ type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "burn",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "amount", type: "uint256" }],
+    outputs: [],
   },
 ] as const;
