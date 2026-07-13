@@ -10,30 +10,43 @@ import { useAuth } from "./AuthProvider";
 import Link from "next/link";
 
 const inputCls =
-  "w-full rounded-xl border border-white/10 bg-black/35 px-3.5 py-2.5 text-sm text-white placeholder:text-white/30 outline-none focus:border-[#00c805]/45 focus:ring-1 focus:ring-[#00c805]/25";
+  "w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-sm text-white placeholder:text-white/28 outline-none transition focus:border-[#00c805]/50 focus:ring-1 focus:ring-[#00c805]/25";
 
 const CREATE_FEE = "0.0005";
 const MIN_LP = "0.01";
 
 export const SUPPLY_PRESETS = [
-  { label: "1 Billion", value: 1_000_000_000n * 10n ** 18n },
-  { label: "5 Billion", value: 5_000_000_000n * 10n ** 18n },
-  { label: "10 Billion", value: 10_000_000_000n * 10n ** 18n },
-  { label: "100 Billion", value: 100_000_000_000n * 10n ** 18n },
-  { label: "1 Trillion", value: 1_000_000_000_000n * 10n ** 18n },
+  { label: "1B", full: "1 Billion", value: 1_000_000_000n * 10n ** 18n },
+  { label: "5B", full: "5 Billion", value: 5_000_000_000n * 10n ** 18n },
+  { label: "10B", full: "10 Billion", value: 10_000_000_000n * 10n ** 18n },
+  { label: "100B", full: "100 Billion", value: 100_000_000_000n * 10n ** 18n },
+  { label: "1T", full: "1 Trillion", value: 1_000_000_000_000n * 10n ** 18n },
 ] as const;
 
 const LP_PRESETS = ["0.05", "0.1", "0.2", "0.5"] as const;
 
 export function CreateForm() {
   const { address, mode, ethBalance, writeContract, refreshBalance } = useAuth();
+  const [step, setStep] = useState(0);
+
   const [name, setName] = useState("");
   const [symbol, setSymbol] = useState("");
   const [desc, setDesc] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const [website, setWebsite] = useState("");
+  const [twitter, setTwitter] = useState("");
+  const [tweet, setTweet] = useState("");
+  const [telegram, setTelegram] = useState("");
+  const [discord, setDiscord] = useState("");
+  const [github, setGithub] = useState("");
+  const [farcaster, setFarcaster] = useState("");
+  const [showMoreSocial, setShowMoreSocial] = useState(false);
+
   const [totalSupply, setTotalSupply] = useState<bigint>(SUPPLY_PRESETS[0].value);
   const [lpEth, setLpEth] = useState("0.05");
   const [burnLp, setBurnLp] = useState(true);
+
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -43,12 +56,23 @@ export function CreateForm() {
   } | null>(null);
 
   const configured = isFactoryConfigured();
+  const supplyLabel =
+    SUPPLY_PRESETS.find((p) => p.value === totalSupply)?.full ?? "Custom";
 
   const totalEth = useMemo(() => {
     const lp = Number(lpEth) || 0;
-    const fee = Number(CREATE_FEE);
-    return (lp + fee).toFixed(4);
+    return (lp + Number(CREATE_FEE)).toFixed(4);
   }, [lpEth]);
+
+  const socialCount = [
+    website,
+    twitter,
+    tweet,
+    telegram,
+    discord,
+    github,
+    farcaster,
+  ].filter((s) => s.trim()).length;
 
   function onImage(file: File | null) {
     if (!file) {
@@ -58,22 +82,48 @@ export function CreateForm() {
     setImagePreview(URL.createObjectURL(file));
   }
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  function validateStep(s: number): string | null {
+    if (s === 0) {
+      if (!name.trim()) return "Enter a token name";
+      if (!symbol.trim()) return "Enter a ticker";
+    }
+    if (s === 2) {
+      const lp = Number(lpEth);
+      if (!Number.isFinite(lp) || lp < Number(MIN_LP)) {
+        return `LP ETH must be at least ${MIN_LP}`;
+      }
+    }
+    return null;
+  }
+
+  function next() {
+    const e = validateStep(step);
+    if (e) {
+      setErr(e);
+      return;
+    }
+    setErr(null);
+    setStep((x) => Math.min(3, x + 1));
+  }
+
+  function back() {
+    setErr(null);
+    setStep((x) => Math.max(0, x - 1));
+  }
+
+  async function onSubmit() {
     setErr(null);
     setMsg(null);
     setLaunched(null);
 
-    if (!configured) {
-      setErr(
-        "Instant factory not deployed yet. Deploy HoodInstantFactory and set NEXT_PUBLIC_FACTORY_ADDRESS."
-      );
+    const e0 = validateStep(0);
+    const e2 = validateStep(2);
+    if (e0 || e2) {
+      setErr(e0 || e2);
       return;
     }
-
-    const lp = Number(lpEth);
-    if (!Number.isFinite(lp) || lp < Number(MIN_LP)) {
-      setErr(`LP ETH must be at least ${MIN_LP} ETH`);
+    if (!configured) {
+      setErr("Factory not configured. Set NEXT_PUBLIC_FACTORY_ADDRESS.");
       return;
     }
 
@@ -88,11 +138,11 @@ export function CreateForm() {
         address: FACTORY_ADDRESS as `0x${string}`,
         abi: factoryAbi,
         functionName: "createToken",
-        args: [name, symbol, totalSupply, burnLp],
+        args: [name.trim(), symbol.trim().toUpperCase(), totalSupply, burnLp],
         value,
       });
 
-      setMsg(`Submitted ${hash.slice(0, 12)}… waiting for confirm`);
+      setMsg(`Submitted ${hash.slice(0, 12)}… confirming`);
       const receipt = await publicClient.waitForTransactionReceipt({
         hash: hash as Hex,
       });
@@ -112,12 +162,40 @@ export function CreateForm() {
             pair = args.pair;
           }
         } catch {
-          /* not our event */
+          /* skip */
         }
       }
 
       if (token) {
         setLaunched({ token, pair });
+        // persist social meta (Upstash / file)
+        try {
+          await fetch("/api/launch-meta", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              token,
+              pair,
+              name: name.trim(),
+              symbol: symbol.trim().toUpperCase(),
+              description: desc,
+              website,
+              twitter,
+              tweet,
+              telegram,
+              discord,
+              github,
+              farcaster,
+              creator: address,
+              lpBurned: burnLp,
+              lpEth,
+              totalSupply: totalSupply.toString(),
+              createdAt: Date.now(),
+            }),
+          });
+        } catch {
+          /* non-fatal */
+        }
         try {
           const key = "hoodmemes_launches";
           const prev = JSON.parse(localStorage.getItem(key) || "[]");
@@ -127,284 +205,592 @@ export function CreateForm() {
             name,
             symbol,
             desc,
-            image: imagePreview,
+            website,
+            twitter,
+            tweet,
+            telegram,
+            discord,
             createdAt: Date.now(),
             creator: address,
             burnLp,
             lpEth,
-            totalSupply: totalSupply.toString(),
             instant: true,
           });
           localStorage.setItem(key, JSON.stringify(prev.slice(0, 100)));
         } catch {
           /* ignore */
         }
-        setMsg(
-          `$${symbol} live on Uniswap${burnLp ? " (LP burned)" : " (you hold LP)"}. DexScreener can index the pair shortly.`
-        );
+        setMsg(`$${symbol.toUpperCase()} is live on Uniswap.`);
         await refreshBalance();
+        setStep(4);
       } else {
         setMsg("Confirmed — check explorer if event not decoded.");
       }
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Create failed");
+      setErr(e instanceof Error ? e.message : "Launch failed");
     } finally {
       setBusy(false);
     }
   }
 
+  if (launched && step === 4) {
+    return (
+      <SuccessPanel
+        symbol={symbol.toUpperCase()}
+        token={launched.token}
+        pair={launched.pair}
+        burnLp={burnLp}
+        socials={{ website, twitter, tweet, telegram, discord }}
+      />
+    );
+  }
+
+  const steps = ["Identity", "Authority", "Liquidity", "Review"];
+
   return (
-    <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[1fr_320px]">
-      <form onSubmit={onSubmit} className="space-y-5">
-        <div className="rounded-2xl border border-[#00c805]/25 bg-[#00c805]/5 px-4 py-3 text-sm text-[#b8f5b8]">
-          <strong className="text-[#00c805]">Instant Uniswap launch.</strong>{" "}
-          Fixed supply + LP in one transaction. Live on Uni immediately —
-          DexScreener can pick it up without a bonding-curve wait.
+    <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[1fr_340px]">
+      <div className="space-y-5">
+        {/* Stepper */}
+        <div className="hm-glass flex gap-1 rounded-2xl p-1.5">
+          {steps.map((label, i) => (
+            <button
+              key={label}
+              type="button"
+              onClick={() => {
+                if (i < step) {
+                  setErr(null);
+                  setStep(i);
+                }
+              }}
+              className={`flex-1 rounded-xl px-2 py-2.5 text-center text-[11px] font-bold transition sm:text-xs ${
+                i === step
+                  ? "bg-[#00c805] text-black shadow-[0_0_20px_rgba(0,200,5,0.3)]"
+                  : i < step
+                    ? "bg-white/10 text-white/80 hover:bg-white/15"
+                    : "text-white/30"
+              }`}
+            >
+              <span className="hidden sm:inline">{i + 1}. </span>
+              {label}
+            </button>
+          ))}
         </div>
 
-        <div className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-          <Field label="Name">
-            <input
-              required
-              maxLength={32}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="HoodMemes"
-              className={inputCls}
-            />
-          </Field>
-          <Field label="Ticker">
-            <input
-              required
-              maxLength={12}
-              value={symbol}
-              onChange={(e) => setSymbol(e.target.value.toUpperCase())}
-              placeholder="HOODMEMES"
-              className={`${inputCls} uppercase`}
-            />
-          </Field>
-          <Field label="Description (optional)">
-            <textarea
-              maxLength={280}
-              value={desc}
-              onChange={(e) => setDesc(e.target.value)}
-              rows={2}
-              className={`${inputCls} resize-none`}
-            />
-          </Field>
-          <div className="space-y-1.5">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-white/45">
-              Image
-            </span>
-            <div className="flex items-center gap-4">
-              <label className="cursor-pointer rounded-xl border border-dashed border-white/20 px-6 py-4 text-xs text-white/50 hover:border-[#00c805]/40">
-                Upload
+        {/* STEP 0 — Identity */}
+        {step === 0 && (
+          <Section
+            title="Token identity"
+            subtitle="How the trenches will know your coin"
+          >
+            <div className="flex flex-col gap-5 sm:flex-row">
+              <div className="flex flex-col items-center gap-2">
+                <label className="group relative flex h-28 w-28 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-white/15 bg-black/30 transition hover:border-[#00c805]/50">
+                  {imagePreview ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={imagePreview}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <span className="px-2 text-center text-[11px] text-white/35">
+                      Logo
+                      <br />
+                      upload
+                    </span>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => onImage(e.target.files?.[0] ?? null)}
+                  />
+                </label>
+                <span className="text-[10px] text-white/30">Optional</span>
+              </div>
+              <div className="min-w-0 flex-1 space-y-3">
+                <Field label="Name">
+                  <input
+                    required
+                    maxLength={32}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="HoodMemes"
+                    className={inputCls}
+                  />
+                </Field>
+                <Field label="Ticker">
+                  <input
+                    required
+                    maxLength={12}
+                    value={symbol}
+                    onChange={(e) => setSymbol(e.target.value.toUpperCase())}
+                    placeholder="HOODMEMES"
+                    className={`${inputCls} uppercase tracking-wide`}
+                  />
+                </Field>
+                <Field label="Description">
+                  <textarea
+                    maxLength={280}
+                    value={desc}
+                    onChange={(e) => setDesc(e.target.value)}
+                    placeholder="What is this coin about?"
+                    rows={3}
+                    className={`${inputCls} resize-none`}
+                  />
+                </Field>
+              </div>
+            </div>
+          </Section>
+        )}
+
+        {/* STEP 1 — Authority / socials */}
+        {step === 1 && (
+          <Section
+            title="Launcher authority"
+            subtitle="Socials build trust. Shown on your token page."
+          >
+            <div className="mb-3 flex items-center justify-between text-xs">
+              <span className="text-white/40">
+                {socialCount === 0
+                  ? "No links yet — optional but recommended"
+                  : `${socialCount} link${socialCount > 1 ? "s" : ""} added`}
+              </span>
+              <span className="rounded-full bg-[#00c805]/15 px-2 py-0.5 text-[10px] font-bold text-[#00c805]">
+                Builds credibility
+              </span>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label="Website">
                 <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => onImage(e.target.files?.[0] ?? null)}
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  placeholder="https://yoursite.com"
+                  className={inputCls}
                 />
-              </label>
-              {imagePreview && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={imagePreview}
-                  alt=""
-                  className="h-14 w-14 rounded-xl object-cover"
+              </Field>
+              <Field label="X / Twitter">
+                <input
+                  value={twitter}
+                  onChange={(e) => setTwitter(e.target.value)}
+                  placeholder="@handle or profile URL"
+                  className={inputCls}
                 />
-              )}
+              </Field>
+              <Field label="Launch tweet / thread">
+                <input
+                  value={tweet}
+                  onChange={(e) => setTweet(e.target.value)}
+                  placeholder="https://x.com/.../status/..."
+                  className={inputCls}
+                />
+              </Field>
+              <Field label="Telegram">
+                <input
+                  value={telegram}
+                  onChange={(e) => setTelegram(e.target.value)}
+                  placeholder="t.me/yourgroup or @channel"
+                  className={inputCls}
+                />
+              </Field>
             </div>
-          </div>
-        </div>
 
-        <div className="space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-          <h3 className="text-sm font-bold text-white">1 · Total supply (fixed)</h3>
-          <p className="text-xs text-white/45">
-            Entire supply goes into the Uniswap pool. No unlimited minting.
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {SUPPLY_PRESETS.map((p) => (
-              <button
-                key={p.label}
-                type="button"
-                onClick={() => setTotalSupply(p.value)}
-                className={`rounded-lg px-3 py-2 text-xs font-bold transition ${
-                  totalSupply === p.value
-                    ? "bg-[#00c805] text-black"
-                    : "bg-white/5 text-white/60 hover:bg-white/10"
-                }`}
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-          <h3 className="text-sm font-bold text-white">2 · Initial LP (ETH)</h3>
-          <p className="text-xs text-white/45">
-            Your ETH seeds the TOKEN/WETH Uniswap pool. Min {MIN_LP} ETH. Plus
-            launch fee ~{CREATE_FEE} ETH to protocol.
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {LP_PRESETS.map((v) => (
-              <button
-                key={v}
-                type="button"
-                onClick={() => setLpEth(v)}
-                className={`rounded-lg px-3 py-2 text-xs font-bold ${
-                  lpEth === v
-                    ? "bg-[#00c805] text-black"
-                    : "bg-white/5 text-white/60 hover:bg-white/10"
-                }`}
-              >
-                {v} ETH
-              </button>
-            ))}
-          </div>
-          <Field label="Custom LP ETH">
-            <input
-              type="number"
-              min={MIN_LP}
-              step="any"
-              value={lpEth}
-              onChange={(e) => setLpEth(e.target.value)}
-              className={inputCls}
-            />
-          </Field>
-          <p className="text-xs text-white/50">
-            Total from wallet ≈{" "}
-            <strong className="text-white">{totalEth} ETH</strong>
-          </p>
-        </div>
-
-        <div className="space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-          <h3 className="text-sm font-bold text-white">3 · LP ownership</h3>
-          <div className="grid gap-2 sm:grid-cols-2">
             <button
               type="button"
-              onClick={() => setBurnLp(true)}
-              className={`rounded-xl border p-3 text-left text-xs transition ${
-                burnLp
-                  ? "border-[#00c805]/50 bg-[#00c805]/10 text-white"
-                  : "border-white/10 bg-black/20 text-white/50"
-              }`}
+              onClick={() => setShowMoreSocial((v) => !v)}
+              className="mt-3 text-xs font-semibold text-[#00c805] hover:underline"
             >
-              <div className="font-bold text-sm">Burn LP (recommended)</div>
-              <div className="mt-1 text-white/45">
-                Liquidity locked forever. Stronger trust / anti-rug signal.
-              </div>
+              {showMoreSocial ? "− Hide extra links" : "+ Discord, GitHub, Farcaster"}
             </button>
-            <button
-              type="button"
-              onClick={() => setBurnLp(false)}
-              className={`rounded-xl border p-3 text-left text-xs transition ${
-                !burnLp
-                  ? "border-amber-500/50 bg-amber-500/10 text-white"
-                  : "border-white/10 bg-black/20 text-white/50"
-              }`}
-            >
-              <div className="font-bold text-sm">Keep LP</div>
-              <div className="mt-1 text-white/45">
-                LP tokens go to you. You can earn fees or remove liquidity later.
+
+            {showMoreSocial && (
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <Field label="Discord">
+                  <input
+                    value={discord}
+                    onChange={(e) => setDiscord(e.target.value)}
+                    placeholder="https://discord.gg/..."
+                    className={inputCls}
+                  />
+                </Field>
+                <Field label="GitHub">
+                  <input
+                    value={github}
+                    onChange={(e) => setGithub(e.target.value)}
+                    placeholder="https://github.com/..."
+                    className={inputCls}
+                  />
+                </Field>
+                <Field label="Farcaster">
+                  <input
+                    value={farcaster}
+                    onChange={(e) => setFarcaster(e.target.value)}
+                    placeholder="https://warpcast.com/..."
+                    className={inputCls}
+                  />
+                </Field>
               </div>
-            </button>
-          </div>
-        </div>
-
-        <div className="rounded-xl bg-black/30 px-3 py-2 font-mono text-[11px] text-white/40">
-          {ROBINHOOD_CHAIN.name} · chainId {ROBINHOOD_CHAIN.id} · factory{" "}
-          {configured ? `${FACTORY_ADDRESS.slice(0, 10)}…` : "not set"}
-        </div>
-
-        <button
-          type="submit"
-          disabled={busy || !name || !symbol}
-          className="w-full rounded-xl bg-[#00c805] py-3 text-sm font-bold text-black transition hover:bg-[#00e006] disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          {busy
-            ? "Launching on Uniswap…"
-            : `Launch $${symbol || "TOKEN"} on Uniswap`}
-        </button>
-
-        {msg && <p className="text-sm text-white/70">{msg}</p>}
-        {err && <p className="text-sm text-rose-300">{err}</p>}
-        {launched && (
-          <div className="rounded-xl border border-[#00c805]/30 bg-[#00c805]/10 p-4 text-sm space-y-2">
-            <p className="font-semibold text-[#00c805]">Live on Uniswap</p>
-            <p className="font-mono text-[11px] text-white/50 break-all">
-              Token {launched.token}
-            </p>
-            {launched.pair && (
-              <p className="font-mono text-[11px] text-white/50 break-all">
-                Pair {launched.pair}
-              </p>
             )}
-            <div className="flex flex-wrap gap-3 pt-1">
-              <Link
-                href={`/token/${launched.token}${launched.pair ? `?pair=${launched.pair}` : ""}`}
-                className="text-white underline"
-              >
-                Open token page →
-              </Link>
-              {launched.pair && (
-                <a
-                  href={`https://dexscreener.com/robinhood/${launched.pair}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-[#00c805] underline"
-                >
-                  DexScreener ↗
-                </a>
-              )}
-              <a
-                href={`https://app.uniswap.org/swap?chain=robinhood&inputCurrency=NATIVE&outputCurrency=${launched.token}`}
-                target="_blank"
-                rel="noreferrer"
-                className="text-[#00c805] underline"
-              >
-                Trade on Uniswap ↗
-              </a>
+
+            <p className="mt-4 text-[11px] leading-relaxed text-white/30">
+              Links are stored off-chain with your launch metadata and shown on
+              the token page. They are not on-chain (no redeploy needed).
+            </p>
+          </Section>
+        )}
+
+        {/* STEP 2 — Supply + LP */}
+        {step === 2 && (
+          <>
+            <Section
+              title="Fixed total supply"
+              subtitle="Entire supply seeds the Uniswap pool"
+            >
+              <div className="grid grid-cols-5 gap-2">
+                {SUPPLY_PRESETS.map((p) => (
+                  <button
+                    key={p.label}
+                    type="button"
+                    onClick={() => setTotalSupply(p.value)}
+                    className={`rounded-xl py-3 text-center transition ${
+                      totalSupply === p.value
+                        ? "bg-[#00c805] text-black shadow-[0_0_24px_rgba(0,200,5,0.35)]"
+                        : "border border-white/10 bg-black/30 text-white/60 hover:border-white/20 hover:text-white"
+                    }`}
+                  >
+                    <div className="text-sm font-black">{p.label}</div>
+                    <div className="mt-0.5 hidden text-[9px] opacity-70 sm:block">
+                      {p.full}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </Section>
+
+            <Section
+              title="Initial liquidity (ETH)"
+              subtitle={`Min ${MIN_LP} ETH · plus ${CREATE_FEE} ETH launch fee`}
+            >
+              <div className="flex flex-wrap gap-2">
+                {LP_PRESETS.map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setLpEth(v)}
+                    className={`rounded-xl px-4 py-2.5 text-xs font-bold ${
+                      lpEth === v
+                        ? "bg-[#00c805] text-black"
+                        : "border border-white/10 bg-black/30 text-white/60 hover:text-white"
+                    }`}
+                  >
+                    {v} ETH
+                  </button>
+                ))}
+              </div>
+              <div className="mt-3">
+                <Field label="Custom LP amount">
+                  <input
+                    type="number"
+                    min={MIN_LP}
+                    step="any"
+                    value={lpEth}
+                    onChange={(e) => setLpEth(e.target.value)}
+                    className={inputCls}
+                  />
+                </Field>
+              </div>
+              <div className="mt-3 rounded-xl border border-white/8 bg-black/40 px-4 py-3 text-sm">
+                <div className="flex justify-between text-white/50">
+                  <span>LP into pool</span>
+                  <span className="font-semibold text-white">{lpEth} ETH</span>
+                </div>
+                <div className="mt-1 flex justify-between text-white/50">
+                  <span>Launch fee</span>
+                  <span className="font-semibold text-white">
+                    {CREATE_FEE} ETH
+                  </span>
+                </div>
+                <div className="mt-2 flex justify-between border-t border-white/10 pt-2 font-bold text-white">
+                  <span>Total</span>
+                  <span className="text-[#00c805]">{totalEth} ETH</span>
+                </div>
+              </div>
+            </Section>
+
+            <Section title="LP ownership" subtitle="Choose carefully">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <ToggleCard
+                  active={burnLp}
+                  onClick={() => setBurnLp(true)}
+                  title="Burn LP"
+                  badge="Recommended"
+                  body="Liquidity locked forever. Strongest trust signal for buyers."
+                  accent="green"
+                />
+                <ToggleCard
+                  active={!burnLp}
+                  onClick={() => setBurnLp(false)}
+                  title="Keep LP"
+                  badge="You control"
+                  body="LP tokens go to your wallet. You can earn fees or remove liquidity."
+                  accent="amber"
+                />
+              </div>
+            </Section>
+          </>
+        )}
+
+        {/* STEP 3 — Review */}
+        {step === 3 && (
+          <Section
+            title="Review & launch"
+            subtitle="One transaction · Uniswap V2 on Robinhood Chain"
+          >
+            <div className="space-y-3 text-sm">
+              <Row k="Token" v={`$${symbol || "—"} · ${name || "—"}`} />
+              <Row k="Supply" v={supplyLabel} />
+              <Row k="LP" v={`${lpEth} ETH`} />
+              <Row k="LP mode" v={burnLp ? "Burned (locked)" : "Kept by you"} />
+              <Row k="Socials" v={socialCount ? `${socialCount} linked` : "None"} />
+              <Row k="You pay" v={`${totalEth} ETH + gas`} highlight />
             </div>
+            <div className="mt-4 rounded-xl border border-[#00c805]/25 bg-[#00c805]/5 px-4 py-3 text-xs text-[#b8f5b8]">
+              100% of supply goes into the Uniswap pool. You don&apos;t receive
+              free tokens — buy on Uni after if you want a bag.
+            </div>
+          </Section>
+        )}
+
+        {err && (
+          <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+            {err}
           </div>
         )}
-      </form>
+        {msg && step < 4 && (
+          <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/70">
+            {msg}
+          </div>
+        )}
 
-      <div className="space-y-4 lg:sticky lg:top-20 lg:self-start">
-        <div className="rounded-2xl border border-[#00c805]/20 bg-[#00c805]/[0.06] p-4 text-sm">
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-[#00c805]">
+        {/* Nav buttons */}
+        <div className="flex gap-3">
+          {step > 0 && (
+            <button
+              type="button"
+              onClick={back}
+              disabled={busy}
+              className="rounded-xl border border-white/15 px-5 py-3 text-sm font-semibold text-white/70 hover:bg-white/5"
+            >
+              Back
+            </button>
+          )}
+          {step < 3 ? (
+            <button
+              type="button"
+              onClick={next}
+              className="flex-1 rounded-xl bg-[#00c805] py-3 text-sm font-black text-black shadow-[0_0_24px_rgba(0,200,5,0.3)] hover:bg-[#00e006]"
+            >
+              Continue
+            </button>
+          ) : (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={onSubmit}
+              className="flex-1 rounded-xl bg-[#00c805] py-3 text-sm font-black text-black shadow-[0_0_28px_rgba(0,200,5,0.4)] hover:bg-[#00e006] disabled:opacity-40"
+            >
+              {busy ? "Launching on Uniswap…" : `Launch $${symbol || "TOKEN"}`}
+            </button>
+          )}
+        </div>
+
+        <p className="text-center font-mono text-[10px] text-white/25">
+          {ROBINHOOD_CHAIN.name} · {ROBINHOOD_CHAIN.id} ·{" "}
+          {configured ? `${FACTORY_ADDRESS.slice(0, 10)}…` : "factory not set"}
+        </p>
+      </div>
+
+      {/* Live preview */}
+      <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
+        <div className="hm-glass-green overflow-hidden rounded-3xl p-5">
+          <div className="text-[10px] font-bold uppercase tracking-widest text-[#00c805]/80">
+            Live preview
+          </div>
+          <div className="mt-4 flex items-center gap-3">
+            {imagePreview ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={imagePreview}
+                alt=""
+                className="h-14 w-14 rounded-2xl object-cover ring-2 ring-[#00c805]/30"
+              />
+            ) : (
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-black/40 text-xl font-black text-[#00c805] ring-2 ring-[#00c805]/25">
+                {(symbol || name || "?")[0]?.toUpperCase()}
+              </div>
+            )}
+            <div className="min-w-0">
+              <div className="truncate text-lg font-black text-white">
+                ${symbol || "TICKER"}
+              </div>
+              <div className="truncate text-xs text-white/45">
+                {name || "Token name"}
+              </div>
+            </div>
+          </div>
+          {desc && (
+            <p className="mt-3 line-clamp-3 text-xs leading-relaxed text-white/50">
+              {desc}
+            </p>
+          )}
+          <div className="mt-4 grid grid-cols-2 gap-2 text-[11px]">
+            <PreviewStat label="Supply" value={supplyLabel} />
+            <PreviewStat label="LP" value={`${lpEth} ETH`} />
+            <PreviewStat
+              label="LP mode"
+              value={burnLp ? "Burned" : "Kept"}
+            />
+            <PreviewStat
+              label="Socials"
+              value={socialCount ? String(socialCount) : "—"}
+            />
+          </div>
+          {(website || twitter || telegram || tweet) && (
+            <div className="mt-4 flex flex-wrap gap-1.5 border-t border-white/10 pt-3">
+              {website && <Chip>🌐 Web</Chip>}
+              {twitter && <Chip>𝕏 Profile</Chip>}
+              {tweet && <Chip>🧵 Tweet</Chip>}
+              {telegram && <Chip>✈️ TG</Chip>}
+              {discord && <Chip>Discord</Chip>}
+              {github && <Chip>GitHub</Chip>}
+              {farcaster && <Chip>FC</Chip>}
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-2xl border border-white/8 bg-black/30 p-4 text-sm">
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-white/35">
             Paying from
           </div>
-          <div className="mt-1 font-mono text-xs text-white/80 break-all">
+          <div className="mt-1 break-all font-mono text-xs text-white/80">
             {address}
           </div>
-          <div className="mt-1 text-xs text-white/50">
-            {ethBalance} ETH · {mode === "session" ? "quick wallet" : "browser wallet"}
+          <div className="mt-1 text-xs text-white/45">
+            {ethBalance} ETH · {mode === "session" ? "quick wallet" : "browser"}
           </div>
           <Link
             href="/account"
-            className="mt-2 inline-block text-xs text-[#00c805] hover:underline"
+            className="mt-2 inline-block text-xs font-semibold text-[#00c805] hover:underline"
           >
             Manage wallet →
           </Link>
         </div>
-        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-[11px] leading-relaxed text-white/40">
-          <p className="font-semibold text-white/60">How it works</p>
-          <ol className="mt-2 list-decimal space-y-1.5 pl-4">
-            <li>You pick fixed supply + LP ETH</li>
-            <li>One tx mints supply and seeds Uniswap V2</li>
-            <li>Optional: burn LP so liquidity can&apos;t be pulled</li>
-            <li>Token is tradeable on Uni immediately</li>
-            <li>DexScreener indexes the pair (often minutes)</li>
-          </ol>
-          <p className="mt-3 text-white/35">
-            Launch fee (~{CREATE_FEE} ETH) → protocol. LP ETH → pool. You profit
-            from tokens you buy on Uni after, or from LP fees if you keep LP.
+
+        <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4 text-[11px] leading-relaxed text-white/40">
+          <p className="font-semibold text-white/60">Why authority matters</p>
+          <p className="mt-2">
+            Degens check socials before they ape. A website, X, or TG on the
+            token page signals you&apos;re not a hit-and-run deployer.
           </p>
         </div>
-      </div>
+      </aside>
     </div>
+  );
+}
+
+function SuccessPanel({
+  symbol,
+  token,
+  pair,
+  burnLp,
+  socials,
+}: {
+  symbol: string;
+  token: string;
+  pair: string;
+  burnLp: boolean;
+  socials: {
+    website?: string;
+    twitter?: string;
+    tweet?: string;
+    telegram?: string;
+    discord?: string;
+  };
+}) {
+  return (
+    <div className="mx-auto max-w-lg space-y-5 py-4 text-center">
+      <div className="hm-glass-green rounded-3xl p-8">
+        <div className="text-4xl">🚀</div>
+        <h2 className="mt-3 text-2xl font-black text-white">
+          ${symbol} is live
+        </h2>
+        <p className="mt-2 text-sm text-white/50">
+          Uniswap V2 pool seeded
+          {burnLp ? " · LP burned" : " · you hold LP"}
+        </p>
+        <p className="mt-4 break-all font-mono text-[11px] text-white/35">
+          {token}
+        </p>
+        {pair && (
+          <p className="mt-1 break-all font-mono text-[11px] text-white/35">
+            pair {pair}
+          </p>
+        )}
+      </div>
+      <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
+        <Link
+          href={`/token/${token}${pair ? `?pair=${pair}` : ""}`}
+          className="rounded-xl bg-[#00c805] px-5 py-3 text-sm font-black text-black"
+        >
+          Token page
+        </Link>
+        <a
+          href={`https://app.uniswap.org/swap?chain=robinhood&inputCurrency=NATIVE&outputCurrency=${token}`}
+          target="_blank"
+          rel="noreferrer"
+          className="rounded-xl border border-white/15 px-5 py-3 text-sm font-semibold text-white"
+        >
+          Uniswap ↗
+        </a>
+        {pair && (
+          <a
+            href={`https://dexscreener.com/robinhood/${pair}`}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-xl border border-white/15 px-5 py-3 text-sm font-semibold text-white"
+          >
+            DexScreener ↗
+          </a>
+        )}
+      </div>
+      {(socials.website || socials.twitter || socials.telegram) && (
+        <p className="text-xs text-white/40">
+          Your socials are attached to the token page for authority.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function Section({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="hm-glass space-y-4 rounded-3xl p-5 sm:p-6">
+      <div>
+        <h2 className="text-lg font-black text-white">{title}</h2>
+        {subtitle && (
+          <p className="mt-0.5 text-xs text-white/40">{subtitle}</p>
+        )}
+      </div>
+      {children}
+    </section>
   );
 }
 
@@ -417,10 +803,96 @@ function Field({
 }) {
   return (
     <label className="block space-y-1.5">
-      <span className="text-[10px] font-semibold uppercase tracking-wider text-white/45">
+      <span className="text-[10px] font-semibold uppercase tracking-wider text-white/40">
         {label}
       </span>
       {children}
     </label>
+  );
+}
+
+function Row({
+  k,
+  v,
+  highlight,
+}: {
+  k: string;
+  v: string;
+  highlight?: boolean;
+}) {
+  return (
+    <div
+      className={`flex justify-between gap-4 rounded-xl px-3 py-2.5 ${
+        highlight ? "bg-[#00c805]/10 text-[#00c805]" : "bg-black/30 text-white/80"
+      }`}
+    >
+      <span className={highlight ? "" : "text-white/45"}>{k}</span>
+      <span className="font-semibold text-right">{v}</span>
+    </div>
+  );
+}
+
+function PreviewStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl bg-black/30 px-2.5 py-2">
+      <div className="text-[9px] uppercase tracking-wider text-white/35">
+        {label}
+      </div>
+      <div className="font-bold text-white/90">{value}</div>
+    </div>
+  );
+}
+
+function Chip({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="rounded-lg bg-black/35 px-2 py-1 text-[10px] font-semibold text-white/70">
+      {children}
+    </span>
+  );
+}
+
+function ToggleCard({
+  active,
+  onClick,
+  title,
+  badge,
+  body,
+  accent,
+}: {
+  active: boolean;
+  onClick: () => void;
+  title: string;
+  badge: string;
+  body: string;
+  accent: "green" | "amber";
+}) {
+  const on =
+    accent === "green"
+      ? "border-[#00c805]/50 bg-[#00c805]/10"
+      : "border-amber-500/45 bg-amber-500/10";
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-2xl border p-4 text-left transition ${
+        active ? on : "border-white/10 bg-black/25 hover:border-white/20"
+      }`}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-sm font-black text-white">{title}</span>
+        <span
+          className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase ${
+            active
+              ? accent === "green"
+                ? "bg-[#00c805] text-black"
+                : "bg-amber-400 text-black"
+              : "bg-white/10 text-white/40"
+          }`}
+        >
+          {badge}
+        </span>
+      </div>
+      <p className="mt-2 text-[11px] leading-relaxed text-white/45">{body}</p>
+    </button>
   );
 }

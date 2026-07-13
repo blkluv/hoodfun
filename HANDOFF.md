@@ -136,7 +136,7 @@ CREATE_FEE_WEI / MIN_LP_ETH_WEI     # deploy-time only
 | Path | Purpose |
 |------|---------|
 | `/` | Trending board (DexScreener multi-query), filters, marquee, featured |
-| `/create` | **Instant launch UI** (supply + LP ETH + burn/keep LP) |
+| `/create` | **Instant launch UI** — multi-step wizard; supply + LP + social authority (website/X/tweet/TG/etc.) |
 | `/token/[address]` | Token page: instant Uni pair **or** legacy curve chart |
 | `/account` | Login-gated wallet (quick wallet export) |
 | `/wallet` | Redirects → `/account` |
@@ -194,7 +194,9 @@ CREATE_FEE_WEI / MIN_LP_ETH_WEI     # deploy-time only
 | `src/lib/curve.ts` | Legacy curve; uses **separate** `legacyFactoryAbi` for `marketOfToken` (TS fix) |
 | `src/lib/dexscreener.ts` | Board token aggregation |
 | `src/lib/sessionWallet.ts` / `wallet-tx.ts` | Quick + injected wallets |
-| `src/components/CreateForm.tsx` | Instant launch form |
+| `src/components/CreateForm.tsx` | Instant launch wizard + social fields |
+| `src/lib/launch-meta.ts` | Off-chain launch social/authority storage |
+| `src/app/api/launch-meta/route.ts` | GET/POST meta by token address |
 | `src/components/TokenPageClient.tsx` | Instant vs curve vs dex |
 | `src/components/TokenBoard.tsx` | Homepage board UI |
 | `src/app/api/launch/route.ts` | Instant launch lookup |

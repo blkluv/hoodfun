@@ -36,11 +36,29 @@ export function TokenPageClient({
 }) {
   const [curve, setCurve] = useState<CurveSnapshot | null>(null);
   const [instant, setInstant] = useState<InstantLaunch | null>(null);
+  const [meta, setMeta] = useState<{
+    description?: string;
+    website?: string;
+    twitter?: string;
+    tweet?: string;
+    telegram?: string;
+    discord?: string;
+    github?: string;
+    farcaster?: string;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
+      // Off-chain social / authority meta
+      fetch(`/api/launch-meta?token=${address}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (d?.meta) setMeta(d.meta);
+        })
+        .catch(() => null);
+
       // Instant Uniswap launch first
       const launchRes = await fetch(`/api/launch?token=${address}`);
       if (launchRes.ok) {
@@ -164,6 +182,42 @@ export function TokenPageClient({
               <p className="mt-1 text-xs text-white/40">
                 Created {timeAgo(dexToken.createdAt)}
               </p>
+            )}
+            {meta?.description && (
+              <p className="mt-2 max-w-xl text-sm text-white/50">
+                {meta.description}
+              </p>
+            )}
+            {(meta?.website ||
+              meta?.twitter ||
+              meta?.tweet ||
+              meta?.telegram ||
+              meta?.discord ||
+              meta?.github ||
+              meta?.farcaster) && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {meta.website && (
+                  <SocialLink href={meta.website} label="Website" />
+                )}
+                {meta.twitter && (
+                  <SocialLink href={meta.twitter} label="X / Twitter" />
+                )}
+                {meta.tweet && (
+                  <SocialLink href={meta.tweet} label="Launch tweet" />
+                )}
+                {meta.telegram && (
+                  <SocialLink href={meta.telegram} label="Telegram" />
+                )}
+                {meta.discord && (
+                  <SocialLink href={meta.discord} label="Discord" />
+                )}
+                {meta.github && (
+                  <SocialLink href={meta.github} label="GitHub" />
+                )}
+                {meta.farcaster && (
+                  <SocialLink href={meta.farcaster} label="Farcaster" />
+                )}
+              </div>
             )}
           </div>
         </div>
@@ -358,5 +412,18 @@ function Metric({
       </div>
       <div className={`mt-0.5 text-lg font-semibold ${color}`}>{value}</div>
     </div>
+  );
+}
+
+function SocialLink({ href, label }: { href: string; label: string }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-semibold text-white/70 transition hover:border-[#00c805]/40 hover:text-[#00c805]"
+    >
+      {label} ↗
+    </a>
   );
 }
