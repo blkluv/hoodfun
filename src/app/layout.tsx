@@ -120,6 +120,12 @@ export default function RootLayout({
                 Launch
               </Link>
               <Link
+                href="/roadmap"
+                className="font-semibold text-white/55 hover:text-[#00c805]"
+              >
+                Roadmap
+              </Link>
+              <Link
                 href="/how-it-works"
                 className="font-semibold text-white/55 hover:text-[#00c805]"
               >
