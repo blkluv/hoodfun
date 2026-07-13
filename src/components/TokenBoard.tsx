@@ -381,7 +381,7 @@ export function TokenBoard() {
           <div className="grid gap-3 sm:grid-cols-3">
             {[
               { n: "01", t: "Launch", d: "Fixed supply · 0–10% creator" },
-              { n: "02", t: "Seed LP", d: "Your ETH → Uniswap V2 pool" },
+              { n: "02", t: "V3 LP lock", d: "100% supply → Uni V3 · LP locked forever" },
               { n: "03", t: "Go live", d: "Trade · share · get on board" },
             ].map((s) => (
               <div

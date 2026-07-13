@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
 
     const zero = "0x0000000000000000000000000000000000000000";
 
-    // Instant factory: pairOfToken + launches
+    // HoodV3Factory: pairOfToken + getLaunchedToken
     try {
       const pair = (await pc.readContract({
         address: FACTORY_ADDRESS as Address,
@@ -43,23 +43,19 @@ export async function GET(req: NextRequest) {
       })) as Address;
 
       if (pair && pair !== zero) {
-        const launch = await pc.readContract({
+        const launch = (await pc.readContract({
           address: FACTORY_ADDRESS as Address,
           abi: factoryAbi,
-          functionName: "launches",
+          functionName: "getLaunchedToken",
           args: [token],
-        });
-
-        const pairAddr = launch[1] || pair;
-        const creator = launch[2];
-        const totalSupply = launch[3];
-        const lpEth = launch[4];
-        const lpBurned = launch[5];
-        const createdAt = launch[6];
-        // New factory ABI: index 7 = creatorBps. Old live factory may omit it.
-        const creatorBpsRaw = (launch as readonly unknown[])[7];
-        const creatorBps =
-          creatorBpsRaw != null ? Number(creatorBpsRaw as number | bigint) : undefined;
+        })) as {
+          deployer: Address;
+          pool: Address;
+          pairToken: Address;
+          positionId: bigint;
+          launchConfigId: bigint;
+          dexId: bigint;
+        };
 
         let name = "Token";
         let symbol = "TOKEN";
@@ -82,23 +78,20 @@ export async function GET(req: NextRequest) {
 
         return NextResponse.json({
           kind: "instant",
+          v3: true,
           token,
-          pair: pairAddr,
-          creator,
-          totalSupply: totalSupply?.toString(),
-          lpEth: lpEth?.toString(),
-          lpBurned,
-          creatorBps:
-            creatorBps != null && Number.isFinite(creatorBps)
-              ? creatorBps
-              : undefined,
-          createdAt: Number(createdAt) * 1000,
+          pair: launch.pool || pair,
+          pool: launch.pool || pair,
+          creator: launch.deployer,
+          positionId: launch.positionId?.toString(),
+          lpBurned: true,
+          creatorBps: 0,
           name,
           symbol,
         });
       }
     } catch {
-      /* not instant factory or wrong ABI */
+      /* not V3 factory or wrong ABI */
     }
 
     return NextResponse.json({ error: "not found" }, { status: 404 });

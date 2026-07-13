@@ -22,9 +22,13 @@ export type LaunchMeta = {
   creator?: string;
   lpBurned?: boolean;
   lpEth?: string;
+  /** V3: ETH used for creator initial buy */
+  buyEth?: string;
   totalSupply?: string;
-  /** 0 | 100 | 500 | 1000 — creator allocation at launch */
+  /** 0 | 100 | 500 | 1000 — creator allocation at launch (V2); V3 always 0 */
   creatorBps?: number;
+  /** true = HoodV3Factory launch */
+  v3?: boolean;
   /** Public logo URL (/api/logo/0x… or external blob) */
   imageUrl?: string;
   createdAt: number;

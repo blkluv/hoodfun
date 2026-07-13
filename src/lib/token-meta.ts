@@ -95,13 +95,17 @@ export async function resolveTokenIdentity(
         const zero = "0x0000000000000000000000000000000000000000";
         if (pair && pair !== zero) {
           factoryPair = pair;
-          const launch = await pc.readContract({
-            address: FACTORY_ADDRESS as Address,
-            abi: factoryAbi,
-            functionName: "launches",
-            args: [addr],
-          });
-          factoryCreator = launch[2] as string;
+          try {
+            const launch = (await pc.readContract({
+              address: FACTORY_ADDRESS as Address,
+              abi: factoryAbi,
+              functionName: "getLaunchedToken",
+              args: [addr],
+            })) as { deployer: string };
+            factoryCreator = launch.deployer;
+          } catch {
+            /* legacy V2 factories use different shape */
+          }
           if (!dexToken) {
             dexToken = await fetchTokenByPair(pair).catch(() => null);
           }

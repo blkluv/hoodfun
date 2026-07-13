@@ -15,6 +15,14 @@ export function dexscreenerTokenUrl(token: string): string {
   return `https://dexscreener.com/${DEXSCREENER_CHAIN}/${token}`;
 }
 
+export function fomoTokenUrl(token: string): string {
+  return `https://fomo.family/tokens/robinhood/${token.toLowerCase()}`;
+}
+
+export function uniswapV3PoolUrl(pool: string): string {
+  return `https://app.uniswap.org/explore/pools/robinhood/${pool}`;
+}
+
 /**
  * Deep link helpers for post-launch "legit stack".
  * Dex has no free write API — paid Token Info is the official path for logo/socials.

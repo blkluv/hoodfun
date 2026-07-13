@@ -14,7 +14,7 @@ export default function HowItWorksPage() {
       <div>
         <h1 className="text-3xl font-black text-white">How HoodMemes works</h1>
         <p className="mt-2 text-sm text-white/45">
-          Instant Uniswap V2 launches on Robinhood Chain. No long bonding wait.
+          Instant Uniswap V3 launches on Robinhood Chain. No bonding curve — straight to a locked pool.
         </p>
       </div>
 
@@ -30,7 +30,7 @@ export default function HowItWorksPage() {
           },
           {
             t: "Seed liquidity",
-            d: "You pay LP ETH (min 0.01) + small create fee. Tokens + your ETH form a Uniswap V2 pair in one tx.",
+            d: "You pay initial-buy ETH (min 0.01) + small launch fee. 100% supply seeds a Uni V3 pool (locked); your ETH buys first.",
           },
           {
             t: "LP burn or keep",

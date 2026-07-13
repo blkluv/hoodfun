@@ -449,7 +449,7 @@ export function TokenPageClient({
                 <span className="text-base text-white/40">{name}</span>
               </div>
               <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                {isInstant && <Badge green>Uniswap V2</Badge>}
+                {isInstant && <Badge green>Uniswap V3</Badge>}
                 {isCurve && <Badge green>Bonding curve</Badge>}
                 {instant?.lpBurned && <Badge>LP burned 🔥</Badge>}
                 {!instant?.lpBurned && isInstant && (

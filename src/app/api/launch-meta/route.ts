@@ -51,6 +51,8 @@ export async function POST(req: NextRequest) {
       creator: body.creator,
       lpBurned: body.lpBurned,
       lpEth: body.lpEth,
+      buyEth: body.buyEth,
+      v3: body.v3 === true,
       totalSupply: body.totalSupply,
       creatorBps:
         typeof body.creatorBps === "number" &&
