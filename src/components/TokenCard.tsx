@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { TokenCardData } from "@/lib/types";
 import { formatPct, formatUsd, shortAddr, timeAgo } from "@/lib/format";
+import { dexscreenerTokenUrl, fomoTokenUrl } from "@/lib/dex-links";
 
 export function TokenCard({
   token,
@@ -15,15 +16,27 @@ export function TokenCard({
 }) {
   const up = (token.priceChange24h ?? 0) >= 0;
   const up1h = (token.priceChange1h ?? 0) >= 0;
+  const up5m = (token.priceChange5m ?? 0) >= 0;
   const initial = (token.symbol || "?")[0]?.toUpperCase() ?? "?";
   const buys = token.buys24h ?? 0;
   const sells = token.sells24h ?? 0;
   const total = buys + sells || 1;
   const buyPct = Math.round((buys / total) * 100);
+  const fomo = fomoTokenUrl(token.address);
+  const dex =
+    token.dexscreenerUrl ||
+    (token.pairAddress
+      ? `https://dexscreener.com/robinhood/${token.pairAddress}`
+      : dexscreenerTokenUrl(token.address));
+  const isFresh =
+    token.createdAt != null &&
+    Date.now() - token.createdAt < 1000 * 60 * 60 * 2;
 
   return (
     <Link
-      href={`/token/${token.address}`}
+      href={`/token/${token.address}${
+        token.pairAddress ? `?pair=${token.pairAddress}` : ""
+      }`}
       className="hm-card-in group relative flex flex-col overflow-hidden rounded-2xl border border-white/[0.07] bg-gradient-to-b from-white/[0.06] to-white/[0.02] p-4 transition-all duration-300 hover:-translate-y-1 hover:border-[#ccff00]/50 hover:shadow-[0_12px_40px_rgba(204, 255, 0,0.15)]"
       style={{ animationDelay: `${Math.min(index, 12) * 40}ms` }}
     >
@@ -62,8 +75,13 @@ export function TokenCard({
               </span>
             )}
             {token.isNative && (
-              <span className="shrink-0 rounded-md bg-white/10 px-1.5 py-0.5 text-[9px] font-bold uppercase text-white/70">
+              <span className="shrink-0 rounded-md bg-[#ccff00]/15 px-1.5 py-0.5 text-[9px] font-bold uppercase text-[#ccff00]">
                 HM
+              </span>
+            )}
+            {isFresh && (
+              <span className="shrink-0 rounded-md bg-sky-500/20 px-1.5 py-0.5 text-[9px] font-bold uppercase text-sky-300">
+                NEW
               </span>
             )}
           </div>
@@ -89,6 +107,13 @@ export function TokenCard({
           >
             1h {formatPct(token.priceChange1h)}
           </div>
+          {token.priceChange5m != null && (
+            <div
+              className={`text-[10px] tabular-nums ${up5m ? "text-[#ccff00]/55" : "text-rose-400/55"}`}
+            >
+              5m {formatPct(token.priceChange5m)}
+            </div>
+          )}
         </div>
       </div>
 
@@ -123,6 +148,30 @@ export function TokenCard({
             {token.txns24h?.toLocaleString() ?? "—"}
           </div>
         </div>
+      </div>
+
+      <div
+        className="mt-3 flex gap-2 border-t border-white/5 pt-3"
+        onClick={(e) => e.preventDefault()}
+      >
+        <a
+          href={fomo}
+          target="_blank"
+          rel="noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="flex-1 rounded-lg border border-white/10 bg-white/[0.04] py-1.5 text-center text-[10px] font-bold text-white/60 transition hover:border-[#ccff00]/40 hover:text-[#ccff00]"
+        >
+          Fomo ↗
+        </a>
+        <a
+          href={dex}
+          target="_blank"
+          rel="noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="flex-1 rounded-lg border border-white/10 bg-white/[0.04] py-1.5 text-center text-[10px] font-bold text-white/60 transition hover:border-[#ccff00]/40 hover:text-[#ccff00]"
+        >
+          Dex ↗
+        </a>
       </div>
     </Link>
   );

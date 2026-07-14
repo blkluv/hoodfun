@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { ConnectModal } from "@/components/ConnectModal";
 import { VerifyXPanel } from "@/components/VerifyXPanel";
 import { AddNetworkButton } from "@/components/AddNetworkButton";
+import { CreatorFeesPanel } from "@/components/CreatorFeesPanel";
 import Link from "next/link";
 
 export default function AccountPage() {
@@ -181,6 +182,14 @@ function AccountInner() {
             <p className="text-[11px] text-rose-300">{importErr}</p>
           )}
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <h2 className="text-sm font-bold text-white/70">Creator fee claims</h2>
+        <p className="text-xs text-white/40">
+          Collect your share of Uniswap V3 swap fees from locked LP positions.
+        </p>
+        <CreatorFeesPanel />
       </div>
 
       <div className="space-y-2">

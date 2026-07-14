@@ -37,4 +37,12 @@ export const DISCOVERY_QUERIES = [
   "4663",
   "cash",
   "trench",
+  "HOODMEMES",
+  "robinhood",
+  "ETH",
+  "WETH",
+  "frog",
+  "ai",
+  "sol",
+  "pump",
 ] as const;

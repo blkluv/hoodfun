@@ -128,6 +128,102 @@ export const factoryAbi = [
   },
 ] as const;
 
+/** HoodV3Locker — permanent LP NFT holder; collect fees only */
+export const lockerAbi = [
+  {
+    type: "function",
+    name: "collect",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "tokenId", type: "uint256" }],
+    outputs: [],
+  },
+  {
+    type: "function",
+    name: "collectMany",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "tokenIds", type: "uint256[]" }],
+    outputs: [],
+  },
+  {
+    type: "function",
+    name: "positionOf",
+    stateMutability: "view",
+    inputs: [{ name: "meme", type: "address" }],
+    outputs: [{ type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "positionMeta",
+    stateMutability: "view",
+    inputs: [{ name: "tokenId", type: "uint256" }],
+    outputs: [
+      { name: "creator", type: "address" },
+      { name: "meme", type: "address" },
+      { name: "pairToken", type: "address" },
+      { name: "creatorShareBps", type: "uint16" },
+    ],
+  },
+  {
+    type: "function",
+    name: "rewardRecipient",
+    stateMutability: "view",
+    inputs: [{ name: "tokenId", type: "uint256" }],
+    outputs: [{ type: "address" }],
+  },
+  {
+    type: "function",
+    name: "defaultCreatorShareBps",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ type: "uint16" }],
+  },
+] as const;
+
+/** Uniswap V3 NonfungiblePositionManager — fee preview via simulate collect */
+export const npmAbi = [
+  {
+    type: "function",
+    name: "collect",
+    stateMutability: "payable",
+    inputs: [
+      {
+        name: "params",
+        type: "tuple",
+        components: [
+          { name: "tokenId", type: "uint256" },
+          { name: "recipient", type: "address" },
+          { name: "amount0Max", type: "uint128" },
+          { name: "amount1Max", type: "uint128" },
+        ],
+      },
+    ],
+    outputs: [
+      { name: "amount0", type: "uint256" },
+      { name: "amount1", type: "uint256" },
+    ],
+  },
+  {
+    type: "function",
+    name: "positions",
+    stateMutability: "view",
+    inputs: [{ name: "tokenId", type: "uint256" }],
+    outputs: [
+      { name: "nonce", type: "uint96" },
+      { name: "operator", type: "address" },
+      { name: "token0", type: "address" },
+      { name: "token1", type: "address" },
+      { name: "fee", type: "uint24" },
+      { name: "tickLower", type: "int24" },
+      { name: "tickUpper", type: "int24" },
+      { name: "liquidity", type: "uint128" },
+      { name: "feeGrowthInside0LastX128", type: "uint256" },
+      { name: "feeGrowthInside1LastX128", type: "uint256" },
+      { name: "tokensOwed0", type: "uint128" },
+      { name: "tokensOwed1", type: "uint128" },
+    ],
+  },
+] as const;
+
 /** Legacy V2 instant factory (kept for reading old launches) */
 export const factoryV2Abi = [
   {

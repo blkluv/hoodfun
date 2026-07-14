@@ -10,8 +10,9 @@ import { AddNetworkButton } from "./AddNetworkButton";
 
 const TABS: { id: BoardTab; label: string; emoji: string }[] = [
   { id: "trending", label: "Trending", emoji: "" },
-  { id: "hot", label: "Hot 1h", emoji: "" },
+  { id: "hot", label: "Hot", emoji: "" },
   { id: "new", label: "New", emoji: "" },
+  { id: "hood", label: "Hood", emoji: "" },
   { id: "gainers", label: "Gainers", emoji: "" },
   { id: "losers", label: "Losers", emoji: "" },
   { id: "volume", label: "Volume", emoji: "" },
@@ -24,6 +25,7 @@ type ViewMode = "grid" | "table";
 export function TokenBoard() {
   const [tokens, setTokens] = useState<TokenCardData[]>([]);
   const [movers, setMovers] = useState<TokenCardData[]>([]);
+  const [alerts, setAlerts] = useState<TokenCardData[]>([]);
   const [config, setConfig] = useState<SiteConfig | null>(null);
   const [tab, setTab] = useState<BoardTab>("trending");
   const [q, setQ] = useState("");
@@ -138,6 +140,10 @@ export function TokenBoard() {
       list = list.filter((t) => !hidden.has(t.address.toLowerCase()));
       setTokens(list);
       setMovers(data.movers ?? list.slice(0, 15));
+      const alertList = (data.alerts as TokenCardData[] | undefined) ?? [];
+      setAlerts(
+        alertList.filter((t) => !hidden.has(t.address.toLowerCase())).slice(0, 12)
+      );
       setUpdatedAt(data.updatedAt ?? Date.now());
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error");
@@ -434,6 +440,73 @@ export function TokenBoard() {
       )}
 
       <div className="space-y-6 px-4 py-6 sm:px-0">
+        {/* Discovery alerts — fresh + 5m heat */}
+        {alerts.length > 0 && (
+          <section className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="text-[11px] font-black uppercase tracking-widest text-[#ccff00]">
+                Moving now
+              </h2>
+              <button
+                type="button"
+                onClick={() => setTab("hot")}
+                className="text-[11px] font-semibold text-white/40 hover:text-[#ccff00]"
+              >
+                Open Hot →
+              </button>
+            </div>
+            <div className="flex gap-2 overflow-x-auto hm-scroll pb-1">
+              {alerts.map((t) => {
+                const up = (t.priceChange5m ?? t.priceChange1h ?? 0) >= 0;
+                return (
+                  <Link
+                    key={t.address}
+                    href={`/token/${t.address}${
+                      t.pairAddress ? `?pair=${t.pairAddress}` : ""
+                    }`}
+                    className="flex min-w-[148px] shrink-0 flex-col gap-1 rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.07] to-transparent px-3 py-2.5 transition hover:border-[#ccff00]/45"
+                  >
+                    <div className="flex items-center gap-2">
+                      {t.imageUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={t.imageUrl}
+                          alt=""
+                          className="h-7 w-7 rounded-lg object-cover"
+                        />
+                      ) : (
+                        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#ccff00]/20 text-[10px] font-black text-[#ccff00]">
+                          {(t.symbol || "?")[0]}
+                        </span>
+                      )}
+                      <span className="truncate text-sm font-black text-white">
+                        ${t.symbol}
+                      </span>
+                      {t.isNative && (
+                        <span className="rounded bg-[#ccff00]/15 px-1 text-[8px] font-bold text-[#ccff00]">
+                          HM
+                        </span>
+                      )}
+                    </div>
+                    <div
+                      className={`text-xs font-bold tabular-nums ${
+                        up ? "text-[#ccff00]" : "text-rose-400"
+                      }`}
+                    >
+                      {t.priceChange5m != null
+                        ? `5m ${formatPct(t.priceChange5m)}`
+                        : formatPct(t.priceChange1h ?? t.priceChange24h)}
+                    </div>
+                    <div className="text-[10px] text-white/35">
+                      {formatUsd(t.volume1h ?? t.volume24h)} vol
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
         {/* Featured */}
         {featuredCards.length > 0 && (
           <section className="space-y-3">
@@ -588,7 +661,11 @@ export function TokenBoard() {
                   <TokenCard
                     key={t.address.toLowerCase()}
                     token={t}
-                    rank={tab === "trending" || tab === "hot" ? i + 1 : undefined}
+                    rank={
+                      tab === "trending" || tab === "hot" || tab === "hood"
+                        ? i + 1
+                        : undefined
+                    }
                     index={i}
                   />
                 ))}

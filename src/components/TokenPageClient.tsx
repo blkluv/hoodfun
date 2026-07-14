@@ -8,6 +8,7 @@ import type { TokenCardData } from "@/lib/types";
 import { CurveChart, CurveStats, RecentTrades } from "./CurveChart";
 import { TokenTradeSection } from "./TokenTradeSection";
 import { SwapBridgePanel } from "./SwapBridgePanel";
+import { CreatorFeesPanel } from "./CreatorFeesPanel";
 import {
   formatPct,
   formatPrice,
@@ -18,6 +19,7 @@ import {
 } from "@/lib/format";
 import { ROBINHOOD_CHAIN, UNISWAP_APP } from "@/lib/chain";
 import { VerifiedBadge } from "./VerifyXPanel";
+import { fomoTokenUrl, dexscreenerPairUrl, dexscreenerTokenUrl } from "@/lib/dex-links";
 
 type InstantLaunch = {
   kind: "instant";
@@ -826,6 +828,36 @@ export function TokenPageClient({
                 accent={(chg.h24 ?? 0) >= 0 ? "green" : "down"}
               />
             </Panel>
+
+            <CreatorFeesPanel tokenAddress={address} compact />
+
+            <div className="rounded-lg border border-[#2a2f37] bg-[#171b21] p-3">
+              <div className="mb-2 text-[10px] font-bold uppercase tracking-wider text-[#9aa3ab]">
+                Trade elsewhere
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <a
+                  href={fomoTokenUrl(address)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-md border border-[#2a2f37] bg-[#0f1318] px-2.5 py-1.5 text-[11px] font-semibold text-[#e8eaed] hover:border-[#ccff00]/40 hover:text-[#ccff00]"
+                >
+                  Fomo ↗
+                </a>
+                <a
+                  href={
+                    pairAddress
+                      ? dexscreenerPairUrl(pairAddress)
+                      : dexscreenerTokenUrl(address)
+                  }
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-md border border-[#2a2f37] bg-[#0f1318] px-2.5 py-1.5 text-[11px] font-semibold text-[#e8eaed] hover:border-[#ccff00]/40 hover:text-[#ccff00]"
+                >
+                  DexScreener ↗
+                </a>
+              </div>
+            </div>
 
             <div className="rounded-lg border border-[#2a2f37] bg-[#171b21] p-3 text-[10px] leading-relaxed text-[#9aa3ab]">
               <strong className="text-[#e8eaed]/80">Risk</strong> — Memecoins

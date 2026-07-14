@@ -32,20 +32,64 @@ function toNum(v: string | number | null | undefined): number | null {
 
 function trendScore(t: {
   volume1h: number | null;
+  volume5m?: number | null;
   volume24h: number | null;
   priceChange1h: number | null;
   priceChange5m: number | null;
   txns24h: number | null;
+  buys24h?: number | null;
+  sells24h?: number | null;
+  buys5m?: number | null;
+  sells5m?: number | null;
   liquidity: number | null;
+  createdAt?: number | null;
+  isNative?: boolean;
 }): number {
   const v1 = t.volume1h ?? 0;
+  const v5 = t.volume5m ?? 0;
   const v24 = t.volume24h ?? 0;
   const c1 = Math.abs(t.priceChange1h ?? 0);
   const c5 = Math.abs(t.priceChange5m ?? 0);
   const tx = t.txns24h ?? 0;
   const liq = Math.log10(Math.max(t.liquidity ?? 1, 1));
-  // Weight recent activity hard (NOXA-style trenches heat)
-  return v1 * 3 + v24 * 0.15 + c1 * 800 + c5 * 2000 + tx * 40 + liq * 500;
+
+  // Buy pressure (5m preferred, else 24h)
+  const b5 = t.buys5m ?? 0;
+  const s5 = t.sells5m ?? 0;
+  const b24 = t.buys24h ?? 0;
+  const s24 = t.sells24h ?? 0;
+  const buys = b5 + s5 > 0 ? b5 : b24;
+  const sells = b5 + s5 > 0 ? s5 : s24;
+  const total = buys + sells;
+  const buyRatio = total > 0 ? buys / total : 0.5;
+  const pressure = (buyRatio - 0.5) * 4000;
+
+  // Recency boost — new pairs surface hard in the first day
+  let recency = 0;
+  if (t.createdAt) {
+    const ageH = (Date.now() - t.createdAt) / 3_600_000;
+    if (ageH < 0.5) recency = 8000;
+    else if (ageH < 2) recency = 4500;
+    else if (ageH < 6) recency = 2200;
+    else if (ageH < 24) recency = 900;
+    else if (ageH < 72) recency = 300;
+  }
+
+  const hoodBoost = t.isNative ? 1200 : 0;
+
+  // Weight recent activity hard (trenches heat)
+  return (
+    v5 * 14 +
+    v1 * 4 +
+    v24 * 0.12 +
+    c1 * 700 +
+    c5 * 2800 +
+    tx * 45 +
+    liq * 420 +
+    pressure +
+    recency +
+    hoodBoost
+  );
 }
 
 function pairToToken(p: DsPair): TokenCardData {
@@ -58,21 +102,14 @@ function pairToToken(p: DsPair): TokenCardData {
   const liquidity = toNum(p.liquidity?.usd);
   const txns24h = buys + sells || null;
 
-  const partial = {
-    volume1h,
-    volume24h,
-    priceChange1h,
-    priceChange5m,
-    txns24h,
-    liquidity,
-  };
-
   const buys1h = p.txns?.h1?.buys ?? 0;
   const sells1h = p.txns?.h1?.sells ?? 0;
   const buys5m = p.txns?.m5?.buys ?? 0;
   const sells5m = p.txns?.m5?.sells ?? 0;
+  const volume5m = toNum(p.volume?.m5);
+  const createdAt = p.pairCreatedAt ?? null;
 
-  return {
+  const base = {
     address: p.baseToken.address,
     name: p.baseToken.name,
     symbol: p.baseToken.symbol,
@@ -84,7 +121,7 @@ function pairToToken(p: DsPair): TokenCardData {
     volume24h,
     volume1h,
     volume6h: toNum(p.volume?.h6),
-    volume5m: toNum(p.volume?.m5),
+    volume5m,
     priceChange5m,
     priceChange1h,
     priceChange6h: toNum(p.priceChange?.h6),
@@ -94,8 +131,8 @@ function pairToToken(p: DsPair): TokenCardData {
     liquidityQuote: toNum(p.liquidity?.quote),
     imageUrl: p.info?.imageUrl ?? null,
     dexscreenerUrl: p.url ?? null,
-    createdAt: p.pairCreatedAt ?? null,
-    source: "dex",
+    createdAt,
+    source: "dex" as const,
     isNative: false,
     txns24h,
     buys24h: buys || null,
@@ -106,7 +143,25 @@ function pairToToken(p: DsPair): TokenCardData {
     sells5m: sells5m || null,
     dexId: p.dexId ?? null,
     quoteSymbol: p.quoteToken?.symbol ?? null,
-    trendScore: trendScore(partial),
+  };
+
+  return {
+    ...base,
+    trendScore: trendScore({
+      volume1h,
+      volume5m,
+      volume24h,
+      priceChange1h,
+      priceChange5m,
+      txns24h,
+      buys24h: buys || null,
+      sells24h: sells || null,
+      buys5m: buys5m || null,
+      sells5m: sells5m || null,
+      liquidity,
+      createdAt,
+      isNative: false,
+    }),
   };
 }
 

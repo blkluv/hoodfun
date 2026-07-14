@@ -42,6 +42,7 @@ export type BoardTab =
   | "trending"
   | "hot"
   | "new"
+  | "hood"
   | "gainers"
   | "losers"
   | "volume"

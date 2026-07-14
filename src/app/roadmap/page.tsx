@@ -68,13 +68,13 @@ const PHASES: Phase[] = [
       },
       {
         title: "Creator fee claims",
-        body: "One-click collect for locked V3 LP fee share — creators earn without holding the LP NFT.",
-        tag: "Creators",
+        body: "One-click collect for locked V3 LP fee share — creators earn without holding the LP NFT. Live on Account + token pages.",
+        tag: "Live",
       },
       {
         title: "Smarter discovery",
-        body: "Better ranking, new-pair alerts, and Fomo / Dex deep-links so launches surface where traders already live.",
-        tag: "Growth",
+        body: "Recency + buy-pressure ranking, Moving now strip, Hood tab, Fomo/Dex deep-links on cards.",
+        tag: "Live",
       },
       {
         title: "Ansem-style airdrop",
