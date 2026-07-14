@@ -175,7 +175,7 @@ export function TradePanel({ marketAddress, tokenAddress, symbol = "TOKEN" }: Pr
         Paying as{" "}
         <span className="font-mono text-white/80">{shortAddr(address || "")}</span>{" "}
         · {ethBalance} ETH · {mode === "session" ? "quick" : "browser"}{" "}
-        <Link href="/account" className="text-[#00c805]">
+        <Link href="/account" className="text-[#ccff00]">
           account
         </Link>
       </div>
@@ -190,7 +190,7 @@ export function TradePanel({ marketAddress, tokenAddress, symbol = "TOKEN" }: Pr
               className={`flex-1 rounded-lg py-2 text-sm font-semibold capitalize transition ${
                 side === s
                   ? s === "buy"
-                    ? "bg-[#00c805] text-black"
+                    ? "bg-[#ccff00] text-black"
                     : "bg-rose-500 text-white"
                   : "text-white/50 hover:text-white"
               }`}
@@ -210,12 +210,12 @@ export function TradePanel({ marketAddress, tokenAddress, symbol = "TOKEN" }: Pr
             type="number"
             step="any"
             min="0"
-            className="w-full rounded-xl border border-white/10 bg-black/35 px-3 py-2.5 text-sm text-white outline-none focus:border-[#00c805]/45"
+            className="w-full rounded-xl border border-white/10 bg-black/35 px-3 py-2.5 text-sm text-white outline-none focus:border-[#ccff00]/45"
           />
           {side === "sell" && (
             <button
               type="button"
-              className="text-[11px] text-[#00c805]"
+              className="text-[11px] text-[#ccff00]"
               onClick={() => setAmount(tokenBal)}
             >
               Max ({tokenBal})
@@ -241,7 +241,7 @@ export function TradePanel({ marketAddress, tokenAddress, symbol = "TOKEN" }: Pr
           onClick={execute}
           className={`w-full rounded-xl py-3 text-sm font-bold disabled:opacity-40 ${
             side === "buy"
-              ? "bg-[#00c805] text-black hover:bg-[#00e006]"
+              ? "bg-[#ccff00] text-black hover:bg-[#e8ff66]"
               : "bg-rose-500 text-white hover:bg-rose-400"
           }`}
         >
@@ -249,7 +249,7 @@ export function TradePanel({ marketAddress, tokenAddress, symbol = "TOKEN" }: Pr
         </button>
 
         {tx && (
-          <p className="break-all text-[11px] text-[#00c805]/90">
+          <p className="break-all text-[11px] text-[#ccff00]/90">
             Tx {shortAddr(tx, 8)}
           </p>
         )}

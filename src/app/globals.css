@@ -3,10 +3,10 @@
 :root {
   --background: #050806;
   --foreground: #f2f5f2;
-  --hood: #00c805;
-  --hood-dim: #00a004;
+  --hood: #ccff00;
+  --hood-dim: #b8e600;
   --card: rgba(12, 18, 14, 0.85);
-  --glow: rgba(0, 200, 5, 0.45);
+  --glow: rgba(204, 255, 0, 0.45);
 }
 
 @theme inline {
@@ -19,24 +19,24 @@
 
 body {
   background:
-    radial-gradient(900px 500px at 15% -5%, rgba(0, 200, 5, 0.16), transparent 55%),
-    radial-gradient(700px 400px at 90% 10%, rgba(0, 255, 120, 0.06), transparent 50%),
-    radial-gradient(600px 400px at 50% 100%, rgba(0, 80, 40, 0.12), transparent 55%),
+    radial-gradient(900px 500px at 15% -5%, rgba(204, 255, 0, 0.16), transparent 55%),
+    radial-gradient(700px 400px at 90% 10%, rgba(204, 255, 0, 0.06), transparent 50%),
+    radial-gradient(600px 400px at 50% 100%, rgba(204, 255, 0, 0.06), transparent 55%),
     var(--background);
   color: var(--foreground);
   min-height: 100vh;
 }
 
 ::selection {
-  background: rgba(0, 200, 5, 0.4);
-  color: #fff;
+  background: rgba(204, 255, 0, 0.85);
+  color: #0b0b0b;
 }
 
 /* Ambient grid */
 .hm-grid {
   background-image:
-    linear-gradient(rgba(0, 200, 5, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 200, 5, 0.04) 1px, transparent 1px);
+    linear-gradient(rgba(204, 255, 0, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(204, 255, 0, 0.04) 1px, transparent 1px);
   background-size: 48px 48px;
   mask-image: linear-gradient(to bottom, black 0%, transparent 90%);
 }
@@ -63,11 +63,11 @@ body {
   0%,
   100% {
     opacity: 1;
-    box-shadow: 0 0 0 0 rgba(0, 200, 5, 0.6);
+    box-shadow: 0 0 0 0 rgba(204, 255, 0, 0.6);
   }
   50% {
     opacity: 0.85;
-    box-shadow: 0 0 0 6px rgba(0, 200, 5, 0);
+    box-shadow: 0 0 0 6px rgba(204, 255, 0, 0);
   }
 }
 
@@ -88,7 +88,7 @@ body {
   background: linear-gradient(
     90deg,
     rgba(255, 255, 255, 0.03) 25%,
-    rgba(0, 200, 5, 0.08) 50%,
+    rgba(204, 255, 0, 0.08) 50%,
     rgba(255, 255, 255, 0.03) 75%
   );
   background-size: 200% 100%;
@@ -119,11 +119,11 @@ body {
 .hm-glass-green {
   background: linear-gradient(
     145deg,
-    rgba(0, 200, 5, 0.12) 0%,
+    rgba(204, 255, 0, 0.12) 0%,
     rgba(12, 18, 14, 0.9) 45%
   );
-  border: 1px solid rgba(0, 200, 5, 0.25);
-  box-shadow: 0 0 40px rgba(0, 200, 5, 0.08);
+  border: 1px solid rgba(204, 255, 0, 0.25);
+  box-shadow: 0 0 40px rgba(204, 255, 0, 0.08);
 }
 
 /* Custom scrollbar */
@@ -132,7 +132,7 @@ body {
   width: 6px;
 }
 .hm-scroll::-webkit-scrollbar-thumb {
-  background: rgba(0, 200, 5, 0.35);
+  background: rgba(204, 255, 0, 0.35);
   border-radius: 99px;
 }
 .hm-scroll::-webkit-scrollbar-track {

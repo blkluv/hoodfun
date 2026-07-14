@@ -10,7 +10,7 @@ import { shortAddr, timeAgo } from "@/lib/format";
 import Link from "next/link";
 
 const inp =
-  "w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white outline-none focus:border-[#00c805]/45";
+  "w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white outline-none focus:border-[#ccff00]/45";
 const btnSec =
   "rounded-xl border border-white/15 px-3 py-2 text-xs font-semibold text-white/80 hover:bg-white/5";
 const btnXs =
@@ -632,7 +632,7 @@ export function AdminDashboard() {
           <button
             type="button"
             onClick={() => loginWithInjected().catch(() => {})}
-            className="text-xs text-white/40 hover:text-[#00c805]"
+            className="text-xs text-white/40 hover:text-[#ccff00]"
           >
             Optional wallet:{" "}
             {address ? shortAddr(address, 6) : "not connected"}
@@ -640,7 +640,7 @@ export function AdminDashboard() {
           <button
             type="submit"
             disabled={busy}
-            className="w-full rounded-xl bg-[#00c805] py-2.5 text-sm font-bold text-black disabled:opacity-40"
+            className="w-full rounded-xl bg-[#ccff00] py-2.5 text-sm font-bold text-black disabled:opacity-40"
           >
             Enter
           </button>
@@ -669,7 +669,7 @@ export function AdminDashboard() {
             type="button"
             onClick={() => save()}
             disabled={busy}
-            className="rounded-xl bg-[#00c805] px-4 py-2 text-sm font-black text-black disabled:opacity-40"
+            className="rounded-xl bg-[#ccff00] px-4 py-2 text-sm font-black text-black disabled:opacity-40"
           >
             {busy ? "Saving…" : "Save all"}
           </button>
@@ -680,7 +680,7 @@ export function AdminDashboard() {
       </div>
 
       {msg && (
-        <div className="rounded-xl border border-[#00c805]/30 bg-[#00c805]/10 px-4 py-2.5 text-xs font-semibold text-[#b8f5b8]">
+        <div className="rounded-xl border border-[#ccff00]/30 bg-[#ccff00]/10 px-4 py-2.5 text-xs font-semibold text-[#e8ff99]">
           {msg}
         </div>
       )}
@@ -699,7 +699,7 @@ export function AdminDashboard() {
             onClick={() => setTab(t.id)}
             className={`shrink-0 rounded-xl px-3 py-2 text-xs font-bold transition ${
               tab === t.id
-                ? "bg-[#00c805] text-black"
+                ? "bg-[#ccff00] text-black"
                 : "text-white/45 hover:text-white"
             }`}
           >
@@ -800,7 +800,7 @@ export function AdminDashboard() {
                 type="button"
                 disabled={busy}
                 onClick={pinOfficial}
-                className="rounded-xl bg-[#00c805] px-4 py-2 text-sm font-bold text-black"
+                className="rounded-xl bg-[#ccff00] px-4 py-2 text-sm font-bold text-black"
               >
                 Pin official
               </button>
@@ -1109,14 +1109,14 @@ export function AdminDashboard() {
                     config.announcement.tone === "warn"
                       ? "border-amber-500/40 bg-amber-500/10 text-amber-100"
                       : config.announcement.tone === "success"
-                        ? "border-[#00c805]/40 bg-[#00c805]/10 text-[#b8f5b8]"
+                        ? "border-[#ccff00]/40 bg-[#ccff00]/10 text-[#e8ff99]"
                         : "border-sky-500/30 bg-sky-500/10 text-sky-100"
                   }`}
                 >
                   {config.announcement.text}
                 </div>
               )}
-              <div className="text-[10px] font-bold uppercase tracking-widest text-[#00c805]">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-[#ccff00]">
                 Homepage hero
               </div>
               <h2 className="mt-2 text-2xl font-black text-white">
@@ -1126,8 +1126,8 @@ export function AdminDashboard() {
                 {config.heroSubtitle || "—"}
               </p>
               {config.featured[0] && (
-                <div className="mt-4 rounded-xl border border-[#00c805]/25 bg-[#00c805]/5 p-3">
-                  <div className="text-[10px] font-bold text-[#00c805]">
+                <div className="mt-4 rounded-xl border border-[#ccff00]/25 bg-[#ccff00]/5 p-3">
+                  <div className="text-[10px] font-bold text-[#ccff00]">
                     {config.featuredSectionTitle}
                   </div>
                   <div className="text-lg font-black text-white">
@@ -1183,7 +1183,7 @@ export function AdminDashboard() {
                         {f.name}
                       </span>
                       {(f.note || "").toLowerCase() === "official" && (
-                        <span className="ml-2 rounded-full bg-[#00c805]/20 px-2 py-0.5 text-[10px] font-bold text-[#00c805]">
+                        <span className="ml-2 rounded-full bg-[#ccff00]/20 px-2 py-0.5 text-[10px] font-bold text-[#ccff00]">
                           OFFICIAL
                         </span>
                       )}
@@ -1286,7 +1286,7 @@ export function AdminDashboard() {
             <button
               type="button"
               onClick={addFeatured}
-              className="mt-2 rounded-xl bg-[#00c805] px-4 py-2 text-sm font-bold text-black"
+              className="mt-2 rounded-xl bg-[#ccff00] px-4 py-2 text-sm font-bold text-black"
             >
               Add featured
             </button>
@@ -1307,7 +1307,7 @@ export function AdminDashboard() {
               />
               <button
                 type="button"
-                className="rounded-xl bg-[#00c805] px-3 py-2 text-xs font-bold text-black"
+                className="rounded-xl bg-[#ccff00] px-3 py-2 text-xs font-bold text-black"
                 onClick={() => {
                   hideOne(hideDraft);
                   setHideDraft("");
@@ -1353,7 +1353,7 @@ export function AdminDashboard() {
               />
               <button
                 type="button"
-                className="rounded-xl bg-[#00c805] px-3 py-2 text-xs font-bold text-black"
+                className="rounded-xl bg-[#ccff00] px-3 py-2 text-xs font-bold text-black"
                 onClick={() => {
                   blockOne(blockDraft);
                   setBlockDraft("");
@@ -1540,7 +1540,7 @@ export function AdminDashboard() {
                   type="button"
                   disabled={busy}
                   onClick={() => saveLaunchMeta(editMeta)}
-                  className="rounded-xl bg-[#00c805] px-4 py-2 text-sm font-bold text-black"
+                  className="rounded-xl bg-[#ccff00] px-4 py-2 text-sm font-bold text-black"
                 >
                   Save meta
                 </button>
@@ -1644,7 +1644,7 @@ export function AdminDashboard() {
               <div>
                 Factory:{" "}
                 <a
-                  className="font-mono text-[#00c805] hover:underline"
+                  className="font-mono text-[#ccff00] hover:underline"
                   href={`${ROBINHOOD_CHAIN.blockExplorers.default.url}/address/${FACTORY_ADDRESS}`}
                   target="_blank"
                   rel="noreferrer"
@@ -1801,7 +1801,7 @@ function Toggle({
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="h-4 w-4 accent-[#00c805]"
+        className="h-4 w-4 accent-[#ccff00]"
       />
     </label>
   );
@@ -1837,7 +1837,7 @@ function Check({ ok, label }: { ok: boolean; label: string }) {
     <div
       className={`rounded-xl border px-3 py-2 ${
         ok
-          ? "border-[#00c805]/25 bg-[#00c805]/5 text-[#b8f5b8]"
+          ? "border-[#ccff00]/25 bg-[#ccff00]/5 text-[#e8ff99]"
           : "border-amber-500/30 bg-amber-500/10 text-amber-100"
       }`}
     >

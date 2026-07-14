@@ -32,7 +32,7 @@ export default function DisclaimerPage() {
         By using HoodMemes you accept these risks and that the operators are
         not liable for losses from launches, trades, bugs, or downtime.
       </p>
-      <Link href="/" className="inline-block font-semibold text-[#00c805]">
+      <Link href="/" className="inline-block font-semibold text-[#ccff00]">
         ← Back to board
       </Link>
     </div>

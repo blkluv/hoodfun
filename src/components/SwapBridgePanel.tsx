@@ -328,7 +328,7 @@ export function SwapBridgePanel({
               }}
               className={`flex-1 rounded py-1.5 text-sm font-semibold transition ${
                 tab === id
-                  ? "bg-[#00c805] text-black"
+                  ? "bg-[#ccff00] text-black"
                   : "text-[#9aa3ab] hover:text-[#e8eaed]"
               }`}
             >
@@ -366,7 +366,7 @@ export function SwapBridgePanel({
               onClick={() => setSide("buy")}
               className={`flex-1 rounded py-1.5 text-sm font-semibold ${
                 side === "buy"
-                  ? "bg-[#00c805] text-black"
+                  ? "bg-[#ccff00] text-black"
                   : "text-[#9aa3ab]"
               }`}
             >
@@ -395,7 +395,7 @@ export function SwapBridgePanel({
                   step="any"
                   value={ethIn}
                   onChange={(e) => setEthIn(e.target.value)}
-                  className="mt-1 w-full rounded-md border border-[#2a2f37] bg-[#0e1116] px-3 py-2.5 font-mono text-sm text-[#e8eaed] outline-none focus:border-[#00c805]/60"
+                  className="mt-1 w-full rounded-md border border-[#2a2f37] bg-[#0e1116] px-3 py-2.5 font-mono text-sm text-[#e8eaed] outline-none focus:border-[#ccff00]/60"
                 />
               </label>
               <div className="grid grid-cols-4 gap-1.5">
@@ -406,7 +406,7 @@ export function SwapBridgePanel({
                     onClick={() => setEthIn(v)}
                     className={`rounded-md py-1.5 text-xs font-semibold ${
                       ethIn === v
-                        ? "bg-[#00c805] text-black"
+                        ? "bg-[#ccff00] text-black"
                         : "border border-[#2a2f37] text-[#9aa3ab]"
                     }`}
                   >
@@ -430,13 +430,13 @@ export function SwapBridgePanel({
                   step="any"
                   value={tokenIn}
                   onChange={(e) => setTokenIn(e.target.value)}
-                  className="mt-1 w-full rounded-md border border-[#2a2f37] bg-[#0e1116] px-3 py-2.5 font-mono text-sm text-[#e8eaed] outline-none focus:border-[#00c805]/60"
+                  className="mt-1 w-full rounded-md border border-[#2a2f37] bg-[#0e1116] px-3 py-2.5 font-mono text-sm text-[#e8eaed] outline-none focus:border-[#ccff00]/60"
                 />
               </label>
               {tokenBal != null && (
                 <button
                   type="button"
-                  className="text-[11px] text-[#00c805]"
+                  className="text-[11px] text-[#ccff00]"
                   onClick={() => setTokenIn(formatEther(tokenBal))}
                 >
                   Max {Number(formatEther(tokenBal)).toPrecision(6)}
@@ -452,7 +452,7 @@ export function SwapBridgePanel({
             type="button"
             disabled={busy}
             onClick={onSwap}
-            className="w-full rounded-md bg-[#00c805] py-3 text-sm font-bold text-black hover:bg-[#00e006] disabled:opacity-50"
+            className="w-full rounded-md bg-[#ccff00] py-3 text-sm font-bold text-black hover:bg-[#e8ff66] disabled:opacity-50"
           >
             {busy
               ? "Working…"
@@ -482,7 +482,7 @@ export function SwapBridgePanel({
               </span>
             </div>
             <div className="flex flex-col items-center gap-0.5 px-1">
-              <div className="flex h-9 items-center gap-1 rounded-full bg-[#00c805]/10 px-3 text-xs font-bold text-[#00c805] ring-1 ring-[#00c805]/25">
+              <div className="flex h-9 items-center gap-1 rounded-full bg-[#ccff00]/10 px-3 text-xs font-bold text-[#ccff00] ring-1 ring-[#ccff00]/25">
                 <span className="opacity-70">Relay</span>
                 <span aria-hidden>→</span>
               </div>
@@ -494,9 +494,9 @@ export function SwapBridgePanel({
                 iconUrl={ROBINHOOD_RELAY_META.iconUrl}
                 name={ROBINHOOD_RELAY_META.name}
                 size={40}
-                className="ring-2 ring-[#00c805]/40 shadow-[0_0_16px_rgba(0,200,5,0.35)]"
+                className="ring-2 ring-[#ccff00]/40 shadow-[0_0_16px_rgba(204, 255, 0,0.35)]"
               />
-              <span className="text-[10px] font-bold text-[#00c805]">RH</span>
+              <span className="text-[10px] font-bold text-[#ccff00]">RH</span>
             </div>
           </div>
 
@@ -516,8 +516,8 @@ export function SwapBridgePanel({
                       onClick={() => setFromChainId(c.id)}
                       className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[11px] font-semibold transition ${
                         active
-                          ? "bg-[#00c805] text-black shadow-[0_0_12px_rgba(0,200,5,0.35)]"
-                          : "border border-[#2a2f37] bg-[#0e1116] text-[#9aa3ab] hover:border-[#00c805]/40 hover:text-white"
+                          ? "bg-[#ccff00] text-black shadow-[0_0_12px_rgba(204, 255, 0,0.35)]"
+                          : "border border-[#2a2f37] bg-[#0e1116] text-[#9aa3ab] hover:border-[#ccff00]/40 hover:text-white"
                       }`}
                     >
                       <ChainLogo
@@ -552,7 +552,7 @@ export function SwapBridgePanel({
               <select
                 value={fromChainId}
                 onChange={(e) => setFromChainId(Number(e.target.value))}
-                className="w-full appearance-none rounded-xl border border-[#2a2f37] bg-[#0e1116] py-3 pl-12 pr-8 text-sm font-medium text-[#e8eaed] outline-none focus:border-[#00c805]/50"
+                className="w-full appearance-none rounded-xl border border-[#2a2f37] bg-[#0e1116] py-3 pl-12 pr-8 text-sm font-medium text-[#e8eaed] outline-none focus:border-[#ccff00]/50"
               >
                 {fromChains.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -572,7 +572,7 @@ export function SwapBridgePanel({
                 step="any"
                 value={bridgeAmount}
                 onChange={(e) => setBridgeAmount(e.target.value)}
-                className="w-full rounded-xl border border-[#2a2f37] bg-[#0e1116] px-3 py-3 font-mono text-lg font-semibold text-[#e8eaed] outline-none focus:border-[#00c805]/50"
+                className="w-full rounded-xl border border-[#2a2f37] bg-[#0e1116] px-3 py-3 font-mono text-lg font-semibold text-[#e8eaed] outline-none focus:border-[#ccff00]/50"
               />
               <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-white/30">
                 ETH
@@ -587,7 +587,7 @@ export function SwapBridgePanel({
                 onClick={() => setBridgeAmount(v)}
                 className={`rounded-xl py-2 text-xs font-bold transition ${
                   bridgeAmount === v
-                    ? "bg-[#00c805] text-black"
+                    ? "bg-[#ccff00] text-black"
                     : "border border-[#2a2f37] text-[#9aa3ab] hover:border-white/20"
                 }`}
               >
@@ -597,7 +597,7 @@ export function SwapBridgePanel({
           </div>
 
           {outPreview && (
-            <div className="flex items-center gap-3 rounded-xl border border-[#00c805]/25 bg-[#00c805]/[0.06] px-3 py-3">
+            <div className="flex items-center gap-3 rounded-xl border border-[#ccff00]/25 bg-[#ccff00]/[0.06] px-3 py-3">
               <ChainLogo
                 chainId={4663}
                 iconUrl={ROBINHOOD_RELAY_META.iconUrl}
@@ -625,7 +625,7 @@ export function SwapBridgePanel({
             type="button"
             disabled={busy || !isLoggedIn}
             onClick={onRelayQuoteAndBridge}
-            className="w-full rounded-xl bg-[#00c805] py-3.5 text-sm font-black text-black shadow-[0_0_28px_rgba(0,200,5,0.3)] transition hover:bg-[#00e006] disabled:opacity-50"
+            className="w-full rounded-xl bg-[#ccff00] py-3.5 text-sm font-black text-black shadow-[0_0_28px_rgba(204, 255, 0,0.3)] transition hover:bg-[#e8ff66] disabled:opacity-50"
           >
             {busy ? "Bridging…" : "Bridge with Relay"}
           </button>
@@ -634,7 +634,7 @@ export function SwapBridgePanel({
             href={relayLink}
             target="_blank"
             rel="noreferrer"
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#2a2f37] py-2.5 text-xs font-semibold text-[#9aa3ab] hover:border-[#00c805]/40 hover:text-[#e8eaed]"
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#2a2f37] py-2.5 text-xs font-semibold text-[#9aa3ab] hover:border-[#ccff00]/40 hover:text-[#e8eaed]"
           >
             Open full Relay app ↗
           </a>
@@ -646,7 +646,7 @@ export function SwapBridgePanel({
       )}
 
       {status && (
-        <p className="mt-3 text-[11px] font-medium text-[#00c805]">{status}</p>
+        <p className="mt-3 text-[11px] font-medium text-[#ccff00]">{status}</p>
       )}
       {txHash && (
         <p className="mt-1 break-all font-mono text-[10px] text-[#9aa3ab]">

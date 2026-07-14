@@ -325,7 +325,7 @@ export function VerifyXPanel({
               Step 1 · Sign with wallet
             </div>
             {signature ? (
-              <div className="rounded-xl border border-[#00c805]/25 bg-[#00c805]/10 px-3 py-2 text-xs font-semibold text-[#00c805]">
+              <div className="rounded-xl border border-[#ccff00]/25 bg-[#ccff00]/10 px-3 py-2 text-xs font-semibold text-[#ccff00]">
                 ✓ Signed
               </div>
             ) : (
@@ -382,7 +382,7 @@ export function VerifyXPanel({
               type="button"
               disabled={busy || !signature || !tweetUrl.trim()}
               onClick={confirm}
-              className="w-full rounded-xl bg-[#00c805] py-3 text-sm font-black text-black shadow-[0_0_24px_rgba(0,200,5,0.25)] hover:bg-[#00e006] disabled:opacity-40"
+              className="w-full rounded-xl bg-[#ccff00] py-3 text-sm font-black text-black shadow-[0_0_24px_rgba(204, 255, 0,0.25)] hover:bg-[#e8ff66] disabled:opacity-40"
             >
               {busy ? "Checking tweet…" : "Verify & get badge"}
             </button>

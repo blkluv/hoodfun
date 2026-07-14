@@ -69,7 +69,7 @@ export function Header() {
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4">
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2.5 group">
-              <span className="relative h-9 w-9 overflow-hidden rounded-xl shadow-[0_0_24px_rgba(0,200,5,0.4)] ring-1 ring-[#00c805]/30 transition group-hover:scale-105">
+              <span className="relative h-9 w-9 overflow-hidden rounded-xl shadow-[0_0_24px_rgba(204, 255, 0,0.4)] ring-1 ring-[#ccff00]/30 transition group-hover:scale-105">
                 <Image
                   src="/logo.png"
                   alt="HoodMemes"
@@ -80,7 +80,7 @@ export function Header() {
                 />
               </span>
               <div className="leading-tight">
-                <div className="text-sm font-black tracking-tight text-white group-hover:text-[#00c805]">
+                <div className="text-sm font-black tracking-tight text-white group-hover:text-[#ccff00]">
                   HoodMemes
                 </div>
                 <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-white/35">
@@ -89,7 +89,7 @@ export function Header() {
               </div>
             </Link>
             <span className="hidden items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[10px] font-bold text-white/45 sm:inline-flex">
-              <span className="hm-live-dot h-1.5 w-1.5 rounded-full bg-[#00c805]" />
+              <span className="hm-live-dot h-1.5 w-1.5 rounded-full bg-[#ccff00]" />
               RH · {ROBINHOOD_CHAIN.id}
             </span>
           </div>
@@ -104,7 +104,7 @@ export function Header() {
               href="https://x.com/hoodmemesdotfun"
               target="_blank"
               rel="noreferrer"
-              className="rounded-lg px-2.5 py-1.5 text-sm font-medium text-white/50 hover:bg-white/5 hover:text-[#00c805]"
+              className="rounded-lg px-2.5 py-1.5 text-sm font-medium text-white/50 hover:bg-white/5 hover:text-[#ccff00]"
             >
               𝕏
             </a>
@@ -113,7 +113,7 @@ export function Header() {
           <div className="flex items-center gap-1.5 sm:gap-2">
             <Link
               href="/create"
-              className="rounded-xl bg-[#00c805] px-3 py-1.5 text-sm font-black text-black shadow-[0_0_20px_rgba(0,200,5,0.3)] hover:bg-[#00e006]"
+              className="rounded-xl bg-[#ccff00] px-3 py-1.5 text-sm font-black text-black shadow-[0_0_20px_rgba(204, 255, 0,0.3)] hover:bg-[#e8ff66]"
             >
               Launch
             </Link>
@@ -125,7 +125,7 @@ export function Header() {
                 <button
                   type="button"
                   onClick={() => setWalletOpen((v) => !v)}
-                  className="rounded-xl border border-white/10 bg-white/[0.04] px-2.5 py-1.5 text-left hover:border-[#00c805]/40"
+                  className="rounded-xl border border-white/10 bg-white/[0.04] px-2.5 py-1.5 text-left hover:border-[#ccff00]/40"
                 >
                   <div className="font-mono text-[11px] font-semibold text-white/90">
                     {shortAddr(address, 4)}
@@ -159,7 +159,7 @@ export function Header() {
                     </Link>
                     <button
                       type="button"
-                      className="block w-full px-3 py-2 text-left text-xs font-semibold text-[#00c805] hover:bg-white/5"
+                      className="block w-full px-3 py-2 text-left text-xs font-semibold text-[#ccff00] hover:bg-white/5"
                       onClick={() => {
                         setWalletOpen(false);
                         setConnectOpen(true);
@@ -184,7 +184,7 @@ export function Header() {
               <button
                 type="button"
                 onClick={() => setConnectOpen(true)}
-                className="rounded-xl border border-white/15 bg-white/5 px-3 py-1.5 text-sm font-semibold text-white/85 hover:border-[#00c805]/40"
+                className="rounded-xl border border-white/15 bg-white/5 px-3 py-1.5 text-sm font-semibold text-white/85 hover:border-[#ccff00]/40"
               >
                 Log in
               </button>

@@ -234,19 +234,19 @@ export function TokenBoard() {
       {/* ═══ MEGA HERO ═══ */}
       <section className="relative overflow-hidden border-b border-white/5">
         <div className="hm-grid pointer-events-none absolute inset-0 opacity-70" />
-        <div className="pointer-events-none absolute -left-20 top-0 h-80 w-80 rounded-full bg-[#00c805]/25 blur-[100px]" />
-        <div className="pointer-events-none absolute -right-10 bottom-0 h-72 w-72 rounded-full bg-emerald-400/15 blur-[90px]" />
-        <div className="pointer-events-none absolute left-1/2 top-1/3 h-40 w-[60%] -translate-x-1/2 rounded-full bg-[#00c805]/10 blur-[80px]" />
+        <div className="pointer-events-none absolute -left-20 top-0 h-80 w-80 rounded-full bg-[#ccff00]/25 blur-[100px]" />
+        <div className="pointer-events-none absolute -right-10 bottom-0 h-72 w-72 rounded-full bg-[#ccff00]/12 blur-[90px]" />
+        <div className="pointer-events-none absolute left-1/2 top-1/3 h-40 w-[60%] -translate-x-1/2 rounded-full bg-[#ccff00]/10 blur-[80px]" />
 
         <div className="relative space-y-8 px-4 pb-10 pt-6 sm:px-0 sm:pb-12 sm:pt-8">
           <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-2xl">
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#00c805]/40 bg-[#00c805]/15 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em] text-[#00c805] shadow-[0_0_24px_rgba(0,200,5,0.2)]">
-                <span className="hm-live-dot h-2 w-2 rounded-full bg-[#00c805]" />
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#ccff00]/40 bg-[#ccff00]/15 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em] text-[#ccff00] shadow-[0_0_24px_rgba(204, 255, 0,0.2)]">
+                <span className="hm-live-dot h-2 w-2 rounded-full bg-[#ccff00]" />
                 Live · Robinhood Chain · 4663
               </div>
               <h1 className="text-5xl font-black leading-[0.98] tracking-tight text-white sm:text-6xl md:text-7xl">
-                <span className="bg-gradient-to-br from-white via-white to-[#00c805] bg-clip-text text-transparent">
+                <span className="bg-gradient-to-br from-white via-white to-[#ccff00] bg-clip-text text-transparent">
                   {config?.heroTitle || "Robinhood trenches"}
                 </span>
               </h1>
@@ -257,13 +257,13 @@ export function TokenBoard() {
               <div className="mt-7 flex flex-wrap items-center gap-3">
                 <Link
                   href="/create"
-                  className="rounded-2xl bg-[#00c805] px-7 py-3.5 text-base font-black text-black shadow-[0_0_40px_rgba(0,200,5,0.45)] transition hover:scale-[1.02] hover:bg-[#00e006]"
+                  className="rounded-2xl bg-[#ccff00] px-7 py-3.5 text-base font-black text-black shadow-[0_0_40px_rgba(204, 255, 0,0.45)] transition hover:scale-[1.02] hover:bg-[#e8ff66]"
                 >
                   Launch coin
                 </Link>
                 <a
                   href="#board"
-                  className="rounded-2xl border border-white/15 bg-white/5 px-6 py-3.5 text-base font-bold text-white/85 transition hover:border-[#00c805]/45 hover:bg-[#00c805]/10"
+                  className="rounded-2xl border border-white/15 bg-white/5 px-6 py-3.5 text-base font-bold text-white/85 transition hover:border-[#ccff00]/45 hover:bg-[#ccff00]/10"
                 >
                   Browse board
                 </a>
@@ -294,11 +294,11 @@ export function TokenBoard() {
               href={`/token/${official.address}${
                 official.pairAddress ? `?pair=${official.pairAddress}` : ""
               }`}
-              className="group relative block overflow-hidden rounded-[1.75rem] border border-[#00c805]/45 bg-gradient-to-br from-[#00c805]/20 via-[#0a140c] to-black p-1 shadow-[0_0_60px_rgba(0,200,5,0.2)] transition hover:border-[#00c805]/70 hover:shadow-[0_0_80px_rgba(0,200,5,0.35)]"
+              className="group relative block overflow-hidden rounded-[1.75rem] border border-[#ccff00]/45 bg-gradient-to-br from-[#ccff00]/20 via-[#0a140c] to-black p-1 shadow-[0_0_60px_rgba(204, 255, 0,0.2)] transition hover:border-[#ccff00]/70 hover:shadow-[0_0_80px_rgba(204, 255, 0,0.35)]"
             >
               <div className="relative overflow-hidden rounded-[1.4rem] bg-black/50 px-5 py-6 sm:px-8 sm:py-8">
-                <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-[#00c805]/20 blur-3xl transition group-hover:bg-[#00c805]/30" />
-                <div className="pointer-events-none absolute -bottom-20 left-10 h-40 w-40 rounded-full bg-emerald-500/10 blur-3xl" />
+                <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-[#ccff00]/20 blur-3xl transition group-hover:bg-[#ccff00]/30" />
+                <div className="pointer-events-none absolute -bottom-20 left-10 h-40 w-40 rounded-full bg-[#ccff00]/10 blur-3xl" />
 
                 <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center">
                   <div className="relative shrink-0">
@@ -307,18 +307,18 @@ export function TokenBoard() {
                       <img
                         src={official.imageUrl}
                         alt={official.symbol}
-                        className="h-24 w-24 rounded-3xl object-cover shadow-[0_0_40px_rgba(0,200,5,0.35)] ring-2 ring-[#00c805]/50 sm:h-28 sm:w-28"
+                        className="h-24 w-24 rounded-3xl object-cover shadow-[0_0_40px_rgba(204, 255, 0,0.35)] ring-2 ring-[#ccff00]/50 sm:h-28 sm:w-28"
                       />
                     ) : (
-                      <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-[#00c805]/50 to-emerald-950 text-4xl font-black text-[#00c805] ring-2 ring-[#00c805]/50 sm:h-28 sm:w-28">
+                      <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-[#ccff00]/50 to-[#1a2200] text-4xl font-black text-[#ccff00] ring-2 ring-[#ccff00]/50 sm:h-28 sm:w-28">
                         {(official.symbol || "?")[0]}
                       </div>
                     )}
-                    <span className="hm-live-dot absolute -bottom-1 -right-1 h-5 w-5 rounded-full border-[3px] border-[#050806] bg-[#00c805]" />
+                    <span className="hm-live-dot absolute -bottom-1 -right-1 h-5 w-5 rounded-full border-[3px] border-[#050806] bg-[#ccff00]" />
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <div className="inline-flex items-center gap-2 rounded-full bg-[#00c805] px-3 py-1 text-[10px] font-black uppercase tracking-widest text-black">
+                    <div className="inline-flex items-center gap-2 rounded-full bg-[#ccff00] px-3 py-1 text-[10px] font-black uppercase tracking-widest text-black">
                       ★ {config?.featuredSectionTitle || "Official"}
                     </div>
                     <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -347,7 +347,7 @@ export function TokenBoard() {
                         </div>
                         <div
                           className={`font-black tabular-nums ${
-                            offUp ? "text-[#00c805]" : "text-rose-400"
+                            offUp ? "text-[#ccff00]" : "text-rose-400"
                           }`}
                         >
                           {formatPct(official.priceChange24h)}
@@ -365,7 +365,7 @@ export function TokenBoard() {
                   </div>
 
                   <div className="flex shrink-0 flex-col gap-2 sm:items-end">
-                    <span className="rounded-2xl bg-[#00c805] px-6 py-3 text-center text-sm font-black text-black shadow-[0_0_28px_rgba(0,200,5,0.4)] transition group-hover:scale-105">
+                    <span className="rounded-2xl bg-[#ccff00] px-6 py-3 text-center text-sm font-black text-black shadow-[0_0_28px_rgba(204, 255, 0,0.4)] transition group-hover:scale-105">
                       Trade ${official.symbol} →
                     </span>
                     <span className="text-center text-[10px] text-white/35">
@@ -388,7 +388,7 @@ export function TokenBoard() {
                 key={s.n}
                 className="rounded-2xl border border-white/10 bg-black/40 px-4 py-4 backdrop-blur"
               >
-                <div className="text-xs font-black tracking-widest text-[#00c805]">
+                <div className="text-xs font-black tracking-widest text-[#ccff00]">
                   {s.n}
                 </div>
                 <div className="mt-1 text-base font-black text-white">{s.t}</div>
@@ -417,12 +417,12 @@ export function TokenBoard() {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={t.imageUrl} alt="" className="h-5 w-5 rounded-full" />
                   ) : (
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#00c805]/20 text-[9px] font-bold text-[#00c805]">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#ccff00]/20 text-[9px] font-bold text-[#ccff00]">
                       {t.symbol[0]}
                     </span>
                   )}
                   <span className="font-bold text-white">${t.symbol}</span>
-                  <span className={up ? "text-[#00c805]" : "text-rose-400"}>
+                  <span className={up ? "text-[#ccff00]" : "text-rose-400"}>
                     {formatPct(t.priceChange1h ?? t.priceChange24h)}
                   </span>
                   <span className="text-white/30">{formatUsd(t.volume1h ?? t.volume24h)}</span>
@@ -438,7 +438,7 @@ export function TokenBoard() {
         {featuredCards.length > 0 && (
           <section className="space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-[#00c805]">
+              <h2 className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-[#ccff00]">
                 <span className="text-lg">★</span>
                 {config?.featuredSectionTitle || "Featured"}
               </h2>
@@ -462,7 +462,7 @@ export function TokenBoard() {
             <button
               type="button"
               onClick={load}
-              className="mt-2 rounded-xl bg-[#00c805] px-4 py-2 text-xs font-bold text-black"
+              className="mt-2 rounded-xl bg-[#ccff00] px-4 py-2 text-xs font-bold text-black"
             >
               Retry
             </button>
@@ -484,7 +484,7 @@ export function TokenBoard() {
                     onClick={() => setTab(t.id)}
                     className={`flex shrink-0 items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition ${
                       tab === t.id
-                        ? "bg-[#00c805] text-black shadow-[0_0_20px_rgba(0,200,5,0.35)]"
+                        ? "bg-[#ccff00] text-black shadow-[0_0_20px_rgba(204, 255, 0,0.35)]"
                         : "bg-white/5 text-white/55 hover:bg-white/10 hover:text-white"
                     }`}
                   >
@@ -503,7 +503,7 @@ export function TokenBoard() {
                     value={q}
                     onChange={(e) => setQ(e.target.value)}
                     placeholder="Search ticker, name, or 0x address…"
-                    className="w-full rounded-xl border border-white/10 bg-black/40 py-2.5 pl-9 pr-4 text-sm text-white placeholder:text-white/30 outline-none focus:border-[#00c805]/50 focus:ring-1 focus:ring-[#00c805]/25"
+                    className="w-full rounded-xl border border-white/10 bg-black/40 py-2.5 pl-9 pr-4 text-sm text-white placeholder:text-white/30 outline-none focus:border-[#ccff00]/50 focus:ring-1 focus:ring-[#ccff00]/25"
                   />
                 </div>
                 <div className="flex flex-wrap items-center gap-1.5">
@@ -531,7 +531,7 @@ export function TokenBoard() {
                       type="button"
                       onClick={() => setView("grid")}
                       className={`rounded-md px-2.5 py-1 text-[11px] font-bold ${
-                        view === "grid" ? "bg-[#00c805] text-black" : "text-white/40"
+                        view === "grid" ? "bg-[#ccff00] text-black" : "text-white/40"
                       }`}
                     >
                       Grid
@@ -540,7 +540,7 @@ export function TokenBoard() {
                       type="button"
                       onClick={() => setView("table")}
                       className={`rounded-md px-2.5 py-1 text-[11px] font-bold ${
-                        view === "table" ? "bg-[#00c805] text-black" : "text-white/40"
+                        view === "table" ? "bg-[#ccff00] text-black" : "text-white/40"
                       }`}
                     >
                       Table
@@ -577,7 +577,7 @@ export function TokenBoard() {
                 <p className="text-lg font-bold text-white/70">No coins in this filter</p>
                 <p className="mt-2 text-sm text-white/40">
                   Try another tab or{" "}
-                  <Link href="/create" className="font-semibold text-[#00c805]">
+                  <Link href="/create" className="font-semibold text-[#ccff00]">
                     launch the first one
                   </Link>
                 </p>
@@ -617,7 +617,7 @@ export function TokenBoard() {
                         return (
                           <tr
                             key={t.address}
-                            className="border-b border-white/5 transition hover:bg-[#00c805]/[0.06]"
+                            className="border-b border-white/5 transition hover:bg-[#ccff00]/[0.06]"
                           >
                             <td className="px-4 py-3 tabular-nums text-white/30">
                               {i + 1}
@@ -635,7 +635,7 @@ export function TokenBoard() {
                                     className="h-9 w-9 rounded-xl object-cover"
                                   />
                                 ) : (
-                                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#00c805]/15 font-bold text-[#00c805]">
+                                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#ccff00]/15 font-bold text-[#ccff00]">
                                     {t.symbol[0]}
                                   </span>
                                 )}
@@ -653,12 +653,12 @@ export function TokenBoard() {
                               {formatUsd(t.marketCap)}
                             </td>
                             <td
-                              className={`px-4 py-3 font-bold tabular-nums ${up ? "text-[#00c805]" : "text-rose-400"}`}
+                              className={`px-4 py-3 font-bold tabular-nums ${up ? "text-[#ccff00]" : "text-rose-400"}`}
                             >
                               {formatPct(t.priceChange24h)}
                             </td>
                             <td
-                              className={`px-4 py-3 tabular-nums ${up1 ? "text-[#00c805]/80" : "text-rose-400/80"}`}
+                              className={`px-4 py-3 tabular-nums ${up1 ? "text-[#ccff00]/80" : "text-rose-400/80"}`}
                             >
                               {formatPct(t.priceChange1h)}
                             </td>
@@ -674,7 +674,7 @@ export function TokenBoard() {
                             <td className="px-4 py-3 text-right">
                               <Link
                                 href={`/token/${t.address}`}
-                                className="rounded-lg bg-[#00c805]/15 px-2.5 py-1 text-[11px] font-bold text-[#00c805] hover:bg-[#00c805] hover:text-black"
+                                className="rounded-lg bg-[#ccff00]/15 px-2.5 py-1 text-[11px] font-bold text-[#ccff00] hover:bg-[#ccff00] hover:text-black"
                               >
                                 Trade
                               </Link>
@@ -697,7 +697,7 @@ export function TokenBoard() {
             }
             target="_blank"
             rel="noreferrer"
-            className="font-semibold hover:text-[#00c805]"
+            className="font-semibold hover:text-[#ccff00]"
           >
             𝕏 @hoodmemesdotfun
           </a>
@@ -706,7 +706,7 @@ export function TokenBoard() {
               href={config.social.telegram}
               target="_blank"
               rel="noreferrer"
-              className="hover:text-[#00c805]"
+              className="hover:text-[#ccff00]"
             >
               Telegram
             </a>
@@ -716,7 +716,7 @@ export function TokenBoard() {
               href={config.social.discord}
               target="_blank"
               rel="noreferrer"
-              className="hover:text-[#00c805]"
+              className="hover:text-[#ccff00]"
             >
               Discord
             </a>
@@ -743,7 +743,7 @@ function HeroStatBig({
       </div>
       <div
         className={`mt-1 text-xl font-black tabular-nums sm:text-2xl ${
-          accent ? "text-[#00c805]" : "text-white"
+          accent ? "text-[#ccff00]" : "text-white"
         }`}
       >
         {value}

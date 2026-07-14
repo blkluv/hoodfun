@@ -113,39 +113,39 @@ export default function RootLayout({
           </main>
           <footer className="border-t border-white/5 py-10 text-center text-[11px] text-white/30">
             <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-center gap-x-4 gap-y-2">
-              <Link href="/" className="font-semibold text-white/55 hover:text-[#00c805]">
+              <Link href="/" className="font-semibold text-white/55 hover:text-[#ccff00]">
                 Board
               </Link>
-              <Link href="/create" className="font-semibold text-white/55 hover:text-[#00c805]">
+              <Link href="/create" className="font-semibold text-white/55 hover:text-[#ccff00]">
                 Launch
               </Link>
               <Link
                 href="/bridge"
-                className="font-semibold text-white/55 hover:text-[#00c805]"
+                className="font-semibold text-white/55 hover:text-[#ccff00]"
               >
                 Bridge
               </Link>
               <Link
                 href="/roadmap"
-                className="font-semibold text-white/55 hover:text-[#00c805]"
+                className="font-semibold text-white/55 hover:text-[#ccff00]"
               >
                 Roadmap
               </Link>
               <Link
                 href="/how-it-works"
-                className="font-semibold text-white/55 hover:text-[#00c805]"
+                className="font-semibold text-white/55 hover:text-[#ccff00]"
               >
                 How it works
               </Link>
               <Link
                 href="/tokenlist"
-                className="font-semibold text-white/55 hover:text-[#00c805]"
+                className="font-semibold text-white/55 hover:text-[#ccff00]"
               >
                 Token list
               </Link>
               <Link
                 href="/disclaimer"
-                className="font-semibold text-white/55 hover:text-[#00c805]"
+                className="font-semibold text-white/55 hover:text-[#ccff00]"
               >
                 Disclaimer
               </Link>
@@ -153,7 +153,7 @@ export default function RootLayout({
                 href="https://x.com/hoodmemesdotfun"
                 target="_blank"
                 rel="noreferrer"
-                className="font-semibold text-white/55 hover:text-[#00c805]"
+                className="font-semibold text-white/55 hover:text-[#ccff00]"
               >
                 𝕏 @hoodmemesdotfun
               </a>

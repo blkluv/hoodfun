@@ -36,7 +36,7 @@ export function RequireAuth({
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="mt-5 rounded-xl bg-[#00c805] px-5 py-2.5 text-sm font-bold text-black hover:bg-[#00e006]"
+            className="mt-5 rounded-xl bg-[#ccff00] px-5 py-2.5 text-sm font-bold text-black hover:bg-[#e8ff66]"
           >
             Log in
           </button>

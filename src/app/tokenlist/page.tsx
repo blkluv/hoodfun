@@ -26,7 +26,7 @@ export default async function TokenListPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-8 py-8">
       <div>
-        <div className="text-[10px] font-bold uppercase tracking-widest text-[#00c805]">
+        <div className="text-[10px] font-bold uppercase tracking-widest text-[#ccff00]">
           Legit stack
         </div>
         <h1 className="mt-1 text-3xl font-black text-white">
@@ -36,7 +36,7 @@ export default async function TokenListPage() {
           Public{" "}
           <a
             href="https://github.com/Uniswap/token-lists"
-            className="text-[#00c805] hover:underline"
+            className="text-[#ccff00] hover:underline"
             target="_blank"
             rel="noreferrer"
           >
@@ -47,8 +47,8 @@ export default async function TokenListPage() {
         </p>
       </div>
 
-      <section className="rounded-2xl border border-[#00c805]/25 bg-[#00c805]/5 p-5">
-        <div className="text-[10px] font-bold uppercase tracking-wider text-[#00c805]">
+      <section className="rounded-2xl border border-[#ccff00]/25 bg-[#ccff00]/5 p-5">
+        <div className="text-[10px] font-bold uppercase tracking-wider text-[#ccff00]">
           List URL
         </div>
         <code className="mt-2 block break-all rounded-xl bg-black/40 px-3 py-2.5 font-mono text-xs text-white/85">
@@ -59,7 +59,7 @@ export default async function TokenListPage() {
             href={LIST_URL}
             target="_blank"
             rel="noreferrer"
-            className="rounded-xl bg-[#00c805] px-4 py-2 text-sm font-black text-black"
+            className="rounded-xl bg-[#ccff00] px-4 py-2 text-sm font-black text-black"
           >
             Open JSON
           </a>
@@ -159,7 +159,7 @@ export default async function TokenListPage() {
                     className="h-9 w-9 rounded-xl object-cover bg-black/40"
                   />
                 ) : (
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#00c805]/15 text-xs font-black text-[#00c805]">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#ccff00]/15 text-xs font-black text-[#ccff00]">
                     {t.symbol[0]}
                   </div>
                 )}
@@ -171,7 +171,7 @@ export default async function TokenListPage() {
                 </div>
                 <Link
                   href={`/token/${t.address}`}
-                  className="text-xs font-semibold text-[#00c805]"
+                  className="text-xs font-semibold text-[#ccff00]"
                 >
                   View
                 </Link>

@@ -86,11 +86,11 @@ export function QuickWallet({ compact = false }: { compact?: boolean }) {
 
   return (
     <div
-      className={`rounded-2xl border border-[#00c805]/25 bg-[#00c805]/[0.06] ${compact ? "p-3" : "p-4"} space-y-3`}
+      className={`rounded-2xl border border-[#ccff00]/25 bg-[#ccff00]/[0.06] ${compact ? "p-3" : "p-4"} space-y-3`}
     >
       <div className="flex items-start justify-between gap-2">
         <div>
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-[#00c805]">
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-[#ccff00]">
             Quick wallet · no MetaMask
           </div>
           <p className="mt-0.5 text-[11px] text-white/45">
@@ -114,7 +114,7 @@ export function QuickWallet({ compact = false }: { compact?: boolean }) {
         <button
           type="button"
           onClick={copyAddr}
-          className="rounded-lg bg-[#00c805] px-2.5 py-1 text-xs font-bold text-black"
+          className="rounded-lg bg-[#ccff00] px-2.5 py-1 text-xs font-bold text-black"
         >
           {copied ? "Copied" : "Copy"}
         </button>
@@ -129,7 +129,7 @@ export function QuickWallet({ compact = false }: { compact?: boolean }) {
           href={`${ROBINHOOD_CHAIN.blockExplorers.default.url}/address/${address}`}
           target="_blank"
           rel="noreferrer"
-          className="text-xs text-white/40 hover:text-[#00c805]"
+          className="text-xs text-white/40 hover:text-[#ccff00]"
         >
           Explorer ↗
         </a>
@@ -165,7 +165,7 @@ export function QuickWallet({ compact = false }: { compact?: boolean }) {
           <button
             type="button"
             onClick={() => navigator.clipboard.writeText(pk)}
-            className="text-[11px] text-[#00c805]"
+            className="text-[11px] text-[#ccff00]"
           >
             Copy private key
           </button>
@@ -178,7 +178,7 @@ export function QuickWallet({ compact = false }: { compact?: boolean }) {
             value={importVal}
             onChange={(e) => setImportVal(e.target.value)}
             placeholder="Import private key (0x…)"
-            className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/30 px-2 py-1.5 font-mono text-[11px] text-white outline-none focus:border-[#00c805]/40"
+            className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/30 px-2 py-1.5 font-mono text-[11px] text-white outline-none focus:border-[#ccff00]/40"
           />
           <button
             type="button"

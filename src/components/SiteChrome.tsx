@@ -30,7 +30,7 @@ export function AnnouncementBar() {
     ann.tone === "warn"
       ? "border-amber-500/40 bg-amber-500/15 text-amber-50"
       : ann.tone === "success"
-        ? "border-[#00c805]/35 bg-[#00c805]/12 text-[#d4ffd4]"
+        ? "border-[#ccff00]/35 bg-[#ccff00]/12 text-[#d4ffd4]"
         : "border-sky-500/30 bg-sky-500/12 text-sky-50";
 
   function dismiss() {
@@ -115,7 +115,7 @@ function Tab({
     <Link
       href={href}
       className={`rounded-xl px-1 py-2 text-[10px] font-bold ${
-        primary ? "bg-[#00c805]/15 text-[#00c805]" : "text-white/45"
+        primary ? "bg-[#ccff00]/15 text-[#ccff00]" : "text-white/45"
       }`}
     >
       {label}

@@ -45,7 +45,7 @@ export default function HowItWorksPage() {
             key={s.t}
             className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
           >
-            <div className="text-[10px] font-bold text-[#00c805]">
+            <div className="text-[10px] font-bold text-[#ccff00]">
               Step {i + 1}
             </div>
             <div className="text-lg font-black text-white">{s.t}</div>
@@ -68,7 +68,7 @@ export default function HowItWorksPage() {
         </p>
         <p>
           <strong className="text-white/80">2.</strong> Public{" "}
-          <Link href="/tokenlist" className="text-[#00c805] hover:underline">
+          <Link href="/tokenlist" className="text-[#ccff00] hover:underline">
             token list
           </Link>{" "}
           for wallets/apps that import custom lists.
@@ -77,7 +77,7 @@ export default function HowItWorksPage() {
           <strong className="text-white/80">3.</strong> Optional paid{" "}
           <a
             href="https://marketplace.dexscreener.com/product/token-info"
-            className="text-[#00c805] hover:underline"
+            className="text-[#ccff00] hover:underline"
             target="_blank"
             rel="noreferrer"
           >
@@ -90,7 +90,7 @@ export default function HowItWorksPage() {
       <div className="flex flex-wrap gap-3">
         <Link
           href="/create"
-          className="rounded-xl bg-[#00c805] px-5 py-2.5 text-sm font-black text-black"
+          className="rounded-xl bg-[#ccff00] px-5 py-2.5 text-sm font-black text-black"
         >
           Launch a coin
         </Link>

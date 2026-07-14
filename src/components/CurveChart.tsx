@@ -80,7 +80,7 @@ export function CurveChart({
                 : `${curve.priceEth.toExponential(3)} ETH`}
             </span>
             <span
-              className={`text-sm font-bold ${up ? "text-[#00c805]" : "text-rose-400"}`}
+              className={`text-sm font-bold ${up ? "text-[#ccff00]" : "text-rose-400"}`}
             >
               {curve.trades.length} trades
             </span>
@@ -89,7 +89,7 @@ export function CurveChart({
         <div className="text-right text-[11px] text-white/40">
           {curve.graduated ? (
             <div>
-              <span className="font-bold text-[#00c805]">Graduated → Uniswap</span>
+              <span className="font-bold text-[#ccff00]">Graduated → Uniswap</span>
               {curve.uniswapPair && (
                 <div className="mt-0.5 font-mono text-[10px]">
                   pair {curve.uniswapPair.slice(0, 10)}…
@@ -100,7 +100,7 @@ export function CurveChart({
             <>
               <div>
                 Bonding curve · DexScreener after{" "}
-                <span className="text-[#00c805]">
+                <span className="text-[#ccff00]">
                   {curve.graduateThresholdEth || 0.25} ETH
                 </span>
               </div>
@@ -126,12 +126,12 @@ export function CurveChart({
             <linearGradient id="curveFill" x1="0" y1="0" x2="0" y2="1">
               <stop
                 offset="0%"
-                stopColor={up ? "#00c805" : "#f43f5e"}
+                stopColor={up ? "#ccff00" : "#f43f5e"}
                 stopOpacity="0.35"
               />
               <stop
                 offset="100%"
-                stopColor={up ? "#00c805" : "#f43f5e"}
+                stopColor={up ? "#ccff00" : "#f43f5e"}
                 stopOpacity="0"
               />
             </linearGradient>
@@ -152,7 +152,7 @@ export function CurveChart({
           <path
             d={path}
             fill="none"
-            stroke={up ? "#00c805" : "#f43f5e"}
+            stroke={up ? "#ccff00" : "#f43f5e"}
             strokeWidth="3"
             strokeLinejoin="round"
             strokeLinecap="round"
@@ -162,7 +162,7 @@ export function CurveChart({
               cx={points[points.length - 1].x}
               cy={points[points.length - 1].y}
               r="6"
-              fill={up ? "#00c805" : "#f43f5e"}
+              fill={up ? "#ccff00" : "#f43f5e"}
               className="hm-live-dot"
             />
           )}
@@ -182,7 +182,7 @@ export function CurveChart({
         </div>
         <div className="h-2 overflow-hidden rounded-full bg-white/10">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-[#00a004] to-[#00c805] transition-all"
+            className="h-full rounded-full bg-gradient-to-r from-[#b8e600] to-[#ccff00] transition-all"
             style={{ width: `${Math.max(2, curve.progressPct)}%` }}
           />
         </div>
@@ -257,7 +257,7 @@ export function RecentTrades({ curve }: { curve: CurveSnapshot }) {
           >
             <span
               className={
-                t.type === "buy" ? "font-bold text-[#00c805]" : "font-bold text-rose-400"
+                t.type === "buy" ? "font-bold text-[#ccff00]" : "font-bold text-rose-400"
               }
             >
               {t.type.toUpperCase()}
@@ -274,7 +274,7 @@ export function RecentTrades({ curve }: { curve: CurveSnapshot }) {
                 href={`https://robinhoodchain.blockscout.com/tx/${t.txHash}`}
                 target="_blank"
                 rel="noreferrer"
-                className="text-[#00c805]/80 hover:underline"
+                className="text-[#ccff00]/80 hover:underline"
               >
                 tx
               </a>

@@ -121,7 +121,7 @@ const PHASES: Phase[] = [
 function StatusPill({ status }: { status: Phase["status"] }) {
   if (status === "live") {
     return (
-      <span className="rounded-full bg-[#00c805]/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#00c805]">
+      <span className="rounded-full bg-[#ccff00]/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#ccff00]">
         Live
       </span>
     );
@@ -144,7 +144,7 @@ export default function RoadmapPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-10 py-8 pb-16">
       <div>
-        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#00c805]">
+        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#ccff00]">
           Product
         </p>
         <h1 className="mt-1 text-3xl font-black tracking-tight text-white sm:text-4xl">
@@ -158,7 +158,7 @@ export default function RoadmapPage() {
         <div className="mt-4 flex flex-wrap gap-2">
           <Link
             href="/create"
-            className="rounded-xl bg-[#00c805] px-4 py-2 text-sm font-black text-black"
+            className="rounded-xl bg-[#ccff00] px-4 py-2 text-sm font-black text-black"
           >
             Launch a coin
           </Link>
@@ -180,8 +180,8 @@ export default function RoadmapPage() {
       </div>
 
       {/* Highlight: buyback */}
-      <section className="rounded-2xl border border-[#00c805]/35 bg-gradient-to-br from-[#00c805]/12 to-transparent p-5 sm:p-6">
-        <div className="text-[10px] font-bold uppercase tracking-widest text-[#00c805]">
+      <section className="rounded-2xl border border-[#ccff00]/35 bg-gradient-to-br from-[#ccff00]/12 to-transparent p-5 sm:p-6">
+        <div className="text-[10px] font-bold uppercase tracking-widest text-[#ccff00]">
           North star
         </div>
         <h2 className="mt-1 text-xl font-black text-white sm:text-2xl">
@@ -195,19 +195,19 @@ export default function RoadmapPage() {
         </p>
         <ul className="mt-4 space-y-2 text-sm text-white/50">
           <li className="flex gap-2">
-            <span className="text-[#00c805]">▸</span>
+            <span className="text-[#ccff00]">▸</span>
             Create fees and protocol cuts feed the engine
           </li>
           <li className="flex gap-2">
-            <span className="text-[#00c805]">▸</span>
+            <span className="text-[#ccff00]">▸</span>
             Buys execute on open market liquidity
           </li>
           <li className="flex gap-2">
-            <span className="text-[#00c805]">▸</span>
+            <span className="text-[#ccff00]">▸</span>
             Burns reduce circulating supply over time
           </li>
           <li className="flex gap-2">
-            <span className="text-[#00c805]">▸</span>
+            <span className="text-[#ccff00]">▸</span>
             Public dashboard so anyone can audit the flow
           </li>
         </ul>
@@ -238,7 +238,7 @@ export default function RoadmapPage() {
                 className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-5"
               >
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-mono text-[11px] font-bold text-[#00c805]/80">
+                  <span className="font-mono text-[11px] font-bold text-[#ccff00]/80">
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <h3 className="text-base font-black text-white">
@@ -268,7 +268,7 @@ export default function RoadmapPage() {
           posted from{" "}
           <a
             href="https://x.com/hoodmemesdotfun"
-            className="font-semibold text-[#00c805] hover:underline"
+            className="font-semibold text-[#ccff00] hover:underline"
             target="_blank"
             rel="noreferrer"
           >
@@ -278,11 +278,11 @@ export default function RoadmapPage() {
         </p>
         <p className="mt-3">
           See also{" "}
-          <Link href="/disclaimer" className="text-[#00c805] hover:underline">
+          <Link href="/disclaimer" className="text-[#ccff00] hover:underline">
             Disclaimer
           </Link>{" "}
           ·{" "}
-          <Link href="/how-it-works" className="text-[#00c805] hover:underline">
+          <Link href="/how-it-works" className="text-[#ccff00] hover:underline">
             How it works
           </Link>
           .

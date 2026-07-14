@@ -366,7 +366,7 @@ export function TokenPageClient({
                   className="h-14 w-14 shrink-0 rounded-lg object-cover ring-1 ring-[#2a2f37]"
                 />
               ) : (
-                <div className="grid h-14 w-14 shrink-0 place-items-center rounded-lg bg-[#0e1116] text-xl font-bold text-[#00c805] ring-1 ring-[#2a2f37]">
+                <div className="grid h-14 w-14 shrink-0 place-items-center rounded-lg bg-[#0e1116] text-xl font-bold text-[#ccff00] ring-1 ring-[#2a2f37]">
                   {symbol[0]}
                 </div>
               )}
@@ -380,7 +380,7 @@ export function TokenPageClient({
                       {name}
                     </span>
                   )}
-                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#00c805]" />
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#ccff00]" />
                 </div>
                 <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                   {isInstant && <Badge green>Uniswap V3</Badge>}
@@ -406,7 +406,7 @@ export function TokenPageClient({
                   <button
                     type="button"
                     onClick={() => copy(address, "ca")}
-                    className="font-mono text-[#9aa3ab] transition-colors hover:text-[#00c805]"
+                    className="font-mono text-[#9aa3ab] transition-colors hover:text-[#ccff00]"
                   >
                     {copied === "ca" ? "Copied" : shortAddr(address, 6)}
                   </button>
@@ -414,7 +414,7 @@ export function TokenPageClient({
                     <button
                       type="button"
                       onClick={() => copy(pairAddress, "pair")}
-                      className="font-mono text-[#9aa3ab] transition-colors hover:text-[#00c805]"
+                      className="font-mono text-[#9aa3ab] transition-colors hover:text-[#ccff00]"
                     >
                       pool {shortAddr(pairAddress, 4)}
                     </button>
@@ -423,7 +423,7 @@ export function TokenPageClient({
                     href={explorer}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-[#9aa3ab] hover:text-[#00c805]"
+                    className="text-[#9aa3ab] hover:text-[#ccff00]"
                   >
                     Explorer
                   </a>
@@ -432,7 +432,7 @@ export function TokenPageClient({
                       href={dexscreenerUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-[#9aa3ab] hover:text-[#00c805]"
+                      className="text-[#9aa3ab] hover:text-[#ccff00]"
                     >
                       DexScreener
                     </a>
@@ -443,7 +443,7 @@ export function TokenPageClient({
                       href={s.href}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-[#9aa3ab] hover:text-[#00c805]"
+                      className="text-[#9aa3ab] hover:text-[#ccff00]"
                     >
                       {s.label}
                     </a>
@@ -459,7 +459,7 @@ export function TokenPageClient({
               </div>
               <div
                 className={`text-sm font-semibold tabular-nums ${
-                  up24 ? "text-[#00c805]" : "text-[#f2555a]"
+                  up24 ? "text-[#ccff00]" : "text-[#f2555a]"
                 }`}
               >
                 {formatPct(chg.h24)} 24h
@@ -480,7 +480,7 @@ export function TokenPageClient({
                     <div className="text-[10px] text-[#9aa3ab]">{lab}</div>
                     <div
                       className={`text-[11px] font-semibold tabular-nums ${
-                        (v ?? 0) >= 0 ? "text-[#00c805]" : "text-[#f2555a]"
+                        (v ?? 0) >= 0 ? "text-[#ccff00]" : "text-[#f2555a]"
                       }`}
                     >
                       {formatPct(v)}
@@ -544,7 +544,7 @@ export function TokenPageClient({
                       onClick={() => setMainTab(id)}
                       className={`rounded px-3 py-1.5 text-xs font-semibold transition ${
                         mainTab === id
-                          ? "bg-[#00c805] text-black"
+                          ? "bg-[#ccff00] text-black"
                           : "text-[#9aa3ab] hover:text-[#e8eaed]"
                       }`}
                     >
@@ -561,7 +561,7 @@ export function TokenPageClient({
                       href={dexscreenerUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="hover:text-[#00c805]"
+                      className="hover:text-[#ccff00]"
                     >
                       DexScreener ↗
                     </a>
@@ -739,7 +739,7 @@ export function TokenPageClient({
                   </h3>
                   <Link
                     href="/"
-                    className="text-xs font-semibold text-[#00c805] hover:underline"
+                    className="text-xs font-semibold text-[#ccff00] hover:underline"
                   >
                     Board →
                   </Link>
@@ -751,7 +751,7 @@ export function TokenPageClient({
                       <Link
                         key={t.address}
                         href={`/token/${t.address}`}
-                        className="rounded-lg border border-[#2a2f37] bg-[#171b21] p-2.5 transition hover:border-[#00c805]/40"
+                        className="rounded-lg border border-[#2a2f37] bg-[#171b21] p-2.5 transition hover:border-[#ccff00]/40"
                       >
                         <div className="flex items-center gap-2">
                           {t.imageUrl ? (
@@ -762,7 +762,7 @@ export function TokenPageClient({
                               className="h-7 w-7 rounded-md object-cover"
                             />
                           ) : (
-                            <div className="grid h-7 w-7 place-items-center rounded-md bg-[#0e1116] text-[10px] font-bold text-[#00c805]">
+                            <div className="grid h-7 w-7 place-items-center rounded-md bg-[#0e1116] text-[10px] font-bold text-[#ccff00]">
                               {(t.symbol || "?")[0]}
                             </div>
                           )}
@@ -776,7 +776,7 @@ export function TokenPageClient({
                               </span>
                               <span
                                 className={
-                                  up ? "text-[#00c805]" : "text-[#f2555a]"
+                                  up ? "text-[#ccff00]" : "text-[#f2555a]"
                                 }
                               >
                                 {formatPct(t.priceChange24h)}
@@ -846,7 +846,7 @@ export function TokenPageClient({
             <div className="truncate text-[11px] tabular-nums text-[#9aa3ab]">
               {formatPrice(stats?.priceUsd)}{" "}
               <span
-                className={up24 ? "text-[#00c805]" : "text-[#f2555a]"}
+                className={up24 ? "text-[#ccff00]" : "text-[#f2555a]"}
               >
                 {formatPct(chg.h24)}
               </span>
@@ -863,7 +863,7 @@ export function TokenPageClient({
             href={tradeUrl(ethIn)}
             target="_blank"
             rel="noreferrer"
-            className="rounded-md bg-[#00c805] px-5 py-2.5 text-sm font-bold text-black"
+            className="rounded-md bg-[#ccff00] px-5 py-2.5 text-sm font-bold text-black"
           >
             Buy
           </a>
@@ -886,7 +886,7 @@ function Badge({
   warn?: boolean;
 }) {
   const cls = green
-    ? "bg-[#00c805]/15 text-[#00c805]"
+    ? "bg-[#ccff00]/15 text-[#ccff00]"
     : warn
       ? "bg-[#f08c1a]/15 text-[#f0bc7a]"
       : "bg-[#0e1116] text-[#9aa3ab]";
@@ -944,7 +944,7 @@ function Row({
 }) {
   const color =
     accent === "green"
-      ? "text-[#00c805]"
+      ? "text-[#ccff00]"
       : accent === "warn"
         ? "text-[#f0bc7a]"
         : accent === "down"
@@ -955,7 +955,7 @@ function Row({
       href={href}
       target="_blank"
       rel="noreferrer"
-      className={`${color} text-xs font-semibold hover:text-[#00c805] hover:underline ${mono ? "font-mono text-[10px]" : ""}`}
+      className={`${color} text-xs font-semibold hover:text-[#ccff00] hover:underline ${mono ? "font-mono text-[10px]" : ""}`}
     >
       {v}
     </a>
@@ -990,13 +990,13 @@ function FlowBar({
       <div className="mb-1 flex justify-between text-[11px]">
         <span className="text-[#9aa3ab]">{label}</span>
         <span className="tabular-nums">
-          <span className="text-[#00c805]">{buys}B</span>
+          <span className="text-[#ccff00]">{buys}B</span>
           <span className="text-[#2a2f37]"> · </span>
           <span className="text-[#f2555a]">{sells}S</span>
         </span>
       </div>
       <div className="flex h-1.5 overflow-hidden rounded-full bg-[#f2555a]/30">
-        <div className="bg-[#00c805]" style={{ width: `${pct}%` }} />
+        <div className="bg-[#ccff00]" style={{ width: `${pct}%` }} />
       </div>
     </div>
   );
@@ -1023,7 +1023,7 @@ function ContractRow({
           href={href}
           target="_blank"
           rel="noreferrer"
-          className="block truncate font-mono text-[10px] text-[#e8eaed]/80 hover:text-[#00c805]"
+          className="block truncate font-mono text-[10px] text-[#e8eaed]/80 hover:text-[#ccff00]"
         >
           {shortAddr(addr, 6)}
         </a>
@@ -1081,7 +1081,7 @@ function EmptyChart({
             }
             target="_blank"
             rel="noreferrer"
-            className="mt-2 inline-block text-xs font-semibold text-[#00c805] hover:underline"
+            className="mt-2 inline-block text-xs font-semibold text-[#ccff00] hover:underline"
           >
             Open on DexScreener ↗
           </a>

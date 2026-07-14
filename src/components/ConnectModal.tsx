@@ -90,7 +90,7 @@ export function ConnectModal({
             type="button"
             disabled={busy}
             onClick={() => mm(true)}
-            className="flex w-full items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-left transition hover:border-[#00c805]/40 hover:bg-white/[0.08] disabled:opacity-50"
+            className="flex w-full items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-left transition hover:border-[#ccff00]/40 hover:bg-white/[0.08] disabled:opacity-50"
           >
             <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-500/20 text-lg">
               🦊
@@ -109,9 +109,9 @@ export function ConnectModal({
             type="button"
             disabled={busy}
             onClick={qw}
-            className="flex w-full items-center gap-3 rounded-xl border border-[#00c805]/30 bg-[#00c805]/10 px-4 py-3 text-left transition hover:bg-[#00c805]/15 disabled:opacity-50"
+            className="flex w-full items-center gap-3 rounded-xl border border-[#ccff00]/30 bg-[#ccff00]/10 px-4 py-3 text-left transition hover:bg-[#ccff00]/15 disabled:opacity-50"
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#00c805]/25 text-sm font-black text-[#00c805]">
+            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#ccff00]/25 text-sm font-black text-[#ccff00]">
               QW
             </span>
             <span>
@@ -149,14 +149,14 @@ export function ConnectModal({
                 value={importKey}
                 onChange={(e) => setImportKey(e.target.value)}
                 placeholder="0x… private key"
-                className="w-full rounded-lg border border-white/10 bg-black/50 px-3 py-2 font-mono text-[11px] text-white outline-none focus:border-[#00c805]/40"
+                className="w-full rounded-lg border border-white/10 bg-black/50 px-3 py-2 font-mono text-[11px] text-white outline-none focus:border-[#ccff00]/40"
                 autoComplete="off"
                 spellCheck={false}
               />
               <button
                 type="button"
                 onClick={doImport}
-                className="w-full rounded-lg bg-[#00c805] py-2 text-sm font-black text-black"
+                className="w-full rounded-lg bg-[#ccff00] py-2 text-sm font-black text-black"
               >
                 Import & log in
               </button>

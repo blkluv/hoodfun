@@ -13,7 +13,7 @@ import { VerifyXPanel, VerifiedBadge, type XVerification } from "./VerifyXPanel"
 import { compressImageFile } from "@/lib/image-compress";
 
 const inputCls =
-  "w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-sm text-white placeholder:text-white/28 outline-none transition focus:border-[#00c805]/50 focus:ring-1 focus:ring-[#00c805]/25";
+  "w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-sm text-white placeholder:text-white/28 outline-none transition focus:border-[#ccff00]/50 focus:ring-1 focus:ring-[#ccff00]/25";
 
 /** Matches DeployV3 default launchFee */
 const LAUNCH_FEE = "0.0005";
@@ -352,7 +352,7 @@ export function CreateForm() {
               }}
               className={`flex-1 rounded-xl px-2 py-2.5 text-center text-[11px] font-bold transition sm:text-xs ${
                 i === step
-                  ? "bg-[#00c805] text-black shadow-[0_0_20px_rgba(0,200,5,0.3)]"
+                  ? "bg-[#ccff00] text-black shadow-[0_0_20px_rgba(204, 255, 0,0.3)]"
                   : i < step
                     ? "bg-white/10 text-white/80 hover:bg-white/15"
                     : "text-white/30"
@@ -371,7 +371,7 @@ export function CreateForm() {
           >
             <div className="flex flex-col gap-5 sm:flex-row">
               <div className="flex flex-col items-center gap-2">
-                <label className="group relative flex h-28 w-28 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-white/15 bg-black/30 transition hover:border-[#00c805]/50">
+                <label className="group relative flex h-28 w-28 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-white/15 bg-black/30 transition hover:border-[#ccff00]/50">
                   {imagePreview ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -454,7 +454,7 @@ export function CreateForm() {
                   size="sm"
                 />
               ) : (
-                <span className="rounded-full bg-[#00c805]/15 px-2 py-0.5 text-[10px] font-bold text-[#00c805]">
+                <span className="rounded-full bg-[#ccff00]/15 px-2 py-0.5 text-[10px] font-bold text-[#ccff00]">
                   Builds credibility
                 </span>
               )}
@@ -502,7 +502,7 @@ export function CreateForm() {
             <button
               type="button"
               onClick={() => setShowMoreSocial((v) => !v)}
-              className="mt-3 text-xs font-semibold text-[#00c805] hover:underline"
+              className="mt-3 text-xs font-semibold text-[#ccff00] hover:underline"
             >
               {showMoreSocial
                 ? "− Hide extra links"
@@ -542,8 +542,8 @@ export function CreateForm() {
             title="Initial buy"
             subtitle="100% supply → single-sided V3 LP (locked). Your ETH is the first buy — same model as LaunchHood."
           >
-            <div className="rounded-xl border border-[#00c805]/25 bg-[#00c805]/8 px-4 py-3 text-[12px] leading-relaxed text-white/70">
-              <strong className="text-[#00c805]">How it works</strong>
+            <div className="rounded-xl border border-[#ccff00]/25 bg-[#ccff00]/8 px-4 py-3 text-[12px] leading-relaxed text-white/70">
+              <strong className="text-[#ccff00]">How it works</strong>
               <ul className="mt-2 space-y-1 list-disc pl-4 text-white/55">
                 <li>1B tokens land in a Uni V3 1% pool (one-sided, locked forever)</li>
                 <li>Starting FDV ≈ ~1.37 ETH (~$2.4k at ~$1.8k/ETH)</li>
@@ -562,7 +562,7 @@ export function CreateForm() {
                     onClick={() => setBuyEth(v)}
                     className={`rounded-lg px-3 py-1.5 text-xs font-bold ${
                       buyEth === v
-                        ? "bg-[#00c805] text-black"
+                        ? "bg-[#ccff00] text-black"
                         : "bg-white/10 text-white/70 hover:bg-white/15"
                     }`}
                   >
@@ -637,7 +637,7 @@ export function CreateForm() {
             <button
               type="button"
               onClick={next}
-              className="flex-1 rounded-xl bg-[#00c805] py-3 text-sm font-black text-black shadow-[0_0_24px_rgba(0,200,5,0.3)] hover:bg-[#00e006]"
+              className="flex-1 rounded-xl bg-[#ccff00] py-3 text-sm font-black text-black shadow-[0_0_24px_rgba(204, 255, 0,0.3)] hover:bg-[#e8ff66]"
             >
               Continue
             </button>
@@ -646,7 +646,7 @@ export function CreateForm() {
               type="button"
               disabled={busy || !configured}
               onClick={onSubmit}
-              className="flex-1 rounded-xl bg-[#00c805] py-3 text-sm font-black text-black shadow-[0_0_28px_rgba(0,200,5,0.4)] hover:bg-[#00e006] disabled:opacity-40"
+              className="flex-1 rounded-xl bg-[#ccff00] py-3 text-sm font-black text-black shadow-[0_0_28px_rgba(204, 255, 0,0.4)] hover:bg-[#e8ff66] disabled:opacity-40"
             >
               {busy ? "Launching on Uniswap V3…" : `Launch $${symbol || "TOKEN"}`}
             </button>
@@ -661,7 +661,7 @@ export function CreateForm() {
 
       <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
         <div className="hm-glass-green overflow-hidden rounded-3xl p-5">
-          <div className="text-[10px] font-bold uppercase tracking-widest text-[#00c805]/80">
+          <div className="text-[10px] font-bold uppercase tracking-widest text-[#ccff00]/80">
             Live preview
           </div>
           <div className="mt-4 flex items-center gap-3">
@@ -670,10 +670,10 @@ export function CreateForm() {
               <img
                 src={imagePreview}
                 alt=""
-                className="h-14 w-14 rounded-2xl object-cover ring-2 ring-[#00c805]/30"
+                className="h-14 w-14 rounded-2xl object-cover ring-2 ring-[#ccff00]/30"
               />
             ) : (
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-black/40 text-xl font-black text-[#00c805] ring-2 ring-[#00c805]/25">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-black/40 text-xl font-black text-[#ccff00] ring-2 ring-[#ccff00]/25">
                 {(symbol || name || "?")[0]?.toUpperCase()}
               </div>
             )}
@@ -719,7 +719,7 @@ export function CreateForm() {
           </div>
           <Link
             href="/account"
-            className="mt-2 inline-block text-xs font-semibold text-[#00c805] hover:underline"
+            className="mt-2 inline-block text-xs font-semibold text-[#ccff00] hover:underline"
           >
             Manage wallet →
           </Link>
@@ -781,10 +781,10 @@ function SuccessPanel({
           <img
             src={imagePreview}
             alt=""
-            className="mx-auto h-20 w-20 rounded-2xl object-cover ring-2 ring-[#00c805]/40"
+            className="mx-auto h-20 w-20 rounded-2xl object-cover ring-2 ring-[#ccff00]/40"
           />
         ) : (
-          <div className="text-[10px] font-bold uppercase tracking-widest text-[#00c805]">
+          <div className="text-[10px] font-bold uppercase tracking-widest text-[#ccff00]">
             Launch complete
           </div>
         )}
@@ -798,10 +798,10 @@ function SuccessPanel({
         <button
           type="button"
           onClick={() => navigator.clipboard.writeText(token)}
-          className="mt-4 w-full break-all rounded-xl border border-white/10 bg-black/40 px-3 py-2.5 font-mono text-[11px] text-white/60 hover:border-[#00c805]/40 hover:text-white"
+          className="mt-4 w-full break-all rounded-xl border border-white/10 bg-black/40 px-3 py-2.5 font-mono text-[11px] text-white/60 hover:border-[#ccff00]/40 hover:text-white"
         >
           {token}
-          <span className="mt-1 block font-sans text-[10px] font-bold text-[#00c805]">
+          <span className="mt-1 block font-sans text-[10px] font-bold text-[#ccff00]">
             Tap to copy CA
           </span>
         </button>
@@ -814,7 +814,7 @@ function SuccessPanel({
       <div className="grid gap-2 sm:grid-cols-2">
         <Link
           href={`/token/${token}${pool ? `?pair=${pool}` : ""}`}
-          className="rounded-xl bg-[#00c805] px-5 py-3 text-sm font-black text-black"
+          className="rounded-xl bg-[#ccff00] px-5 py-3 text-sm font-black text-black"
         >
           Token page
         </Link>
@@ -855,7 +855,7 @@ function SuccessPanel({
       </div>
 
       <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left space-y-2 text-[12px] text-white/50">
-        <div className="text-[10px] font-bold uppercase tracking-widest text-[#00c805]">
+        <div className="text-[10px] font-bold uppercase tracking-widest text-[#ccff00]">
           Share
         </div>
         <p className="break-all font-mono text-[11px] text-white/40">{fomoUrl}</p>
@@ -918,7 +918,7 @@ function Row({
   return (
     <div
       className={`flex justify-between gap-4 rounded-xl px-3 py-2.5 ${
-        highlight ? "bg-[#00c805]/10 text-[#00c805]" : "bg-black/30 text-white/80"
+        highlight ? "bg-[#ccff00]/10 text-[#ccff00]" : "bg-black/30 text-white/80"
       }`}
     >
       <span className={highlight ? "" : "text-white/45"}>{k}</span>

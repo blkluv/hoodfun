@@ -23,7 +23,7 @@ export function ChainLogo({
   if (failed) {
     return (
       <span
-        className={`inline-flex shrink-0 items-center justify-center rounded-full bg-[#0e1116] text-[10px] font-bold text-[#00c805] ring-1 ring-[#2a2f37] ${className}`}
+        className={`inline-flex shrink-0 items-center justify-center rounded-full bg-[#0e1116] text-[10px] font-bold text-[#ccff00] ring-1 ring-[#2a2f37] ${className}`}
         style={{ width: size, height: size }}
         title={name}
       >

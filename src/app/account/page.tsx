@@ -109,7 +109,7 @@ function AccountInner() {
           <button
             type="button"
             onClick={() => setSwitchOpen(true)}
-            className="rounded-lg border border-[#00c805]/40 bg-[#00c805]/10 px-3 py-1.5 text-xs font-bold text-[#00c805]"
+            className="rounded-lg border border-[#ccff00]/40 bg-[#ccff00]/10 px-3 py-1.5 text-xs font-bold text-[#ccff00]"
           >
             Switch wallet…
           </button>
@@ -157,7 +157,7 @@ function AccountInner() {
               value={importKey}
               onChange={(e) => setImportKey(e.target.value)}
               placeholder="0x… private key"
-              className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/40 px-2 py-1.5 font-mono text-[11px] text-white outline-none focus:border-[#00c805]/40"
+              className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/40 px-2 py-1.5 font-mono text-[11px] text-white outline-none focus:border-[#ccff00]/40"
               autoComplete="off"
               spellCheck={false}
             />
@@ -172,7 +172,7 @@ function AccountInner() {
                   setImportErr("Invalid private key");
                 }
               }}
-              className="rounded-lg bg-[#00c805] px-3 py-1.5 text-xs font-black text-black"
+              className="rounded-lg bg-[#ccff00] px-3 py-1.5 text-xs font-black text-black"
             >
               Import
             </button>
@@ -188,7 +188,7 @@ function AccountInner() {
         {launches.length === 0 ? (
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-xs text-white/40">
             No launches stored in this browser yet.{" "}
-            <Link href="/create" className="font-semibold text-[#00c805]">
+            <Link href="/create" className="font-semibold text-[#ccff00]">
               Launch a coin
             </Link>
           </div>
@@ -198,7 +198,7 @@ function AccountInner() {
               <li key={l.token}>
                 <Link
                   href={`/token/${l.token}${l.pair ? `?pair=${l.pair}` : ""}`}
-                  className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5 hover:border-[#00c805]/40"
+                  className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5 hover:border-[#ccff00]/40"
                 >
                   <div>
                     <div className="font-bold text-white">
@@ -247,7 +247,7 @@ function AccountInner() {
             <button
               type="button"
               onClick={() => loginWithSession()}
-              className="rounded-lg bg-[#00c805]/15 px-3 py-1.5 text-[#00c805]"
+              className="rounded-lg bg-[#ccff00]/15 px-3 py-1.5 text-[#ccff00]"
             >
               Switch to quick wallet
             </button>

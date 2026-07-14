@@ -46,7 +46,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 ? "border-rose-500/40 bg-rose-950/90 text-rose-100"
                 : t.tone === "info"
                   ? "border-sky-500/35 bg-sky-950/90 text-sky-100"
-                  : "border-[#00c805]/35 bg-[#061208]/95 text-[#b8f5b8]"
+                  : "border-[#ccff00]/35 bg-[#061208]/95 text-[#e8ff99]"
             }`}
           >
             {t.message}

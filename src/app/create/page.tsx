@@ -33,7 +33,7 @@ export default function CreatePage() {
         <h1 className="text-xl font-bold text-white/80">Launches paused</h1>
         <p className="mt-2 text-sm text-white/40">
           Check back soon or browse the{" "}
-          <Link href="/" className="text-[#00c805]">
+          <Link href="/" className="text-[#ccff00]">
             board
           </Link>
           .
@@ -59,22 +59,22 @@ export default function CreatePage() {
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-white/5 px-4 pb-12 pt-6 sm:px-0">
         <div className="hm-grid pointer-events-none absolute inset-0 opacity-50" />
-        <div className="pointer-events-none absolute -left-24 -top-10 h-72 w-72 rounded-full bg-[#00c805]/18 blur-3xl" />
-        <div className="pointer-events-none absolute -right-16 top-10 h-56 w-56 rounded-full bg-emerald-400/10 blur-3xl" />
-        <div className="pointer-events-none absolute bottom-0 left-1/2 h-40 w-[80%] -translate-x-1/2 rounded-full bg-[#00c805]/5 blur-3xl" />
+        <div className="pointer-events-none absolute -left-24 -top-10 h-72 w-72 rounded-full bg-[#ccff00]/18 blur-3xl" />
+        <div className="pointer-events-none absolute -right-16 top-10 h-56 w-56 rounded-full bg-[#ccff00]/10 blur-3xl" />
+        <div className="pointer-events-none absolute bottom-0 left-1/2 h-40 w-[80%] -translate-x-1/2 rounded-full bg-[#ccff00]/5 blur-3xl" />
 
         <div className="relative mx-auto max-w-3xl text-center">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#00c805]/35 bg-[#00c805]/12 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[#00c805] shadow-[0_0_24px_rgba(0,200,5,0.15)]">
-            <span className="hm-live-dot h-2 w-2 rounded-full bg-[#00c805]" />
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#ccff00]/35 bg-[#ccff00]/12 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[#ccff00] shadow-[0_0_24px_rgba(204, 255, 0,0.15)]">
+            <span className="hm-live-dot h-2 w-2 rounded-full bg-[#ccff00]" />
             Instant Uniswap · Robinhood Chain
           </div>
 
           <h1 className="text-4xl font-black leading-[1.02] tracking-tight text-white sm:text-5xl md:text-6xl">
-            <span className="bg-gradient-to-br from-white via-white to-[#00c805] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-br from-white via-white to-[#ccff00] bg-clip-text text-transparent">
               Launch a coin
             </span>
             <br />
-            <span className="bg-gradient-to-r from-[#00c805] via-[#6dff70] to-white bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#ccff00] via-[#e8ff66] to-white bg-clip-text text-transparent">
               that actually trades
             </span>
           </h1>
@@ -110,9 +110,9 @@ export default function CreatePage() {
             ].map((s) => (
               <div
                 key={s.n}
-                className="group rounded-2xl border border-white/10 bg-black/35 px-3 py-3.5 transition hover:border-[#00c805]/35 hover:bg-[#00c805]/5"
+                className="group rounded-2xl border border-white/10 bg-black/35 px-3 py-3.5 transition hover:border-[#ccff00]/35 hover:bg-[#ccff00]/5"
               >
-                <div className="text-[10px] font-black tracking-wider text-[#00c805]">
+                <div className="text-[10px] font-black tracking-wider text-[#ccff00]">
                   {s.n}
                 </div>
                 <div className="mt-1 text-xs font-black text-white sm:text-sm">
@@ -128,17 +128,17 @@ export default function CreatePage() {
           {/* Trust strip */}
           <div className="mx-auto mt-8 flex max-w-xl flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[11px] text-white/35">
             <span className="inline-flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#00c805]" />
+              <span className="h-1.5 w-1.5 rounded-full bg-[#ccff00]" />
               Creator max 10%
             </span>
             <span className="hidden text-white/15 sm:inline">·</span>
             <span className="inline-flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#00c805]" />
+              <span className="h-1.5 w-1.5 rounded-full bg-[#ccff00]" />
               Rest → Uniswap LP
             </span>
             <span className="hidden text-white/15 sm:inline">·</span>
             <span className="inline-flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#00c805]" />
+              <span className="h-1.5 w-1.5 rounded-full bg-[#ccff00]" />
               Badge on token page
             </span>
           </div>

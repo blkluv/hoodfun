@@ -47,9 +47,9 @@ export function AddNetworkButton({
         type="button"
         disabled={busy}
         onClick={onClick}
-        className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-3.5 py-2 text-xs font-bold text-white/80 transition hover:border-[#00c805]/40 hover:text-white disabled:opacity-50"
+        className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-3.5 py-2 text-xs font-bold text-white/80 transition hover:border-[#ccff00]/40 hover:text-white disabled:opacity-50"
       >
-        <span className="h-2 w-2 rounded-full bg-[#00c805]" />
+        <span className="h-2 w-2 rounded-full bg-[#ccff00]" />
         {busy ? "Switching…" : label}
       </button>
       {msg && (

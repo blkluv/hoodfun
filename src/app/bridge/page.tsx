@@ -18,13 +18,13 @@ export default function BridgePage() {
     <div className="relative pb-20">
       {/* Hero background */}
       <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[420px] overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#00c805]/12 via-transparent to-transparent" />
-        <div className="absolute left-1/2 top-0 h-[320px] w-[640px] -translate-x-1/2 rounded-full bg-[#00c805]/10 blur-[100px]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#ccff00]/12 via-transparent to-transparent" />
+        <div className="absolute left-1/2 top-0 h-[320px] w-[640px] -translate-x-1/2 rounded-full bg-[#ccff00]/10 blur-[100px]" />
         <div
           className="absolute inset-0 opacity-[0.07]"
           style={{
             backgroundImage:
-              "linear-gradient(rgba(0,200,5,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(0,200,5,0.5) 1px, transparent 1px)",
+              "linear-gradient(rgba(204, 255, 0,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(204, 255, 0,0.5) 1px, transparent 1px)",
             backgroundSize: "48px 48px",
             maskImage: "linear-gradient(to bottom, black, transparent)",
           }}
@@ -35,14 +35,14 @@ export default function BridgePage() {
         {/* Header */}
         <div className="mb-8 text-center sm:mb-10">
           <div className="mb-4 flex justify-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-[#00c805]/30 bg-[#00c805]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-[#00c805]">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#00c805]" />
+            <span className="inline-flex items-center gap-2 rounded-full border border-[#ccff00]/30 bg-[#ccff00]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-[#ccff00]">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#ccff00]" />
               Powered by Relay
             </span>
           </div>
           <h1 className="text-3xl font-black tracking-tight text-white sm:text-5xl">
             Bridge to{" "}
-            <span className="bg-gradient-to-r from-[#00c805] to-[#6dff71] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#ccff00] to-[#e8ff66] bg-clip-text text-transparent">
               Robinhood
             </span>
           </h1>
@@ -55,7 +55,7 @@ export default function BridgePage() {
         <div className="grid gap-8 lg:grid-cols-[minmax(0,400px)_1fr] lg:items-start">
           {/* Widget */}
           <div className="relative lg:sticky lg:top-20">
-            <div className="absolute -inset-px rounded-2xl bg-gradient-to-b from-[#00c805]/40 via-[#00c805]/10 to-transparent opacity-80 blur-[1px]" />
+            <div className="absolute -inset-px rounded-2xl bg-gradient-to-b from-[#ccff00]/40 via-[#ccff00]/10 to-transparent opacity-80 blur-[1px]" />
             <div className="relative overflow-hidden rounded-2xl border border-[#2a2f37] bg-[#12161c]/95 shadow-2xl shadow-black/40 backdrop-blur">
               <div className="border-b border-[#2a2f37] bg-[#171b21]/80 px-4 py-3">
                 <div className="flex items-center justify-between">
@@ -81,7 +81,7 @@ export default function BridgePage() {
                     href="https://relay.link"
                     target="_blank"
                     rel="noreferrer"
-                    className="rounded-lg border border-white/10 px-2 py-1 text-[10px] font-semibold text-white/45 hover:text-[#00c805]"
+                    className="rounded-lg border border-white/10 px-2 py-1 text-[10px] font-semibold text-white/45 hover:text-[#ccff00]"
                   >
                     Relay ↗
                   </a>
@@ -123,7 +123,7 @@ export default function BridgePage() {
                   </div>
                 ))}
                 <div className="flex flex-col items-center gap-1 px-1">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#00c805]/15 text-[#00c805]">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#ccff00]/15 text-[#ccff00]">
                     →
                   </div>
                   <span className="text-[9px] text-white/30">Relay</span>
@@ -135,9 +135,9 @@ export default function BridgePage() {
                     alt="Robinhood"
                     width={48}
                     height={48}
-                    className="rounded-full ring-2 ring-[#00c805]/50 shadow-[0_0_24px_rgba(0,200,5,0.35)]"
+                    className="rounded-full ring-2 ring-[#ccff00]/50 shadow-[0_0_24px_rgba(204, 255, 0,0.35)]"
                   />
-                  <span className="text-[10px] font-bold text-[#00c805]">
+                  <span className="text-[10px] font-bold text-[#ccff00]">
                     RH 4663
                   </span>
                 </div>
@@ -173,7 +173,7 @@ export default function BridgePage() {
                   },
                 ].map((s) => (
                   <li key={s.n} className="flex gap-3">
-                    <span className="font-mono text-xs font-bold text-[#00c805]">
+                    <span className="font-mono text-xs font-bold text-[#ccff00]">
                       {s.n}
                     </span>
                     <div>
@@ -218,7 +218,7 @@ export default function BridgePage() {
               ))}
             </section>
 
-            <section className="rounded-2xl border border-[#00c805]/25 bg-[#00c805]/[0.06] p-5">
+            <section className="rounded-2xl border border-[#ccff00]/25 bg-[#ccff00]/[0.06] p-5">
               <h2 className="text-base font-black text-white">Ready?</h2>
               <p className="mt-1 text-xs text-white/50">
                 After your balance lands, launch a coin or browse the board.
@@ -226,7 +226,7 @@ export default function BridgePage() {
               <div className="mt-4 flex flex-wrap gap-2">
                 <Link
                   href="/create"
-                  className="rounded-xl bg-[#00c805] px-4 py-2.5 text-sm font-black text-black shadow-[0_0_24px_rgba(0,200,5,0.25)]"
+                  className="rounded-xl bg-[#ccff00] px-4 py-2.5 text-sm font-black text-black shadow-[0_0_24px_rgba(204, 255, 0,0.25)]"
                 >
                   Launch a coin
                 </Link>
