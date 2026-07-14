@@ -3,7 +3,7 @@ import { resolveTokenIdentity } from "@/lib/token-meta";
 
 const SITE = "https://www.hoodmemes.fun";
 /** Static brand OG — X crawler is unreliable with slow dynamic ImageResponse routes */
-const OG_IMAGE = `${SITE}/og.png?v=4`;
+const OG_IMAGE = `${SITE}/og.png?v=5`;
 
 type Props = {
   params: Promise<{ address: string }>;

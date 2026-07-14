@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { TokenBoard } from "@/components/TokenBoard";
 
 const SITE = "https://www.hoodmemes.fun";
-const OG = `${SITE}/og.png?v=4`;
+const OG = `${SITE}/og.png?v=5`;
 
 export const metadata: Metadata = {
   title: "HoodMemes — Robinhood Chain Trenches",

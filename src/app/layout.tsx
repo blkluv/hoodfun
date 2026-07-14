@@ -23,7 +23,7 @@ const siteDescription =
 /** Canonical host = www (apex 308s to www; X crawler fails image redirects) */
 const SITE_URL = "https://www.hoodmemes.fun";
 /** Absolute OG URL — no redirect chain for Twitter/X */
-const OG_IMAGE = `${SITE_URL}/og.png?v=4`;
+const OG_IMAGE = `${SITE_URL}/og.png?v=5`;
 
 export const metadata: Metadata = {
   title: {
