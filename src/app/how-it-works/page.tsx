@@ -62,6 +62,18 @@ export default function HowItWorksPage() {
         ))}
       </ol>
 
+      <div className="rounded-2xl border border-[#ccff00]/25 bg-[#ccff00]/[0.06] p-5 space-y-2 text-sm text-white/55">
+        <h2 className="text-base font-black text-white">Launch Health Score</h2>
+        <p>
+          Every token page shows a community-requested{" "}
+          <strong className="text-white/80">Launch Health</strong> grade (A–F)
+          from four signals: LP status, creator allocation, liquidity, and
+          wallet concentration. It helps you scan faster — it is{" "}
+          <strong className="text-white/80">not</strong> financial advice or a
+          safety guarantee. Still DYOR.
+        </p>
+      </div>
+
       <div className="rounded-2xl border border-white/10 bg-black/30 p-5 space-y-3 text-sm text-white/50">
         <h2 className="text-base font-black text-white">What you pay / earn</h2>
         <ul className="space-y-2 list-disc pl-4">

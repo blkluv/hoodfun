@@ -77,6 +77,12 @@ const PHASES: Phase[] = [
         tag: "Live",
       },
       {
+        title: "Launch Health Score",
+        body: "A–F grade on every token page: LP lock, creator allocation, liquidity, wallet concentration. Scan faster — still DYOR. From community thread feedback.",
+        tag: "Live",
+      },
+
+      {
         title: "Ansem-style airdrop",
         body: "High-signal CT distribution: dust/bags to curated wallets (early trenchers, RH memecoin holders, KOL-adjacent lists) — loud, cultural, not a farm for bots. Aim is mindshare and real wallet activity, not empty sybil spam. Exact lists + size drop when ready; CA only from @hoodmemesdotfun.",
         tag: "Culture",

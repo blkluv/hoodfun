@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { TokenCardData } from "@/lib/types";
 import { formatPct, formatUsd, shortAddr, timeAgo } from "@/lib/format";
 import { dexscreenerTokenUrl, fomoTokenUrl } from "@/lib/dex-links";
+import { LaunchHealthBadge } from "./LaunchHealth";
 
 export function TokenCard({
   token,
@@ -79,6 +80,7 @@ export function TokenCard({
                 HM
               </span>
             )}
+            <LaunchHealthBadge token={token} />
             {isFresh && (
               <span className="shrink-0 rounded-md bg-sky-500/20 px-1.5 py-0.5 text-[9px] font-bold uppercase text-sky-300">
                 NEW

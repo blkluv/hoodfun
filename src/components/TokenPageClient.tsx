@@ -9,6 +9,7 @@ import { CurveChart, CurveStats, RecentTrades } from "./CurveChart";
 import { TokenTradeSection } from "./TokenTradeSection";
 import { SwapBridgePanel } from "./SwapBridgePanel";
 import { CreatorFeesPanel } from "./CreatorFeesPanel";
+import { LaunchHealthPanel } from "./LaunchHealth";
 import {
   formatPct,
   formatPrice,
@@ -809,6 +810,8 @@ export function TokenPageClient({
 
           {/* RIGHT — sticky trade + Relay bridge */}
           <aside className="space-y-3 lg:sticky lg:top-20 lg:self-start">
+            <LaunchHealthPanel token={address} />
+
             {isInstant || pairAddress ? (
               <SwapBridgePanel
                 token={address}
