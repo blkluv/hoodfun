@@ -32,6 +32,8 @@ export type SiteConfig = {
     twitter: string;
     telegram: string;
     discord: string;
+    /** Public contact email shown site-wide */
+    email: string;
   };
   minLiquidityUsd: number;
   showDexBoard: boolean;
@@ -63,6 +65,7 @@ export const DEFAULT_SITE_CONFIG: SiteConfig = {
     twitter: "https://x.com/hoodmemesdotfun",
     telegram: "",
     discord: "",
+    email: "admin@hoodmemes.fun",
   },
   minLiquidityUsd: 0,
   showDexBoard: true,
@@ -77,7 +80,13 @@ export function normalizeConfig(raw: Partial<SiteConfig> | null): SiteConfig {
     ...DEFAULT_SITE_CONFIG.announcement,
     ...(raw?.announcement ?? {}),
   };
-  base.social = { ...DEFAULT_SITE_CONFIG.social, ...(raw?.social ?? {}) };
+  base.social = {
+    ...DEFAULT_SITE_CONFIG.social,
+    ...(raw?.social ?? {}),
+    email:
+      (raw?.social as { email?: string } | undefined)?.email ||
+      DEFAULT_SITE_CONFIG.social.email,
+  };
   base.featured = Array.isArray(raw?.featured) ? raw!.featured : [];
   base.hiddenTokens = (raw?.hiddenTokens ?? []).map((a) => a.toLowerCase());
   base.blockedCreators = (raw?.blockedCreators ?? []).map((a) =>

@@ -18,6 +18,7 @@ const btnXs =
 
 type TabId =
   | "ops"
+  | "analytics"
   | "homepage"
   | "featured"
   | "moderation"
@@ -28,6 +29,7 @@ type TabId =
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "ops", label: "Ops" },
+  { id: "analytics", label: "Analytics" },
   { id: "homepage", label: "Homepage" },
   { id: "featured", label: "Featured" },
   { id: "moderation", label: "Moderation" },
@@ -36,6 +38,60 @@ const TABS: { id: TabId; label: string }[] = [
   { id: "social", label: "Social" },
   { id: "system", label: "System" },
 ];
+
+type AnalyticsPayload = {
+  traffic: {
+    days: Array<{
+      date: string;
+      pageviews: number;
+      uniqueHints: number;
+      contacts: number;
+      launches: number;
+    }>;
+    totals: {
+      pageviews: number;
+      uniqueHints: number;
+      contacts: number;
+      launches: number;
+    };
+    today: {
+      pageviews: number;
+      uniqueHints: number;
+      contacts: number;
+      launches: number;
+    };
+  };
+  launches: {
+    total: number;
+    v3: number;
+    last24h: number;
+    last7d: number;
+    series: Array<{ date: string; count: number }>;
+    topCreators: Array<{ address: string; count: number }>;
+    recent: Array<{
+      token: string;
+      symbol?: string;
+      name?: string;
+      creator?: string;
+      createdAt?: number;
+      buyEth?: string;
+    }>;
+  };
+  contacts: {
+    total: number;
+    unread: number;
+    recent: Array<{
+      id: string;
+      at: number;
+      name: string;
+      email: string;
+      subject: string;
+      message: string;
+      read?: boolean;
+    }>;
+  };
+  community: { verifiedX: number };
+};
 
 const ANN_PRESETS = [
   {
@@ -111,6 +167,7 @@ export function AdminDashboard() {
   const [activity, setActivity] = useState<
     Array<{ id: string; at: number; action: string; detail?: string }>
   >([]);
+  const [analytics, setAnalytics] = useState<AnalyticsPayload | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const checkSession = useCallback(async () => {
@@ -128,6 +185,7 @@ export function AdminDashboard() {
       loadLaunches();
       loadVerified();
       loadActivity();
+      loadAnalytics();
     }
   }, []);
 
@@ -175,6 +233,28 @@ export function AdminDashboard() {
         const j = await res.json();
         setActivity(j.items || []);
       }
+    } catch {
+      /* */
+    }
+  }
+
+  async function loadAnalytics() {
+    try {
+      const res = await fetch("/api/admin/analytics");
+      if (res.ok) setAnalytics(await res.json());
+    } catch {
+      /* */
+    }
+  }
+
+  async function markContactRead(id: string) {
+    try {
+      await fetch("/api/admin/contacts", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      await loadAnalytics();
     } catch {
       /* */
     }
@@ -1594,9 +1674,221 @@ export function AdminDashboard() {
         </Section>
       )}
 
+      {/* ═══ ANALYTICS ═══ */}
+      {tab === "analytics" && (
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs text-white/40">
+              First-party analytics (no Google). Pageviews + launches + contact
+              inbox. Refresh after traffic hits.
+            </p>
+            <button
+              type="button"
+              className={btnSec}
+              onClick={() => loadAnalytics()}
+            >
+              Refresh
+            </button>
+          </div>
+
+          {!analytics ? (
+            <p className="text-sm text-white/40">Loading analytics…</p>
+          ) : (
+            <>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <StatCard
+                  label="Pageviews today"
+                  value={String(analytics.traffic.today.pageviews)}
+                />
+                <StatCard
+                  label="Uniques today (est.)"
+                  value={String(analytics.traffic.today.uniqueHints)}
+                />
+                <StatCard
+                  label="PV last 30d"
+                  value={String(analytics.traffic.totals.pageviews)}
+                />
+                <StatCard
+                  label="Contacts unread"
+                  value={String(analytics.contacts.unread)}
+                  bad={analytics.contacts.unread > 0}
+                />
+                <StatCard
+                  label="Launches total"
+                  value={String(analytics.launches.total)}
+                />
+                <StatCard
+                  label="Launches 24h"
+                  value={String(analytics.launches.last24h)}
+                />
+                <StatCard
+                  label="Launches 7d"
+                  value={String(analytics.launches.last7d)}
+                />
+                <StatCard
+                  label="Verified X"
+                  value={String(analytics.community.verifiedX)}
+                />
+              </div>
+
+              <Section title="Traffic (last 14 days)">
+                <MiniBars
+                  rows={[...analytics.traffic.days]
+                    .slice(0, 14)
+                    .reverse()
+                    .map((d) => ({
+                      label: d.date.slice(5),
+                      value: d.pageviews,
+                    }))}
+                />
+              </Section>
+
+              <Section title="Launches by day (meta)">
+                <MiniBars
+                  rows={[...analytics.launches.series]
+                    .slice(0, 14)
+                    .reverse()
+                    .map((d) => ({
+                      label: d.date.slice(5),
+                      value: d.count,
+                    }))}
+                />
+                {analytics.launches.recent.length > 0 && (
+                  <ul className="mt-3 space-y-1.5 text-xs">
+                    {analytics.launches.recent.map((l) => (
+                      <li
+                        key={l.token}
+                        className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-white/8 bg-black/30 px-2.5 py-2"
+                      >
+                        <Link
+                          href={`/token/${l.token}`}
+                          className="font-bold text-[#ccff00] hover:underline"
+                        >
+                          ${l.symbol || "TOKEN"}
+                        </Link>
+                        <span className="font-mono text-white/35">
+                          {l.creator ? shortAddr(l.creator, 4) : "—"}
+                        </span>
+                        <span className="text-white/30">
+                          {l.createdAt ? timeAgo(l.createdAt) : ""}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Section>
+
+              <Section title="Top creators">
+                {analytics.launches.topCreators.length === 0 ? (
+                  <p className="text-xs text-white/40">No launch meta yet.</p>
+                ) : (
+                  <ul className="space-y-1.5 text-xs">
+                    {analytics.launches.topCreators.map((c) => (
+                      <li
+                        key={c.address}
+                        className="flex justify-between rounded-lg border border-white/8 bg-black/30 px-2.5 py-2 font-mono"
+                      >
+                        <span className="text-white/70">
+                          {shortAddr(c.address, 6)}
+                        </span>
+                        <span className="font-bold text-[#ccff00]">
+                          {c.count} launches
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Section>
+
+              <Section title="Contact inbox">
+                <p className="mb-2 text-[11px] text-white/40">
+                  Form submissions from /contact. Also receives mail at{" "}
+                  <a
+                    href="mailto:admin@hoodmemes.fun"
+                    className="text-[#ccff00] hover:underline"
+                  >
+                    admin@hoodmemes.fun
+                  </a>{" "}
+                  (mailbox is separate — configure DNS/forwarding).
+                </p>
+                {analytics.contacts.recent.length === 0 ? (
+                  <p className="text-xs text-white/40">No messages yet.</p>
+                ) : (
+                  <ul className="space-y-2">
+                    {analytics.contacts.recent.map((m) => (
+                      <li
+                        key={m.id}
+                        className={`rounded-xl border px-3 py-2.5 text-xs ${
+                          m.read
+                            ? "border-white/8 bg-black/20"
+                            : "border-[#ccff00]/25 bg-[#ccff00]/5"
+                        }`}
+                      >
+                        <div className="flex flex-wrap items-start justify-between gap-2">
+                          <div>
+                            <div className="font-bold text-white">
+                              {m.subject}{" "}
+                              {!m.read && (
+                                <span className="text-[10px] text-[#ccff00]">
+                                  NEW
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-white/50">
+                              {m.name} ·{" "}
+                              <a
+                                href={`mailto:${m.email}`}
+                                className="text-[#ccff00] hover:underline"
+                              >
+                                {m.email}
+                              </a>
+                            </div>
+                            <div className="mt-1 text-white/30">
+                              {timeAgo(m.at)}
+                            </div>
+                          </div>
+                          {!m.read && (
+                            <button
+                              type="button"
+                              className={btnXs}
+                              onClick={() => markContactRead(m.id)}
+                            >
+                              Mark read
+                            </button>
+                          )}
+                        </div>
+                        <p className="mt-2 whitespace-pre-wrap text-white/65">
+                          {m.message}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Section>
+            </>
+          )}
+        </div>
+      )}
+
       {/* ═══ SOCIAL ═══ */}
       {tab === "social" && (
         <Section title="Social links">
+          <Field label="Contact email (public)">
+            <input
+              className={inp}
+              value={config.social.email || "admin@hoodmemes.fun"}
+              onChange={(e) =>
+                setConfig((c) => ({
+                  ...c,
+                  social: { ...c.social, email: e.target.value },
+                }))
+              }
+            />
+            <p className="mt-1 text-[10px] text-white/35">
+              Shown site-wide. Default: admin@hoodmemes.fun — set up DNS /
+              Google Workspace / forwarder so mail actually arrives.
+            </p>
+          </Field>
           <Field label="X / Twitter URL">
             <input
               className={inp}
@@ -1828,6 +2120,39 @@ function StatCard({
       >
         {value}
       </div>
+    </div>
+  );
+}
+
+function MiniBars({
+  rows,
+}: {
+  rows: Array<{ label: string; value: number }>;
+}) {
+  if (!rows.length) {
+    return (
+      <p className="text-xs text-white/40">No data yet — visit the site.</p>
+    );
+  }
+  const max = Math.max(1, ...rows.map((r) => r.value));
+  return (
+    <div className="flex h-32 items-end gap-1.5">
+      {rows.map((r) => (
+        <div
+          key={r.label}
+          className="flex min-w-0 flex-1 flex-col items-center justify-end gap-1"
+          title={`${r.label}: ${r.value}`}
+        >
+          <span className="text-[9px] font-bold tabular-nums text-white/40">
+            {r.value || ""}
+          </span>
+          <div
+            className="w-full max-w-[32px] rounded-t bg-[#ccff00]/85"
+            style={{ height: `${Math.max(6, (r.value / max) * 88)}px` }}
+          />
+          <span className="truncate text-[8px] text-white/30">{r.label}</span>
+        </div>
+      ))}
     </div>
   );
 }

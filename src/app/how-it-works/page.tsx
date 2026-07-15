@@ -148,6 +148,18 @@ export default function HowItWorksPage() {
         >
           Board
         </Link>
+        <Link
+          href="/contact"
+          className="rounded-xl border border-white/15 px-5 py-2.5 text-sm font-semibold text-white/80"
+        >
+          Contact
+        </Link>
+        <a
+          href="mailto:admin@hoodmemes.fun"
+          className="rounded-xl border border-[#ccff00]/30 px-5 py-2.5 text-sm font-semibold text-[#ccff00]"
+        >
+          admin@hoodmemes.fun
+        </a>
         <AddNetworkButton />
       </div>
     </div>

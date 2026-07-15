@@ -144,11 +144,23 @@ export default function RootLayout({
                 Token list
               </Link>
               <Link
+                href="/contact"
+                className="font-semibold text-white/55 hover:text-[#ccff00]"
+              >
+                Contact
+              </Link>
+              <Link
                 href="/disclaimer"
                 className="font-semibold text-white/55 hover:text-[#ccff00]"
               >
                 Disclaimer
               </Link>
+              <a
+                href="mailto:admin@hoodmemes.fun"
+                className="font-semibold text-white/55 hover:text-[#ccff00]"
+              >
+                admin@hoodmemes.fun
+              </a>
               <a
                 href="https://x.com/hoodmemesdotfun"
                 target="_blank"
@@ -159,7 +171,14 @@ export default function RootLayout({
               </a>
             </div>
             <div className="mt-3 text-white/25">
-              Independent · not affiliated with Robinhood Markets, Inc. · Not
+              Contact{" "}
+              <a
+                href="mailto:admin@hoodmemes.fun"
+                className="text-white/45 hover:text-[#ccff00]"
+              >
+                admin@hoodmemes.fun
+              </a>{" "}
+              · Independent · not affiliated with Robinhood Markets, Inc. · Not
               financial advice · DYOR
             </div>
             <div

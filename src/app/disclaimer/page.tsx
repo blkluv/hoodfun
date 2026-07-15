@@ -32,6 +32,19 @@ export default function DisclaimerPage() {
         By using HoodMemes you accept these risks and that the operators are
         not liable for losses from launches, trades, bugs, or downtime.
       </p>
+      <p>
+        Contact:{" "}
+        <a
+          href="mailto:admin@hoodmemes.fun"
+          className="font-semibold text-[#ccff00] hover:underline"
+        >
+          admin@hoodmemes.fun
+        </a>{" "}
+        ·{" "}
+        <Link href="/contact" className="font-semibold text-[#ccff00] hover:underline">
+          Contact form
+        </Link>
+      </p>
       <Link href="/" className="inline-block font-semibold text-[#ccff00]">
         ← Back to board
       </Link>

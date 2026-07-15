@@ -5,6 +5,7 @@ import {
   normalizeUrl,
   type LaunchMeta,
 } from "@/lib/launch-meta";
+import { trackEvent } from "@/lib/analytics-store";
 
 export const dynamic = "force-dynamic";
 
@@ -62,6 +63,10 @@ export async function POST(req: NextRequest) {
       imageUrl: body.imageUrl?.trim() || undefined,
       createdAt: body.createdAt ?? Date.now(),
     });
+
+    if (result.ok) {
+      await trackEvent("launch").catch(() => null);
+    }
 
     return NextResponse.json(result, { status: result.ok ? 200 : 207 });
   } catch (e) {

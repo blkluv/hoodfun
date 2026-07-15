@@ -291,6 +291,17 @@ export default function RoadmapPage() {
           <Link href="/how-it-works" className="text-[#ccff00] hover:underline">
             How it works
           </Link>
+          {" · "}
+          <Link href="/contact" className="text-[#ccff00] hover:underline">
+            Contact
+          </Link>
+          {" · "}
+          <a
+            href="mailto:admin@hoodmemes.fun"
+            className="text-[#ccff00] hover:underline"
+          >
+            admin@hoodmemes.fun
+          </a>
           .
         </p>
       </section>
