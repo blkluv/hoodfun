@@ -540,16 +540,28 @@ export function CreateForm() {
         {step === 2 && (
           <Section
             title="Initial buy"
-            subtitle="100% supply → single-sided V3 LP (locked). Your ETH is the first buy — same model as LaunchHood."
+            subtitle="100% supply → Uni V3 LP locked forever. No burn/keep option — lock is automatic."
           >
             <div className="rounded-xl border border-[#ccff00]/25 bg-[#ccff00]/8 px-4 py-3 text-[12px] leading-relaxed text-white/70">
-              <strong className="text-[#ccff00]">How it works</strong>
+              <strong className="text-[#ccff00]">Exactly what happens in one tx</strong>
               <ul className="mt-2 space-y-1 list-disc pl-4 text-white/55">
-                <li>1B tokens land in a Uni V3 1% pool (one-sided, locked forever)</li>
-                <li>Starting FDV ≈ ~1.37 ETH (~$2.4k at ~$1.8k/ETH)</li>
-                <li>Your ETH (minus {LAUNCH_FEE} fee) buys tokens in the same tx</li>
-                <li>2% max-wallet anti-snipe for ~366 blocks after your buy</li>
-                <li>You earn 50% of trading fees forever (locker)</li>
+                <li>
+                  1B fixed supply → Uni V3 1% TOKEN/ETH pool (single-sided LP)
+                </li>
+                <li>
+                  <strong className="text-white/70">LP NFT locked forever</strong>{" "}
+                  in the HoodMemes locker — not burned to dead, not kept by you.
+                  Nobody can remove liquidity.
+                </li>
+                <li>
+                  Your ETH minus {LAUNCH_FEE} launch fee buys tokens (first
+                  trade) — that is your bag
+                </li>
+                <li>2% max-wallet anti-snipe for ~366 blocks after launch</li>
+                <li>
+                  You earn <strong className="text-white/70">50% of swap fees</strong>{" "}
+                  forever (claim from Account / token page)
+                </li>
               </ul>
             </div>
 
@@ -593,12 +605,20 @@ export function CreateForm() {
             title="Review & launch"
             subtitle="One transaction · Uniswap V3 on Robinhood Chain"
           >
+            <div className="mb-3 rounded-xl border border-white/10 bg-black/40 px-3 py-2.5 text-[11px] leading-relaxed text-white/50">
+              By launching you accept:{" "}
+              <strong className="text-white/75">
+                liquidity is permanently locked
+              </strong>
+              . There is no option to keep or withdraw LP. You can sell tokens
+              you buy and claim trading fees only.
+            </div>
             <div className="space-y-1 text-sm">
               <Row k="Name" v={name} />
               <Row k="Ticker" v={`$${symbol.toUpperCase()}`} />
               <Row k="Supply" v="1 Billion (fixed)" />
               <Row k="AMM" v="Uniswap V3 · 1% fee" />
-              <Row k="LP" v="100% tokens · locked forever" />
+              <Row k="LP" v="Locked forever (no keep/burn toggle)" />
               <Row k="Your buy" v={`${buyEth} ETH → tokens to you`} />
               <Row k="Fee share" v="50% of pool fees to you" />
               <Row k="Total pay" v={`${totalEth} ETH`} highlight />
@@ -733,8 +753,12 @@ export function CreateForm() {
               buy with ETH in the launch tx.
             </li>
             <li>
-              <span className="text-white/55">LP NFT</span> — locked forever;
-              only trading fees can be collected.
+              <span className="text-white/55">No burn / keep LP choice</span> —
+              every launch locks the V3 position forever. By design.
+            </li>
+            <li>
+              <span className="text-white/55">LP NFT</span> — held by the
+              locker; only trading fees can be collected (50% you).
             </li>
             <li>
               <span className="text-white/55">Fomo / Dex</span> — V3 pool + first
@@ -792,8 +816,12 @@ function SuccessPanel({
           ${symbol} is live
         </h2>
         <p className="mt-2 text-sm text-white/50">
-          Uniswap V3 · LP locked · {buyEth} ETH initial buy
+          Uniswap V3 · LP locked forever · {buyEth} ETH initial buy
           {imagePreview ? " · logo saved" : ""}
+        </p>
+        <p className="mt-2 text-[11px] text-white/35">
+          Liquidity cannot be removed. Claim trading fees from Account when
+          volume hits.
         </p>
         <button
           type="button"

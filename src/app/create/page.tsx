@@ -80,9 +80,10 @@ export default function CreatePage() {
           </h1>
 
           <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-white/50 sm:text-base">
-            Fixed supply. Pick a creator cut (0–10%). Seed Uniswap with your ETH.
-            Live pool in one tx — socials on the token page so degens trust the
-            launch.
+            Fixed 1B supply. One tx → Uniswap V3 pool with{" "}
+            <strong className="text-white/70">LP locked forever</strong> (no
+            burn/keep choice). Your ETH is the first buy. You earn 50% of swap
+            fees for life.
           </p>
 
           <div className="mx-auto mt-8 grid max-w-2xl grid-cols-2 gap-2 text-left sm:grid-cols-4 sm:gap-3">
@@ -99,13 +100,13 @@ export default function CreatePage() {
               },
               {
                 n: "03",
-                t: "Split & LP",
-                d: "0–10% you · rest pool",
+                t: "Initial buy",
+                d: "ETH → first buy + fee",
               },
               {
                 n: "04",
                 t: "Go live",
-                d: "Uni + DexScreener",
+                d: "V3 · LP locked forever",
               },
             ].map((s) => (
               <div
@@ -129,19 +130,26 @@ export default function CreatePage() {
           <div className="mx-auto mt-8 flex max-w-xl flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[11px] text-white/35">
             <span className="inline-flex items-center gap-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-[#ccff00]" />
-              Creator max 10%
+              LP locked forever
             </span>
             <span className="hidden text-white/15 sm:inline">·</span>
             <span className="inline-flex items-center gap-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-[#ccff00]" />
-              Rest → Uniswap LP
+              50% fees to creator
             </span>
             <span className="hidden text-white/15 sm:inline">·</span>
             <span className="inline-flex items-center gap-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-[#ccff00]" />
-              Badge on token page
+              No free creator bag
             </span>
           </div>
+
+          <p className="mx-auto mt-4 max-w-lg text-center text-[11px] text-white/30">
+            Full details:{" "}
+            <Link href="/how-it-works" className="text-[#ccff00]/80 hover:underline">
+              How it works
+            </Link>
+          </p>
         </div>
       </section>
 

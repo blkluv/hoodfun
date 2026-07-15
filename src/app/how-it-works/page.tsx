@@ -5,7 +5,7 @@ import { AddNetworkButton } from "@/components/AddNetworkButton";
 export const metadata: Metadata = {
   title: "How it works",
   description:
-    "How HoodMemes launches work on Robinhood Chain — supply, creator allocation, Uniswap LP.",
+    "How HoodMemes V3 launches work on Robinhood Chain — one tx, Uniswap V3, LP locked forever, creator fees.",
 };
 
 export default function HowItWorksPage() {
@@ -14,31 +14,39 @@ export default function HowItWorksPage() {
       <div>
         <h1 className="text-3xl font-black text-white">How HoodMemes works</h1>
         <p className="mt-2 text-sm text-white/45">
-          Instant Uniswap V3 launches on Robinhood Chain. No bonding curve — straight to a locked pool.
+          Instant Uniswap V3 launches on Robinhood Chain. No bonding curve. No
+          “graduate later.” Real pool from the first transaction.
         </p>
+      </div>
+
+      <div className="rounded-2xl border border-[#ccff00]/35 bg-[#ccff00]/10 p-4 text-sm text-white/80">
+        <strong className="text-[#ccff00]">LP is always locked forever.</strong>{" "}
+        There is no “burn LP” or “keep LP” toggle. The Uniswap V3 position NFT
+        goes to the HoodMemes locker and cannot be withdrawn. You only claim
+        trading fees (50% creator / 50% protocol).
       </div>
 
       <ol className="space-y-4">
         {[
           {
             t: "Pick identity",
-            d: "Name, ticker, optional socials (X, TG, site). Verified X badge available from Account.",
+            d: "Name, ticker, logo, optional socials (X, TG, site). Verify X from Account for a badge on your token page.",
           },
           {
-            t: "Fixed supply + creator cut",
-            d: "Choose 1B–1T supply. Creator allocation is 0% (fair), 1%, 5%, or 10% max. Rest goes to the pool.",
+            t: "Fixed 1B supply",
+            d: "Every V3 launch mints a fixed 1 billion tokens. There is no free creator allocation — you buy your bag with ETH in the same launch tx.",
           },
           {
-            t: "Seed liquidity",
-            d: "You pay initial-buy ETH (min 0.01) + small launch fee. 100% supply seeds a Uni V3 pool (locked); your ETH buys first.",
+            t: "One transaction launches everything",
+            d: "In a single tx: token deploys → 100% supply seeds a Uni V3 1% TOKEN/ETH pool (single-sided) → LP NFT locked in the permanent locker → your ETH (minus a small launch fee) buys tokens as the first trade → short anti-snipe window (2% max wallet ~366 blocks).",
           },
           {
-            t: "LP burn or keep",
-            d: "Burn LP = locked forever (best trust). Keep LP = you can remove later and recover ETH.",
+            t: "LP locked forever — not optional",
+            d: "Liquidity cannot be removed by the creator or the platform. That is intentional trust: no rug-via-LP-pull. Your upside as creator is 50% of pool swap fees for life (claim from Account or the token page).",
           },
           {
-            t: "Trade & share",
-            d: "Token is live on Uniswap immediately. Share CA + token page. DexScreener indexes when ready.",
+            t: "Trade & get indexed",
+            d: "Token is live on Uniswap immediately — Fomo, DexScreener, and bots that cover Robinhood Chain can pick it up. Share your CA + hoodmemes.fun/token/… page.",
           },
         ].map((s, i) => (
           <li
@@ -54,17 +62,38 @@ export default function HowItWorksPage() {
         ))}
       </ol>
 
+      <div className="rounded-2xl border border-white/10 bg-black/30 p-5 space-y-3 text-sm text-white/50">
+        <h2 className="text-base font-black text-white">What you pay / earn</h2>
+        <ul className="space-y-2 list-disc pl-4">
+          <li>
+            <strong className="text-white/75">Launch fee</strong> — 0.0005 ETH to
+            protocol (one-time).
+          </li>
+          <li>
+            <strong className="text-white/75">Initial buy</strong> — min 0.01 ETH;
+            becomes your token bag from the new pool (same tx).
+          </li>
+          <li>
+            <strong className="text-white/75">Pool fee</strong> — 1% on every
+            swap. Of fees collected from the locked LP:{" "}
+            <strong className="text-white/75">50% creator</strong>,{" "}
+            <strong className="text-white/75">50% protocol</strong>.
+          </li>
+        </ul>
+      </div>
+
       <div className="rounded-2xl border border-white/10 bg-black/30 p-4 text-sm text-white/50">
-        <strong className="text-white/80">Important:</strong> Market cap on
-        charts is not cash you can withdraw. Recoverable capital if you Keep LP ≈
-        remaining pool ETH (minus fees/gas). Memecoins can go to zero.
+        <strong className="text-white/80">Important:</strong> Market cap on charts
+        is not cash you can withdraw. LP ETH stays in the pool forever. You can
+        sell tokens you bought or claim trading fees — you cannot pull the
+        liquidity. Memecoins can go to zero.
       </div>
 
       <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 space-y-2 text-sm text-white/50">
         <h2 className="text-base font-black text-white">Legit stack</h2>
         <p>
           <strong className="text-white/80">1.</strong> Logo + socials on
-          HoodMemes (free, automatic on launch).
+          HoodMemes (set at launch).
         </p>
         <p>
           <strong className="text-white/80">2.</strong> Public{" "}
@@ -83,7 +112,14 @@ export default function HowItWorksPage() {
           >
             DexScreener Enhanced Token Info
           </a>{" "}
-          if you want the logo on Dex itself (no free API).
+          if you want the logo on Dex itself.
+        </p>
+        <p>
+          <strong className="text-white/80">4.</strong> Claim creator fees from{" "}
+          <Link href="/account" className="text-[#ccff00] hover:underline">
+            Account
+          </Link>{" "}
+          after volume hits your pool.
         </p>
       </div>
 

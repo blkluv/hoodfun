@@ -29,6 +29,8 @@ type InstantLaunch = {
   totalSupply?: string;
   lpEth?: string;
   lpBurned?: boolean;
+  /** HoodV3 — LP always permanently locked */
+  v3?: boolean;
   creatorBps?: number;
   createdAt?: number;
   name: string;
@@ -338,13 +340,20 @@ export function TokenPageClient({
             ← Board
           </Link>
         </div>
-        {/* Risk banners */}
+        {/* Trust / risk banners */}
+        {isInstant && instant && (instant.v3 || instant.lpBurned) ? (
+          <div className="mb-4 rounded-lg border border-[#ccff00]/25 bg-[#ccff00]/10 px-4 py-2.5 text-xs font-semibold text-[#e8ff99]">
+            LP locked forever — Uniswap V3 position cannot be withdrawn. Creator
+            earns 50% of swap fees only (no LP pull).
+          </div>
+        ) : null}
         {(creatorBps != null && creatorBps >= 500) ||
-        (isInstant && instant && !instant.lpBurned) ? (
+        (isInstant && instant && !instant.lpBurned && !instant.v3) ? (
           <div className="mb-4 space-y-2">
-            {isInstant && instant && !instant.lpBurned && (
+            {isInstant && instant && !instant.lpBurned && !instant.v3 && (
               <div className="rounded-lg border border-[#f08c1a]/30 bg-[#f08c1a]/10 px-4 py-2.5 text-xs font-semibold text-[#f0bc7a]">
-                LP not burned — creator can remove liquidity. Trade carefully.
+                LP not locked — creator may be able to remove liquidity. Trade
+                carefully.
               </div>
             )}
             {creatorBps != null && creatorBps >= 500 && (
@@ -387,12 +396,16 @@ export function TokenPageClient({
                 <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                   {isInstant && <Badge green>Uniswap V3</Badge>}
                   {isCurve && <Badge green>Bonding</Badge>}
-                  {instant?.lpBurned && <Badge>LP locked</Badge>}
-                  {isInstant && !instant?.lpBurned && (
-                    <Badge warn>LP not burned</Badge>
+                  {(instant?.v3 || instant?.lpBurned) && (
+                    <Badge green>LP locked forever</Badge>
                   )}
-                  {creatorBps === 0 && <Badge>Fair launch</Badge>}
-                  {creatorBps != null && creatorBps > 0 && (
+                  {isInstant && !instant?.lpBurned && !instant?.v3 && (
+                    <Badge warn>LP not locked</Badge>
+                  )}
+                  {(instant?.v3 || creatorBps === 0) && (
+                    <Badge>No free creator bag</Badge>
+                  )}
+                  {creatorBps != null && creatorBps > 0 && !instant?.v3 && (
                     <Badge warn>Creator {creatorBps / 100}%</Badge>
                   )}
                   {age && <Badge>{age}</Badge>}

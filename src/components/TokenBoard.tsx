@@ -386,9 +386,9 @@ export function TokenBoard() {
           {/* How it works strip */}
           <div className="grid gap-3 sm:grid-cols-3">
             {[
-              { n: "01", t: "Launch", d: "Fixed supply · 0–10% creator" },
-              { n: "02", t: "V3 LP lock", d: "100% supply → Uni V3 · LP locked forever" },
-              { n: "03", t: "Go live", d: "Trade · share · get on board" },
+              { n: "01", t: "Launch", d: "1B supply · one tx · first buy" },
+              { n: "02", t: "LP locked", d: "Forever · no pull · 50% fees to you" },
+              { n: "03", t: "Go live", d: "Fomo · Dex · share the CA" },
             ].map((s) => (
               <div
                 key={s.n}
