@@ -10,11 +10,13 @@ import { shortAddr, timeAgo } from "@/lib/format";
 import Link from "next/link";
 
 const inp =
-  "w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white outline-none focus:border-[#ccff00]/45";
+  "w-full rounded-xl border border-white/[0.08] bg-white/[0.03] px-3.5 py-2.5 text-sm text-white shadow-inner outline-none transition placeholder:text-white/25 focus:border-[#ccff00]/40 focus:bg-white/[0.05] focus:ring-2 focus:ring-[#ccff00]/10";
 const btnSec =
-  "rounded-xl border border-white/15 px-3 py-2 text-xs font-semibold text-white/80 hover:bg-white/5";
+  "rounded-xl border border-white/[0.1] bg-white/[0.03] px-3.5 py-2 text-xs font-semibold text-white/75 transition hover:border-white/20 hover:bg-white/[0.06] hover:text-white";
 const btnXs =
-  "rounded-lg border border-white/12 px-1.5 py-0.5 text-[10px] font-semibold text-white/70 hover:bg-white/5";
+  "rounded-lg border border-white/[0.1] bg-white/[0.03] px-2 py-1 text-[10px] font-semibold text-white/65 transition hover:bg-white/[0.08] hover:text-white";
+const btnPrimary =
+  "rounded-xl bg-[#ccff00] px-4 py-2 text-sm font-black text-black shadow-[0_0_24px_rgba(204,255,0,0.25)] transition hover:bg-[#e8ff66] hover:shadow-[0_0_32px_rgba(204,255,0,0.35)] disabled:opacity-40";
 
 type TabId =
   | "ops"
@@ -27,16 +29,22 @@ type TabId =
   | "social"
   | "system";
 
-const TABS: { id: TabId; label: string }[] = [
-  { id: "ops", label: "Ops" },
-  { id: "analytics", label: "Analytics" },
-  { id: "homepage", label: "Homepage" },
-  { id: "featured", label: "Featured" },
-  { id: "moderation", label: "Moderation" },
-  { id: "launches", label: "Launches" },
-  { id: "verify", label: "Verify X" },
-  { id: "social", label: "Social" },
-  { id: "system", label: "System" },
+const TABS: {
+  id: TabId;
+  label: string;
+  icon: string;
+  blurb: string;
+  group: "command" | "growth" | "content" | "platform";
+}[] = [
+  { id: "ops", label: "Command", icon: "◈", blurb: "Status & kill switches", group: "command" },
+  { id: "analytics", label: "Analytics", icon: "▣", blurb: "Traffic & inbox", group: "command" },
+  { id: "launches", label: "Launches", icon: "◎", blurb: "Token ledger", group: "growth" },
+  { id: "featured", label: "Featured", icon: "★", blurb: "Homepage pins", group: "growth" },
+  { id: "verify", label: "Identity", icon: "✓", blurb: "Verified launchers", group: "growth" },
+  { id: "homepage", label: "Homepage", icon: "▣", blurb: "Hero & banners", group: "content" },
+  { id: "moderation", label: "Moderation", icon: "⊘", blurb: "Hide & block", group: "content" },
+  { id: "social", label: "Brand", icon: "◌", blurb: "Social & email", group: "content" },
+  { id: "system", label: "System", icon: "⚙", blurb: "Factory & health", group: "platform" },
 ];
 
 type AnalyticsPayload = {
@@ -687,152 +695,354 @@ export function AdminDashboard() {
     );
   }, [launches, launchQ]);
 
+  const activeTab = TABS.find((t) => t.id === tab) || TABS[0];
+  const systemsOk =
+    !!diag &&
+    (String(diag.upstashPing || "").includes("PONG") ||
+      String(diag.upstashPing) === "OK") &&
+    !!diag.rpcOk;
+
   if (!authed) {
     return (
-      <div className="mx-auto max-w-md space-y-4 py-10">
-        <h1 className="text-2xl font-black text-white">Ops access</h1>
-        <p className="text-xs text-white/40">
-          Secret console · not linked publicly · password required
-        </p>
-        <form
-          onSubmit={login}
-          className="space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-5"
-        >
-          <label className="block space-y-1">
-            <span className="text-xs text-white/45">Admin password</span>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className={inp}
-              autoComplete="current-password"
-              required
-            />
-          </label>
-          <button
-            type="button"
-            onClick={() => loginWithInjected().catch(() => {})}
-            className="text-xs text-white/40 hover:text-[#ccff00]"
+      <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-auto bg-[#050607] px-4">
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute left-1/2 top-0 h-[480px] w-[720px] -translate-x-1/2 rounded-full bg-[#ccff00]/[0.07] blur-[120px]" />
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(204,255,0,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(204,255,0,0.03)_1px,transparent_1px)] bg-[size:48px_48px] opacity-40" />
+        </div>
+        <div className="relative w-full max-w-md">
+          <div className="mb-8 text-center">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#ccff00]/30 bg-[#ccff00]/10 text-xl font-black text-[#ccff00] shadow-[0_0_40px_rgba(204,255,0,0.2)]">
+              HM
+            </div>
+            <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#ccff00]/80">
+              HoodMemes · Command Center
+            </div>
+            <h1 className="mt-2 text-3xl font-black tracking-tight text-white">
+              Secure access
+            </h1>
+            <p className="mt-2 text-sm text-white/40">
+              Production ops console · not indexed · password required
+            </p>
+          </div>
+          <form
+            onSubmit={login}
+            className="space-y-4 rounded-3xl border border-white/[0.08] bg-white/[0.03] p-7 shadow-2xl shadow-black/50 backdrop-blur-xl"
           >
-            Optional wallet:{" "}
-            {address ? shortAddr(address, 6) : "not connected"}
-          </button>
-          <button
-            type="submit"
-            disabled={busy}
-            className="w-full rounded-xl bg-[#ccff00] py-2.5 text-sm font-bold text-black disabled:opacity-40"
-          >
-            Enter
-          </button>
-          {err && <p className="text-xs text-rose-300">{err}</p>}
-        </form>
+            <label className="block space-y-1.5">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-white/40">
+                Admin password
+              </span>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={inp}
+                autoComplete="current-password"
+                required
+                placeholder="••••••••••••"
+              />
+            </label>
+            <button
+              type="button"
+              onClick={() => loginWithInjected().catch(() => {})}
+              className="w-full rounded-xl border border-white/[0.08] bg-black/30 px-3 py-2.5 text-left text-xs text-white/45 transition hover:border-[#ccff00]/30 hover:text-white/70"
+            >
+              <span className="text-white/30">Optional wallet · </span>
+              {address ? (
+                <span className="font-mono text-[#ccff00]">
+                  {shortAddr(address, 6)}
+                </span>
+              ) : (
+                "Connect for admin wallet checks"
+              )}
+            </button>
+            <button type="submit" disabled={busy} className={`${btnPrimary} w-full py-3`}>
+              {busy ? "Authenticating…" : "Enter command center"}
+            </button>
+            {err && (
+              <p className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">
+                {err}
+              </p>
+            )}
+          </form>
+          <p className="mt-6 text-center text-[10px] text-white/25">
+            Unauthorized access attempts are not welcome. · hoodmemes.fun
+          </p>
+        </div>
       </div>
     );
   }
 
+  const groups: Array<{ id: typeof TABS[0]["group"]; label: string }> = [
+    { id: "command", label: "Command" },
+    { id: "growth", label: "Growth" },
+    { id: "content", label: "Content" },
+    { id: "platform", label: "Platform" },
+  ];
+
   return (
-    <div className="space-y-5 pb-16">
-      {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-black text-white">HoodMemes Ops</h1>
-          <p className="text-xs text-white/40">
-            Last saved{" "}
-            {lastSaved ? new Date(lastSaved).toLocaleString() : "—"}
-            {config.updatedAt
-              ? ` · config v${config.version || 1}`
-              : ""}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => save()}
-            disabled={busy}
-            className="rounded-xl bg-[#ccff00] px-4 py-2 text-sm font-black text-black disabled:opacity-40"
-          >
-            {busy ? "Saving…" : "Save all"}
-          </button>
-          <button type="button" onClick={logout} className={btnSec}>
-            Logout
-          </button>
-        </div>
+    <div className="fixed inset-0 z-[100] flex bg-[#060708] text-white">
+      {/* ambient */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -left-32 top-0 h-96 w-96 rounded-full bg-[#ccff00]/[0.04] blur-[100px]" />
+        <div className="absolute bottom-0 right-0 h-80 w-80 rounded-full bg-[#ccff00]/[0.03] blur-[90px]" />
       </div>
 
-      {msg && (
-        <div className="rounded-xl border border-[#ccff00]/30 bg-[#ccff00]/10 px-4 py-2.5 text-xs font-semibold text-[#e8ff99]">
-          {msg}
+      {/* Sidebar */}
+      <aside className="relative z-10 flex w-[260px] shrink-0 flex-col border-r border-white/[0.06] bg-[#0a0b0d]/95 backdrop-blur-xl">
+        <div className="border-b border-white/[0.06] px-5 py-5">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#ccff00] text-sm font-black text-black shadow-[0_0_20px_rgba(204,255,0,0.35)]">
+              HM
+            </div>
+            <div>
+              <div className="text-sm font-black tracking-tight text-white">
+                HoodMemes
+              </div>
+              <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/35">
+                Command Center
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 flex items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2">
+            <span
+              className={`h-2 w-2 rounded-full ${
+                systemsOk
+                  ? "bg-[#ccff00] shadow-[0_0_8px_#ccff00]"
+                  : "bg-amber-400"
+              }`}
+            />
+            <span className="text-[11px] font-semibold text-white/55">
+              {systemsOk ? "All systems nominal" : "Check system health"}
+            </span>
+          </div>
         </div>
-      )}
-      {err && (
-        <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-2.5 text-xs text-rose-100">
-          {err}
-        </div>
-      )}
 
-      {/* Tabs */}
-      <div className="hm-scroll flex gap-1 overflow-x-auto rounded-2xl border border-white/10 bg-black/30 p-1">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => setTab(t.id)}
-            className={`shrink-0 rounded-xl px-3 py-2 text-xs font-bold transition ${
-              tab === t.id
-                ? "bg-[#ccff00] text-black"
-                : "text-white/45 hover:text-white"
-            }`}
+        <nav className="hm-scroll flex-1 space-y-5 overflow-y-auto px-3 py-4">
+          {groups.map((g) => (
+            <div key={g.id}>
+              <div className="mb-1.5 px-2 text-[10px] font-bold uppercase tracking-[0.18em] text-white/25">
+                {g.label}
+              </div>
+              <div className="space-y-0.5">
+                {TABS.filter((t) => t.group === g.id).map((t) => {
+                  const active = tab === t.id;
+                  const badge =
+                    t.id === "analytics" && analytics?.contacts.unread
+                      ? analytics.contacts.unread
+                      : t.id === "launches"
+                        ? launches.length || null
+                        : null;
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setTab(t.id)}
+                      className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition ${
+                        active
+                          ? "bg-[#ccff00] text-black shadow-[0_0_20px_rgba(204,255,0,0.2)]"
+                          : "text-white/55 hover:bg-white/[0.04] hover:text-white"
+                      }`}
+                    >
+                      <span
+                        className={`text-sm ${active ? "opacity-80" : "opacity-50"}`}
+                      >
+                        {t.icon}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-[13px] font-bold leading-tight">
+                          {t.label}
+                        </span>
+                        <span
+                          className={`block text-[10px] ${
+                            active ? "text-black/55" : "text-white/30"
+                          }`}
+                        >
+                          {t.blurb}
+                        </span>
+                      </span>
+                      {badge != null && badge > 0 && (
+                        <span
+                          className={`rounded-md px-1.5 py-0.5 text-[10px] font-black tabular-nums ${
+                            active
+                              ? "bg-black/15 text-black"
+                              : "bg-white/10 text-white/70"
+                          }`}
+                        >
+                          {badge}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </nav>
+
+        <div className="border-t border-white/[0.06] p-4">
+          <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2.5 text-[10px] text-white/35">
+            <div className="font-semibold text-white/50">Session</div>
+            <div className="mt-0.5 font-mono">
+              {address ? shortAddr(address, 5) : "password only"}
+            </div>
+            <div className="mt-1">
+              config v{config.version || 1}
+              {lastSaved
+                ? ` · saved ${new Date(lastSaved).toLocaleTimeString()}`
+                : ""}
+            </div>
+          </div>
+          <Link
+            href="/"
+            className="mt-2 block text-center text-[11px] font-semibold text-white/35 hover:text-[#ccff00]"
           >
-            {t.label}
-          </button>
-        ))}
-      </div>
+            ← Back to site
+          </Link>
+        </div>
+      </aside>
+
+      {/* Main */}
+      <div className="relative z-10 flex min-w-0 flex-1 flex-col">
+        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.06] bg-[#0a0b0d]/80 px-6 py-4 backdrop-blur-xl">
+          <div>
+            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em] text-white/30">
+              <span>Ops</span>
+              <span className="text-white/15">/</span>
+              <span className="text-[#ccff00]/80">{activeTab.label}</span>
+            </div>
+            <h1 className="mt-0.5 text-xl font-black tracking-tight text-white">
+              {activeTab.label}
+            </h1>
+            <p className="text-xs text-white/40">{activeTab.blurb}</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                loadAnalytics();
+                loadLaunches();
+                loadDiag();
+                loadActivity();
+              }}
+              className={btnSec}
+            >
+              Refresh data
+            </button>
+            <button
+              type="button"
+              onClick={() => save()}
+              disabled={busy}
+              className={btnPrimary}
+            >
+              {busy ? "Saving…" : "Save all changes"}
+            </button>
+            <button type="button" onClick={logout} className={btnSec}>
+              Logout
+            </button>
+          </div>
+        </header>
+
+        {(msg || err) && (
+          <div className="space-y-2 border-b border-white/[0.06] px-6 py-3">
+            {msg && (
+              <div className="rounded-xl border border-[#ccff00]/25 bg-[#ccff00]/10 px-4 py-2.5 text-xs font-semibold text-[#e8ff99]">
+                {msg}
+              </div>
+            )}
+            {err && (
+              <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-2.5 text-xs text-rose-100">
+                {err}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Mobile tab strip */}
+        <div className="hm-scroll flex gap-1 overflow-x-auto border-b border-white/[0.06] px-4 py-2 lg:hidden">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setTab(t.id)}
+              className={`shrink-0 rounded-lg px-3 py-1.5 text-[11px] font-bold ${
+                tab === t.id
+                  ? "bg-[#ccff00] text-black"
+                  : "bg-white/[0.04] text-white/50"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        <main className="hm-scroll flex-1 overflow-y-auto px-4 py-6 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-6xl space-y-5 pb-20">
 
       {/* ═══ OPS ═══ */}
       {tab === "ops" && (
-        <div className="space-y-4">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="space-y-5">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <StatCard
-              label="Maintenance"
-              value={config.maintenanceMode ? "ON" : "Off"}
+              label="Platform status"
+              value={
+                config.maintenanceMode
+                  ? "Maintenance"
+                  : config.launchesEnabled && config.tradingEnabled
+                    ? "Live"
+                    : "Degraded"
+              }
+              hint="Public site mode"
               bad={config.maintenanceMode}
+              accent={!config.maintenanceMode && config.launchesEnabled}
             />
             <StatCard
               label="Launches"
               value={config.launchesEnabled ? "Open" : "Paused"}
+              hint={`${launches.length} in ledger`}
               bad={!config.launchesEnabled}
+              accent={config.launchesEnabled}
             />
+            <StatCard
+              label="Pageviews today"
+              value={String(analytics?.traffic.today.pageviews ?? "—")}
+              hint={`${analytics?.traffic.today.uniqueHints ?? "—"} uniques est.`}
+              accent
+            />
+            <StatCard
+              label="Inbox"
+              value={String(analytics?.contacts.unread ?? 0)}
+              hint={`${analytics?.contacts.total ?? 0} total messages`}
+              bad={(analytics?.contacts.unread ?? 0) > 0}
+            />
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <StatCard
               label="Trading"
               value={config.tradingEnabled ? "On" : "Off"}
               bad={!config.tradingEnabled}
             />
             <StatCard
-              label="Featured"
+              label="Featured slots"
               value={String(config.featured.length)}
             />
             <StatCard
-              label="Hidden"
-              value={String(config.hiddenTokens.length)}
+              label="Moderation"
+              value={`${config.hiddenTokens.length} / ${config.blockedCreators.length}`}
+              hint="Hidden / blocked"
             />
             <StatCard
-              label="Blocked creators"
-              value={String(config.blockedCreators.length)}
-            />
-            <StatCard
-              label="Factory"
-              value={shortAddr(FACTORY_ADDRESS, 4)}
-            />
-            <StatCard
-              label="Upstash"
+              label="Infrastructure"
               value={
                 diag
                   ? String(diag.upstashPing || "—").includes("PONG") ||
                     String(diag.upstashPing) === "OK"
-                    ? "OK"
+                    ? "Healthy"
                     : "Check"
                   : "…"
               }
+              hint={shortAddr(FACTORY_ADDRESS, 4)}
               bad={
                 !!diag &&
                 !(
@@ -840,6 +1050,7 @@ export function AdminDashboard() {
                   String(diag.upstashPing) === "OK"
                 )
               }
+              accent={systemsOk}
             />
           </div>
 
@@ -2041,6 +2252,9 @@ export function AdminDashboard() {
           </Section>
         </div>
       )}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
@@ -2048,14 +2262,21 @@ export function AdminDashboard() {
 function Section({
   title,
   children,
+  action,
 }: {
   title: string;
   children: React.ReactNode;
+  action?: React.ReactNode;
 }) {
   return (
-    <section className="space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-      <h2 className="text-sm font-black text-white">{title}</h2>
-      {children}
+    <section className="overflow-hidden rounded-2xl border border-white/[0.07] bg-gradient-to-b from-white/[0.04] to-white/[0.015] shadow-[0_8px_40px_rgba(0,0,0,0.25)]">
+      <div className="flex items-center justify-between gap-3 border-b border-white/[0.06] px-5 py-3.5">
+        <h2 className="text-[13px] font-black tracking-tight text-white">
+          {title}
+        </h2>
+        {action}
+      </div>
+      <div className="space-y-3 px-5 py-4">{children}</div>
     </section>
   );
 }
@@ -2068,8 +2289,8 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <label className="block space-y-1">
-      <span className="text-[10px] font-semibold uppercase tracking-wider text-white/40">
+    <label className="block space-y-1.5">
+      <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/35">
         {label}
       </span>
       {children}
@@ -2087,14 +2308,25 @@ function Toggle({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <label className="flex cursor-pointer items-center justify-between gap-3 rounded-xl bg-black/25 px-3 py-2.5">
-      <span className="text-sm text-white/75">{label}</span>
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="h-4 w-4 accent-[#ccff00]"
-      />
+    <label className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-white/[0.06] bg-black/20 px-3.5 py-3 transition hover:border-white/[0.1]">
+      <span className="text-sm font-medium text-white/75">{label}</span>
+      <span
+        className={`relative h-6 w-11 shrink-0 rounded-full transition ${
+          checked ? "bg-[#ccff00]" : "bg-white/15"
+        }`}
+      >
+        <span
+          className={`absolute top-0.5 h-5 w-5 rounded-full bg-black shadow transition ${
+            checked ? "left-[22px] bg-black" : "left-0.5 bg-white/80"
+          }`}
+        />
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+          className="sr-only"
+        />
+      </span>
     </label>
   );
 }
@@ -2103,23 +2335,38 @@ function StatCard({
   label,
   value,
   bad,
+  hint,
+  accent,
 }: {
   label: string;
   value: string;
   bad?: boolean;
+  hint?: string;
+  accent?: boolean;
 }) {
   return (
-    <div className="rounded-2xl border border-white/8 bg-black/30 px-3 py-3">
-      <div className="text-[10px] font-semibold uppercase tracking-wider text-white/35">
+    <div
+      className={`relative overflow-hidden rounded-2xl border px-4 py-4 ${
+        bad
+          ? "border-amber-500/25 bg-gradient-to-br from-amber-500/10 to-transparent"
+          : accent
+            ? "border-[#ccff00]/20 bg-gradient-to-br from-[#ccff00]/[0.08] to-transparent"
+            : "border-white/[0.07] bg-gradient-to-br from-white/[0.04] to-transparent"
+      }`}
+    >
+      <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/35">
         {label}
       </div>
       <div
-        className={`mt-0.5 text-lg font-black ${
-          bad ? "text-amber-300" : "text-white"
+        className={`mt-1.5 text-2xl font-black tracking-tight tabular-nums ${
+          bad ? "text-amber-200" : accent ? "text-[#ccff00]" : "text-white"
         }`}
       >
         {value}
       </div>
+      {hint && (
+        <div className="mt-1 text-[11px] font-medium text-white/35">{hint}</div>
+      )}
     </div>
   );
 }
@@ -2136,7 +2383,7 @@ function MiniBars({
   }
   const max = Math.max(1, ...rows.map((r) => r.value));
   return (
-    <div className="flex h-32 items-end gap-1.5">
+    <div className="flex h-36 items-end gap-1.5 rounded-xl border border-white/[0.05] bg-black/20 px-3 py-3">
       {rows.map((r) => (
         <div
           key={r.label}
@@ -2147,8 +2394,8 @@ function MiniBars({
             {r.value || ""}
           </span>
           <div
-            className="w-full max-w-[32px] rounded-t bg-[#ccff00]/85"
-            style={{ height: `${Math.max(6, (r.value / max) * 88)}px` }}
+            className="w-full max-w-[36px] rounded-t-md bg-gradient-to-t from-[#ccff00]/70 to-[#ccff00]"
+            style={{ height: `${Math.max(6, (r.value / max) * 96)}px` }}
           />
           <span className="truncate text-[8px] text-white/30">{r.label}</span>
         </div>
@@ -2160,13 +2407,20 @@ function MiniBars({
 function Check({ ok, label }: { ok: boolean; label: string }) {
   return (
     <div
-      className={`rounded-xl border px-3 py-2 ${
+      className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold ${
         ok
-          ? "border-[#ccff00]/25 bg-[#ccff00]/5 text-[#e8ff99]"
-          : "border-amber-500/30 bg-amber-500/10 text-amber-100"
+          ? "border-[#ccff00]/20 bg-[#ccff00]/[0.06] text-[#e8ff99]"
+          : "border-amber-500/25 bg-amber-500/10 text-amber-100"
       }`}
     >
-      {ok ? "✓" : "!"} {label}
+      <span
+        className={`flex h-5 w-5 items-center justify-center rounded-md text-[10px] font-black ${
+          ok ? "bg-[#ccff00] text-black" : "bg-amber-400 text-black"
+        }`}
+      >
+        {ok ? "✓" : "!"}
+      </span>
+      {label}
     </div>
   );
 }
