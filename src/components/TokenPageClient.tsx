@@ -10,6 +10,7 @@ import { TokenTradeSection } from "./TokenTradeSection";
 import { SwapBridgePanel } from "./SwapBridgePanel";
 import { CreatorFeesPanel } from "./CreatorFeesPanel";
 import { LaunchHealthPanel } from "./LaunchHealth";
+import { TokenChat } from "./TokenChat";
 import {
   formatPct,
   formatPrice,
@@ -86,7 +87,9 @@ export function TokenPageClient({
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [copied, setCopied] = useState<"ca" | "pair" | "share" | null>(null);
-  const [mainTab, setMainTab] = useState<"chart" | "trades" | "info">("chart");
+  const [mainTab, setMainTab] = useState<
+    "chart" | "trades" | "chat" | "info"
+  >("chart");
   const [ethIn, setEthIn] = useState("0.05");
   const [lastRefresh, setLastRefresh] = useState<number>(Date.now());
 
@@ -551,6 +554,7 @@ export function TokenPageClient({
                     [
                       ["chart", "Chart"],
                       ["trades", "Trades"],
+                      ["chat", "Chat"],
                       ["info", "About"],
                     ] as const
                   ).map(([id, lab]) => (
@@ -625,6 +629,10 @@ export function TokenPageClient({
                     </div>
                   )}
                 </>
+              )}
+
+              {mainTab === "chat" && (
+                <TokenChat token={address} symbol={symbol} />
               )}
 
               {mainTab === "info" && (

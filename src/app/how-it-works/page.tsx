@@ -133,6 +133,11 @@ export default function HowItWorksPage() {
           </Link>{" "}
           after volume hits your pool.
         </p>
+        <p>
+          <strong className="text-white/80">5.</strong> On-site{" "}
+          <strong className="text-white/80">community chat</strong> on every
+          token page (wallet login to post · no links · anti-scam).
+        </p>
       </div>
 
       <div className="flex flex-wrap gap-3">
