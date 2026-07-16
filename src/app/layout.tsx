@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Header } from "@/components/Header";
 import { Providers } from "@/components/Providers";
 import { AnnouncementBar, MobileBottomNav } from "@/components/SiteChrome";
+import { OfficialLaunchChrome } from "@/components/LaunchCountdown";
 import { getBuildInfo } from "@/lib/build-info";
 import "./globals.css";
 
@@ -107,6 +108,7 @@ export default function RootLayout({
       <body className="flex min-h-full flex-col font-sans">
         <Providers>
           <Header />
+          <OfficialLaunchChrome />
           <AnnouncementBar />
           <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-20 pt-0 sm:py-2 md:pb-2">
             {children}

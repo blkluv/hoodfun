@@ -7,6 +7,7 @@ import { TokenCard } from "./TokenCard";
 import { formatPct, formatUsd, shortAddr, timeAgo } from "@/lib/format";
 import Link from "next/link";
 import { AddNetworkButton } from "./AddNetworkButton";
+import { LaunchCountdownHero } from "./LaunchCountdown";
 
 const TABS: { id: BoardTab; label: string; emoji: string }[] = [
   { id: "trending", label: "Trending", emoji: "" },
@@ -237,6 +238,11 @@ export function TokenBoard() {
 
   return (
     <div className="relative -mx-4 space-y-0 sm:-mx-0">
+      {/* ═══ OFFICIAL LAUNCH COUNTDOWN ═══ */}
+      {config?.officialLaunch?.enabled && (
+        <LaunchCountdownHero launch={config.officialLaunch} />
+      )}
+
       {/* ═══ MEGA HERO ═══ */}
       <section className="relative overflow-hidden border-b border-white/5">
         <div className="hm-grid pointer-events-none absolute inset-0 opacity-70" />

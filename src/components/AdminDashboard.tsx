@@ -1261,6 +1261,110 @@ export function AdminDashboard() {
       {tab === "homepage" && (
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="space-y-4">
+            <Section title="Official launch countdown">
+              <Toggle
+                label="Show official launch countdown (site-wide)"
+                checked={config.officialLaunch?.enabled ?? false}
+                onChange={(v) =>
+                  setConfig((c) => ({
+                    ...c,
+                    officialLaunch: {
+                      ...c.officialLaunch,
+                      enabled: v,
+                    },
+                  }))
+                }
+              />
+              <Field label="Launch time (local — stored as UTC ms)">
+                <input
+                  type="datetime-local"
+                  className={inp}
+                  value={
+                    config.officialLaunch?.at
+                      ? new Date(config.officialLaunch.at)
+                          .toISOString()
+                          .slice(0, 16)
+                      : ""
+                  }
+                  onChange={(e) => {
+                    const t = new Date(e.target.value).getTime();
+                    if (!Number.isFinite(t)) return;
+                    setConfig((c) => ({
+                      ...c,
+                      officialLaunch: {
+                        ...c.officialLaunch,
+                        at: t,
+                      },
+                    }));
+                  }}
+                />
+              </Field>
+              <Field label="Title">
+                <input
+                  className={inp}
+                  value={config.officialLaunch?.title || ""}
+                  onChange={(e) =>
+                    setConfig((c) => ({
+                      ...c,
+                      officialLaunch: {
+                        ...c.officialLaunch,
+                        title: e.target.value,
+                      },
+                    }))
+                  }
+                />
+              </Field>
+              <Field label="Subtitle">
+                <textarea
+                  className={`${inp} min-h-[64px]`}
+                  value={config.officialLaunch?.subtitle || ""}
+                  onChange={(e) =>
+                    setConfig((c) => ({
+                      ...c,
+                      officialLaunch: {
+                        ...c.officialLaunch,
+                        subtitle: e.target.value,
+                      },
+                    }))
+                  }
+                />
+              </Field>
+              <Field label="CTA label">
+                <input
+                  className={inp}
+                  value={config.officialLaunch?.ctaLabel || ""}
+                  onChange={(e) =>
+                    setConfig((c) => ({
+                      ...c,
+                      officialLaunch: {
+                        ...c.officialLaunch,
+                        ctaLabel: e.target.value,
+                      },
+                    }))
+                  }
+                />
+              </Field>
+              <Field label="CTA link (X / token page after launch)">
+                <input
+                  className={inp}
+                  value={config.officialLaunch?.ctaHref || ""}
+                  onChange={(e) =>
+                    setConfig((c) => ({
+                      ...c,
+                      officialLaunch: {
+                        ...c.officialLaunch,
+                        ctaHref: e.target.value,
+                      },
+                    }))
+                  }
+                />
+              </Field>
+              <p className="text-[10px] text-white/35">
+                After launch: set CTA to token URL, or disable countdown. Or set
+                env NEXT_PUBLIC_OFFICIAL_LAUNCH_AT (ISO) on Vercel.
+              </p>
+            </Section>
+
             <Section title="Hero copy">
               <Field label="Hero title">
                 <input
