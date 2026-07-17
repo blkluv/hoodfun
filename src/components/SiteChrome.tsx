@@ -88,15 +88,8 @@ export function MobileBottomNav() {
       <div className="mx-auto grid max-w-lg grid-cols-4 gap-1 px-2 py-1.5 text-center">
         <Tab href="/" label="Board" />
         <Tab href="/create" label="Launch" primary />
+        <Tab href="/airdrop" label="Airdrop" />
         <Tab href="/account" label="Account" />
-        <a
-          href="https://x.com/hoodmemesdotfun"
-          target="_blank"
-          rel="noreferrer"
-          className="rounded-xl px-1 py-2 text-[10px] font-bold text-white/45"
-        >
-          𝕏
-        </a>
       </div>
     </nav>
   );

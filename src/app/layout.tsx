@@ -134,6 +134,12 @@ export default function RootLayout({
                 Roadmap
               </Link>
               <Link
+                href="/airdrop"
+                className="font-semibold text-white/55 hover:text-[#ccff00]"
+              >
+                Airdrop
+              </Link>
+              <Link
                 href="/how-it-works"
                 className="font-semibold text-white/55 hover:text-[#ccff00]"
               >

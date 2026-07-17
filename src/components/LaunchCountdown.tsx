@@ -146,16 +146,16 @@ export function LaunchCountdownHero({
                 {launch.ctaLabel || "Follow for CA"}
               </a>
               <Link
-                href="/create"
+                href="/airdrop"
                 className="rounded-2xl border-2 border-black/20 bg-white/40 px-6 py-3.5 text-sm font-black text-black transition hover:bg-white/60"
               >
-                Launch a coin
+                Airdrop rules
               </Link>
               <Link
-                href="/how-it-works"
+                href="/create"
                 className="rounded-2xl border-2 border-black/15 px-5 py-3.5 text-sm font-bold text-black/70 hover:text-black"
               >
-                How it works
+                Launch a coin
               </Link>
             </div>
 
