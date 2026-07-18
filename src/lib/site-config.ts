@@ -69,12 +69,12 @@ function defaultLaunchAt(): number {
 export const DEFAULT_SITE_CONFIG: SiteConfig = {
   version: 1,
   updatedAt: 0,
-  heroTitle: "Robinhood trenches",
+  heroTitle: "Robinhood Barter Economy",
   heroSubtitle:
     "Live memecoins on Robinhood Chain — launch, trade, and burn on HoodMemes.",
   announcement: {
     enabled: true,
-    text: "⏰ Official $HOODMEMES brand token launches in under 24 hours — CA only from @hoodmemesdotfun",
+    text: "HOOD WALL ST.",
     href: "/#official-launch",
     tone: "success",
   },
@@ -86,10 +86,10 @@ export const DEFAULT_SITE_CONFIG: SiteConfig = {
   hiddenTokens: [],
   blockedCreators: [],
   social: {
-    twitter: "https://x.com/hoodmemesdotfun",
+    twitter: "https://x.com/hoodmemesdotcom",
     telegram: "",
     discord: "",
-    email: "admin@hoodmemes.fun",
+    email: "admin@hoodmemes.com",
   },
   minLiquidityUsd: 0,
   showDexBoard: true,
@@ -99,11 +99,11 @@ export const DEFAULT_SITE_CONFIG: SiteConfig = {
   officialLaunch: {
     enabled: true,
     at: defaultLaunchAt(),
-    title: "Official $HOODMEMES",
+    title: "Official $LUV",
     subtitle:
-      "Brand token launch on Robinhood Chain. Countdown is live — CA only from @hoodmemesdotfun.",
+      "Barter $LUV IRL",
     ctaLabel: "Follow on X",
-    ctaHref: "https://x.com/hoodmemesdotfun",
+    ctaHref: "https://x.com/hoodmemesdotcom",
   },
 };
 

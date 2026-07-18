@@ -1,8 +1,8 @@
 {
   "version": 1,
   "updatedAt": 0,
-  "heroTitle": "Robinhood trenches",
-  "heroSubtitle": "Live memecoins on Robinhood Chain — launch, trade, and burn on HoodMemes.",
+  "heroTitle": "Robinhood Barter Economy",
+  "heroSubtitle": "Barter memecoins on Robinhood Chain — launch, trade, barter and burn IRL.",
   "announcement": {
     "enabled": false,
     "text": "",
@@ -17,7 +17,7 @@
   "hiddenTokens": [],
   "blockedCreators": [],
   "social": {
-    "twitter": "https://x.com/hoodmemesdotfun",
+    "twitter": "https://x.com/hoodmemesdotcom",
     "telegram": "",
     "discord": ""
   },

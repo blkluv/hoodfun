@@ -259,7 +259,7 @@ export function TokenBoard() {
               </div>
               <h1 className="text-5xl font-black leading-[0.98] tracking-tight text-white sm:text-6xl md:text-7xl">
                 <span className="bg-gradient-to-br from-white via-white to-[#ccff00] bg-clip-text text-transparent">
-                  {config?.heroTitle || "Robinhood trenches"}
+                  {config?.heroTitle || "Robinhood Social Bank"}
                 </span>
               </h1>
               <p className="mt-4 max-w-xl text-base leading-relaxed text-white/50 sm:text-lg">

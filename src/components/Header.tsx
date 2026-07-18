@@ -81,10 +81,10 @@ export function Header() {
               </span>
               <div className="leading-tight">
                 <div className="text-sm font-black tracking-tight text-white group-hover:text-[#ccff00]">
-                  HoodMemes
+                  Hood Memes
                 </div>
                 <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-white/35">
-                  trenches
+                  Social
                 </div>
               </div>
             </Link>

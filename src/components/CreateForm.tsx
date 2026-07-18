@@ -405,7 +405,7 @@ export function CreateForm() {
                     maxLength={32}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="HoodMemes"
+                    placeholder="SHAWN BARTER"
                     className={inputCls}
                   />
                 </Field>
@@ -415,7 +415,7 @@ export function CreateForm() {
                     maxLength={12}
                     value={symbol}
                     onChange={(e) => setSymbol(e.target.value.toUpperCase())}
-                    placeholder="HOODMEMES"
+                    placeholder="LUV"
                     className={`${inputCls} uppercase tracking-wide`}
                   />
                 </Field>
@@ -424,7 +424,7 @@ export function CreateForm() {
                     maxLength={280}
                     value={desc}
                     onChange={(e) => setDesc(e.target.value)}
-                    placeholder="What is this coin about?"
+                    placeholder="How are you solving a problem IRL?"
                     rows={3}
                     className={`${inputCls} resize-none`}
                   />

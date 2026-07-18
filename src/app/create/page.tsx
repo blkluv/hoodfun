@@ -75,15 +75,15 @@ export default function CreatePage() {
             </span>
             <br />
             <span className="bg-gradient-to-r from-[#ccff00] via-[#e8ff66] to-white bg-clip-text text-transparent">
-              that actually trades
+              bartered for a purpose
             </span>
           </h1>
 
           <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-white/50 sm:text-base">
-            Fixed 1B supply. One tx → Uniswap V3 pool with{" "}
-            <strong className="text-white/70">LP locked forever</strong> (no
-            burn/keep choice). Your ETH is the first buy. You earn 50% of swap
-            fees for life.
+            We fund your purpose with {" "}
+            <strong className="text-white/70"></strong>1B supply</strong> of your token.
+            You earn up to 25% APR. Borrow with no credit check. 
+            Keep 50% of every barter fee.
           </p>
 
           <div className="mx-auto mt-8 grid max-w-2xl grid-cols-2 gap-2 text-left sm:grid-cols-4 sm:gap-3">
