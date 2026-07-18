@@ -89,25 +89,25 @@ export function LaunchCountdownHero({
               Live now
             </div>
             <div className="mt-2 text-3xl font-black text-white sm:text-4xl">
-              $HOODMEMES is live
+              FOR PURPOSE ECONOMY
             </div>
             <p className="mt-2 text-sm text-white/50">
-              CA only from the official account. Verify before you ape.
+              We are empowering the new bartering economy.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <a
-                href={launch.ctaHref || "https://x.com/hoodmemesdotfun"}
+                href={launch.ctaHref || "https://x.com/hoodmemesdotcom"}
                 target="_blank"
                 rel="noreferrer"
                 className="rounded-2xl bg-[#ccff00] px-6 py-3 text-sm font-black text-black"
               >
-                Get CA on X →
+                Follow on X →
               </a>
               <Link
-                href="/"
+                href="https://lumeebooth.com/social/s/hood-memes/"
                 className="rounded-2xl border border-white/20 px-6 py-3 text-sm font-bold text-white"
               >
-                Board
+                Social
               </Link>
             </div>
           </div>
@@ -138,12 +138,12 @@ export function LaunchCountdownHero({
 
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <a
-                href={launch.ctaHref || "https://x.com/hoodmemesdotfun"}
+                href={launch.ctaHref || "https://x.com/hoodmemesdotcom"}
                 target="_blank"
                 rel="noreferrer"
                 className="rounded-2xl bg-black px-7 py-3.5 text-sm font-black text-[#ccff00] shadow-lg transition hover:scale-[1.02]"
               >
-                {launch.ctaLabel || "Follow for CA"}
+                {launch.ctaLabel || "Follow on X"}
               </a>
               <Link
                 href="/airdrop"

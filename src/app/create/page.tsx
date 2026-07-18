@@ -79,9 +79,10 @@ export default function CreatePage() {
             </span>
           </h1>
 
+          {/* ✅ FIXED: removed extra closing </strong> and placed text inside */}
           <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-white/50 sm:text-base">
-            We fund your purpose with {" "}
-            <strong className="text-white/70"></strong>1B supply</strong> of your token.
+            We fund your purpose with{" "}
+            <strong className="text-white/70">1B supply</strong> of your token.
             You earn up to 25% APR. Borrow with no credit check. 
             Keep 50% of every barter fee.
           </p>
