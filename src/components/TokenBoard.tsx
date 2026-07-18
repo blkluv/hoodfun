@@ -782,7 +782,7 @@ export function TokenBoard() {
             rel="noreferrer"
             className="font-semibold hover:text-[#ccff00]"
           >
-            𝕏 @hoodmemesdotfun
+            𝕏 @hoodmemesdotcom
           </a>
           {config?.social.telegram && (
             <a

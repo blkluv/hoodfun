@@ -35,10 +35,10 @@ export default function DisclaimerPage() {
       <p>
         Contact:{" "}
         <a
-          href="mailto:admin@hoodmemes.fun"
+          href="mailto:hahz@hoodmemes.com"
           className="font-semibold text-[#ccff00] hover:underline"
         >
-          admin@hoodmemes.fun
+          hahz@hoodmemes.com
         </a>{" "}
         ·{" "}
         <Link href="/contact" className="font-semibold text-[#ccff00] hover:underline">

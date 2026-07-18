@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { resolveTokenIdentity } from "@/lib/token-meta";
 
-const SITE = "https://www.hoodmemes.fun";
+const SITE = "https://www.hoodmemes.com";
 /** Static brand OG — X crawler is unreliable with slow dynamic ImageResponse routes */
 const OG_IMAGE = `${SITE}/og.png?v=5`;
 
@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     : `Token ${address.slice(0, 6)}… | HoodMemes`;
 
   const description = symbol
-    ? `${name ?? symbol} ($${symbol}) on Robinhood Chain — live chart, trade on Uniswap · hoodmemes.fun`
+    ? `${name ?? symbol} ($${symbol}) on Robinhood Chain — live chart, trade on Uniswap · hoodmemes.com`
     : `Robinhood Chain token ${address} on HoodMemes trenches`;
 
   const ogTitle = symbol ? `$${symbol} on HoodMemes` : title;
@@ -53,8 +53,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: ogTitle,
       description,
       images: [OG_IMAGE],
-      creator: "@hoodmemesdotfun",
-      site: "@hoodmemesdotfun",
+      creator: "@hoodmemesdotcom",
+      site: "@hoodmemesdotcom",
     },
   };
 }

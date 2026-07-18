@@ -1,6 +1,6 @@
 # HoodMemes
 
-**https://hoodmemes.fun** — Pump-style memecoin board + launchpad for **Robinhood Chain** (`4663`).
+**https://hoodmemes.com** — Pump-style memecoin board + launchpad for **Robinhood Chain** (`4663`).
 
 Repo: [danyalsad/hoodfun](https://github.com/danyalsad/hoodfun)
 

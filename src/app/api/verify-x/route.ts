@@ -69,7 +69,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "signature required" }, { status: 400 });
     }
 
-    const message = `Unlink X verification on hoodmemes.fun\nWallet: ${body.address.toLowerCase()}`;
+    const message = `Unlink X verification on hoodmemes.com\nWallet: ${body.address.toLowerCase()}`;
     const ok = await verifyMessage({
       address: body.address as `0x${string}`,
       message,

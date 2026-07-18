@@ -84,7 +84,7 @@ const PHASES: Phase[] = [
 
       {
         title: "Ansem-style airdrop",
-        body: "High-signal CT distribution: dust/bags to curated wallets (early trenchers, RH memecoin holders, KOL-adjacent lists) — loud, cultural, not a farm for bots. Aim is mindshare and real wallet activity, not empty sybil spam. Exact lists + size drop when ready; CA only from @hoodmemesdotfun.",
+        body: "High-signal CT distribution: dust/bags to curated wallets (early trenchers, RH memecoin holders, KOL-adjacent lists) — loud, cultural, not a farm for bots. Aim is mindshare and real wallet activity, not empty sybil spam. Exact lists + size drop when ready; CA only from @hoodmemesdotcom.",
         tag: "Culture",
       },
     ],
@@ -278,7 +278,7 @@ export default function RoadmapPage() {
             target="_blank"
             rel="noreferrer"
           >
-            @hoodmemesdotfun
+            @hoodmemesdotcom
           </a>
           .
         </p>
@@ -297,10 +297,10 @@ export default function RoadmapPage() {
           </Link>
           {" · "}
           <a
-            href="mailto:admin@hoodmemes.fun"
+            href="mailto:hahz@hoodmemes.com"
             className="text-[#ccff00] hover:underline"
           >
-            admin@hoodmemes.fun
+            hahz@hoodmemes.com
           </a>
           .
         </p>

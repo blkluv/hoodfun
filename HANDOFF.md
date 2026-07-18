@@ -2,9 +2,9 @@
 
 **Last updated:** 2026-07-13  
 **Repo:** https://github.com/danyalsad/hoodfun  
-**Site:** https://hoodmemes.fun (also www)  
+**Site:** https://hoodmemes.com (also www)  
 **Owner:** danyalsad (GitHub) · local path `/Users/danny/hoodfun`  
-**Domain:** Namecheap · `hoodmemes.fun`
+**Domain:** Namecheap · `hoodmemes.com`
 
 This file is for a **new agent session** to take over without re-discovering context.
 
@@ -225,7 +225,7 @@ CREATE_FEE_WEI / MIN_LP_ETH_WEI     # deploy-time only
 - Community-funded 0.25 ETH graduation felt pointless / no creator profit.
 - LP burn should be **optional** (burn vs keep) — already in instant factory.
 - Official token brand: **HoodMemes / HOODMEMES**; may relaunch after instant factory is live.
-- Domain brand: **hoodmemes.fun** (not hoodfun.io).
+- Domain brand: **hoodmemes.com** (not hoodfun.io).
 
 ---
 
@@ -267,7 +267,7 @@ cd contracts && forge test -vv
 
 ## Admin quick ref
 
-- URL: https://hoodmemes.fun/hm-ops  
+- URL: https://hoodmemes.com/hm-ops  
 - Default password was `hoodmemes-admin` if unset (should be changed on Vercel).  
 - Featured tokens drive homepage “Featured” row.
 

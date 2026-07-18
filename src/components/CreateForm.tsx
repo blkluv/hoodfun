@@ -180,7 +180,7 @@ export function CreateForm() {
       const buyWei = parseEther(buyEth || "0");
       const value = fee + buyWei;
       const userSalt = randomSalt();
-      const metadataURI = website.trim() || `https://www.hoodmemes.fun`;
+      const metadataURI = website.trim() || `https://www.hoodmemes.com`;
 
       const hash = await writeContract({
         address: FACTORY_ADDRESS as `0x${string}`,
@@ -792,7 +792,7 @@ function SuccessPanel({
     discord?: string;
   };
 }) {
-  const pageUrl = `https://www.hoodmemes.fun/token/${token}${pool ? `?pair=${pool}` : ""}`;
+  const pageUrl = `https://www.hoodmemes.com/token/${token}${pool ? `?pair=${pool}` : ""}`;
   const fomoUrl = fomoTokenUrl(token);
   const tweetText = `$${symbol} just launched on Robinhood Chain via HoodMemes (Uniswap V3)\n\nCA: ${token}\n${pageUrl}\n${fomoUrl}`;
   const tweetIntent = `https://x.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;

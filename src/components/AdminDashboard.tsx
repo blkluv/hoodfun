@@ -766,7 +766,7 @@ export function AdminDashboard() {
             )}
           </form>
           <p className="mt-6 text-center text-[10px] text-white/25">
-            Unauthorized access attempts are not welcome. · hoodmemes.fun
+            Unauthorized access attempts are not welcome. · hoodmemes.com
           </p>
         </div>
       </div>
@@ -2119,10 +2119,10 @@ export function AdminDashboard() {
                 <p className="mb-2 text-[11px] text-white/40">
                   Form submissions from /contact. Also receives mail at{" "}
                   <a
-                    href="mailto:admin@hoodmemes.fun"
+                    href="mailto:hahz@hoodmemes.com"
                     className="text-[#ccff00] hover:underline"
                   >
-                    admin@hoodmemes.fun
+                    hahz@hoodmemes.com
                   </a>{" "}
                   (mailbox is separate — configure DNS/forwarding).
                 </p>
@@ -2191,7 +2191,7 @@ export function AdminDashboard() {
           <Field label="Contact email (public)">
             <input
               className={inp}
-              value={config.social.email || "admin@hoodmemes.fun"}
+              value={config.social.email || "hahz@hoodmemes.com"}
               onChange={(e) =>
                 setConfig((c) => ({
                   ...c,
@@ -2200,7 +2200,7 @@ export function AdminDashboard() {
               }
             />
             <p className="mt-1 text-[10px] text-white/35">
-              Shown site-wide. Default: admin@hoodmemes.fun — set up DNS /
+              Shown site-wide. Default: hahz@hoodmemes.com — set up DNS /
               Google Workspace / forwarder so mail actually arrives.
             </p>
           </Field>

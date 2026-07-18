@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { TokenBoard } from "@/components/TokenBoard";
 
-const SITE = "https://www.hoodmemes.fun";
+const SITE = "https://www.hoodmemes.com";
 const OG = `${SITE}/og.png?v=5`;
 
 export const metadata: Metadata = {
   title: "HoodMemes — Robinhood Chain Trenches",
   description:
-    "Trending memecoins on Robinhood Chain. Launch, trade, burn. Live board · hoodmemes.fun",
+    "Trending memecoins on Robinhood Chain. Launch, trade, burn. Live board · hoodmemes.com",
   openGraph: {
     title: "HoodMemes — Robinhood Chain Trenches",
     description:
@@ -31,8 +31,8 @@ export const metadata: Metadata = {
     title: "HoodMemes — Robinhood Chain Trenches",
     description: "Trending memecoins on Robinhood Chain. Live board.",
     images: [OG],
-    creator: "@hoodmemesdotfun",
-    site: "@hoodmemesdotfun",
+    creator: "@hoodmemesdotcom",
+    site: "@hoodmemesdotcom",
   },
 };
 

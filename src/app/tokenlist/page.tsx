@@ -9,15 +9,15 @@ export const revalidate = 60;
 export const metadata: Metadata = {
   title: "Token list",
   description:
-    "Official HoodMemes Uniswap-style token list for Robinhood Chain launches — logos and CAs from hoodmemes.fun.",
+    "Official HoodMemes Uniswap-style token list for Robinhood Chain launches — logos and CAs from hoodmemes.com.",
   openGraph: {
     title: "HoodMemes Token List",
     description: "Import our token list for logos on Robinhood Chain memes.",
-    url: "https://www.hoodmemes.fun/tokenlist",
+    url: "https://www.hoodmemes.com/tokenlist",
   },
 };
 
-const LIST_URL = "https://www.hoodmemes.fun/tokenlist.json";
+const LIST_URL = "https://www.hoodmemes.com/tokenlist.json";
 
 export default async function TokenListPage() {
   const list = await buildHoodTokenList().catch(() => null);

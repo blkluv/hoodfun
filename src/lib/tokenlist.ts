@@ -7,7 +7,7 @@ import { ROBINHOOD_CHAIN } from "./chain";
 import { getAllLaunchMeta, type LaunchMeta } from "./launch-meta";
 import { logoPublicUrl } from "./logo-store";
 
-const SITE = "https://www.hoodmemes.fun";
+const SITE = "https://www.hoodmemes.com";
 
 export type TokenListToken = {
   chainId: number;
@@ -96,7 +96,7 @@ export async function buildHoodTokenList(): Promise<HoodTokenList> {
     tags: {
       hoodmemes: {
         name: "HoodMemes",
-        description: "Launched via hoodmemes.fun on Robinhood Chain",
+        description: "Launched via hoodmemes.com on Robinhood Chain",
       },
     },
     timestamp,

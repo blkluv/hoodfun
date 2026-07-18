@@ -147,7 +147,7 @@ export function buildChallenge(
     "HoodMemes launcher verification",
     `Link X @${h} to wallet ${addr}`,
     `Code: ${code}`,
-    "Only sign this on hoodmemes.fun",
+    "Only sign this on hoodmemes.com",
   ].join("\n");
 
   const shortAddr = `${addr.slice(0, 6)}…${addr.slice(-4)}`;
@@ -156,7 +156,7 @@ export function buildChallenge(
     ``,
     `Wallet: ${addr}`,
     `Code: ${code}`,
-    `https://hoodmemes.fun`,
+    `https://hoodmemes.com`,
     ``,
     `(${shortAddr} · @${h})`,
   ].join("\n");

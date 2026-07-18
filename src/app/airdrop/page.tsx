@@ -5,7 +5,7 @@ import { AirdropClient } from "./AirdropClient";
 export const metadata: Metadata = {
   title: "Airdrop",
   description:
-    "$HOODMEMES community airdrop — hold, shill, thesis, giveaways, IRL. Official rules only on hoodmemes.fun. CA from @hoodmemesdotfun.",
+    "$HOODMEMES community airdrop — hold, shill, thesis, giveaways, IRL. Official rules only on hoodmemes.com. CA from @hoodmemesdotcom.",
   openGraph: {
     title: "HoodMemes Airdrop — $HOODMEMES",
     description:
@@ -56,7 +56,7 @@ export default function AirdropPage() {
               rel="noreferrer"
               className="rounded-2xl border-2 border-black/20 bg-white/40 px-6 py-3.5 text-sm font-black text-black hover:bg-white/60"
             >
-              Follow @hoodmemesdotfun
+              Follow @hoodmemesdotcom
             </a>
             <a
               href={FOMO}
@@ -130,12 +130,12 @@ export default function AirdropPage() {
               {
                 n: "02",
                 t: "Follow the source",
-                d: "Follow @hoodmemesdotfun. Notifs on if you like being early. Official CA, snaps, and claim only come from here and hoodmemes.fun.",
+                d: "Follow @hoodmemesdotcom. Notifs on if you like being early. Official CA, snaps, and claim only come from here and hoodmemes.com.",
               },
               {
                 n: "03",
                 t: "Make noise on X",
-                d: "Original posts with $HOODMEMES + CA or hoodmemes.fun. Quote our launch. Threads. Memes. The timeline should know the ticker.",
+                d: "Original posts with $HOODMEMES + CA or hoodmemes.com. Quote our launch. Threads. Memes. The timeline should know the ticker.",
               },
               {
                 n: "04",
@@ -190,7 +190,7 @@ export default function AirdropPage() {
               {
                 tag: "GIVEAWAY",
                 t: "Run a giveaway",
-                d: "Host a $HOODMEMES or RH-themed giveaway on X / TG — community raffles, meme contests, “RT + follow” drops. Tag @hoodmemesdotfun so we can see the chaos.",
+                d: "Host a $HOODMEMES or RH-themed giveaway on X / TG — community raffles, meme contests, “RT + follow” drops. Tag @hoodmemesdotcom so we can see the chaos.",
               },
               {
                 tag: "IRL",
@@ -296,11 +296,11 @@ export default function AirdropPage() {
               },
               {
                 t: "Snapshots",
-                d: "One or more snaps. Windows announced only on @hoodmemesdotfun and this site. Stay bagged.",
+                d: "One or more snaps. Windows announced only on @hoodmemesdotcom and this site. Stay bagged.",
               },
               {
                 t: "Claim",
-                d: "Connect wallet when claim opens on hoodmemes.fun. We’ll keep it simple.",
+                d: "Connect wallet when claim opens on hoodmemes.com. We’ll keep it simple.",
               },
               {
                 t: "Trust only official",
@@ -370,10 +370,10 @@ export default function AirdropPage() {
           </Link>
           {" · "}
           <a
-            href="mailto:admin@hoodmemes.fun"
+            href="mailto:hahz@hoodmemes.com"
             className="text-white/45 hover:text-[#ccff00]"
           >
-            admin@hoodmemes.fun
+            hahz@hoodmemes.com
           </a>
         </p>
       </div>

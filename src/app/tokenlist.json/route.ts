@@ -4,7 +4,7 @@ import { buildHoodTokenList } from "@/lib/tokenlist";
 export const dynamic = "force-dynamic";
 export const revalidate = 60;
 
-/** Uniswap Token List JSON — import at https://www.hoodmemes.fun/tokenlist.json */
+/** Uniswap Token List JSON — import at https://www.hoodmemes.com/tokenlist.json */
 export async function GET() {
   try {
     const list = await buildHoodTokenList();

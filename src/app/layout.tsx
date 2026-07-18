@@ -19,10 +19,10 @@ const geistMono = Geist_Mono({
 });
 
 const siteDescription =
-  "Pump-style memecoin board for Robinhood Chain. Launch, trade, and burn in the trenches. hoodmemes.fun";
+  "Pump-style memecoin board for Robinhood Chain. Launch, trade, and burn in the trenches. hoodmemes.com";
 
 /** Canonical host = www (apex 308s to www; X crawler fails image redirects) */
-const SITE_URL = "https://www.hoodmemes.fun";
+const SITE_URL = "https://www.hoodmemes.com";
 /** Absolute OG URL — no redirect chain for Twitter/X */
 const OG_IMAGE = `${SITE_URL}/og.png?v=5`;
 
@@ -77,8 +77,8 @@ export const metadata: Metadata = {
     title: "HoodMemes — Robinhood Chain Trenches",
     description: siteDescription,
     images: [OG_IMAGE],
-    creator: "@hoodmemesdotfun",
-    site: "@hoodmemesdotfun",
+    creator: "@hoodmemesdotcom",
+    site: "@hoodmemesdotcom",
   },
   robots: {
     index: true,
@@ -164,10 +164,10 @@ export default function RootLayout({
                 Disclaimer
               </Link>
               <a
-                href="mailto:admin@hoodmemes.fun"
+                href="mailto:hahz@hoodmemes.com"
                 className="font-semibold text-white/55 hover:text-[#ccff00]"
               >
-                admin@hoodmemes.fun
+                hahz@hoodmemes.com
               </a>
               <a
                 href="https://x.com/hoodmemesdotfun"
@@ -175,16 +175,16 @@ export default function RootLayout({
                 rel="noreferrer"
                 className="font-semibold text-white/55 hover:text-[#ccff00]"
               >
-                𝕏 @hoodmemesdotfun
+                𝕏 @hoodmemesdotcom
               </a>
             </div>
             <div className="mt-3 text-white/25">
               Contact{" "}
               <a
-                href="mailto:admin@hoodmemes.fun"
+                href="mailto:hahz@hoodmemes.com"
                 className="text-white/45 hover:text-[#ccff00]"
               >
-                admin@hoodmemes.fun
+                hahz@hoodmemes.com
               </a>{" "}
               · Independent · not affiliated with Robinhood Markets, Inc. · Not
               financial advice · DYOR

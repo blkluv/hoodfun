@@ -185,7 +185,7 @@ h1 {
     <h1>HoodMemes</h1>
     <div class="tag">Robinhood Chain Trenches</div>
     <div class="meta">Launch · Trade · Burn</div>
-    <div class="url">hoodmemes.fun</div>
+    <div class="url">hoodmemes.com</div>
   </div>
 </div>
 </body></html>`;

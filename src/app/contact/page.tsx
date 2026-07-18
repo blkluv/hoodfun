@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 
-const CONTACT_EMAIL = "admin@hoodmemes.fun";
+const CONTACT_EMAIL = "hahz@hoodmemes.com";
 
 export default function ContactPage() {
   const [name, setName] = useState("");
@@ -204,7 +204,7 @@ export default function ContactPage() {
           rel="noreferrer"
           className="font-semibold text-white/45 hover:text-[#ccff00]"
         >
-          𝕏 @hoodmemesdotfun
+          𝕏 @hoodmemesdotcom
         </a>
       </div>
     </div>

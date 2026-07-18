@@ -165,7 +165,7 @@ export function VerifyXPanel({
     setErr(null);
     setBusy(true);
     try {
-      const message = `Unlink X verification on hoodmemes.fun\nWallet: ${address.toLowerCase()}`;
+      const message = `Unlink X verification on hoodmemes.com\nWallet: ${address.toLowerCase()}`;
       const sig = await signMessage(message);
       const res = await fetch("/api/verify-x", {
         method: "DELETE",

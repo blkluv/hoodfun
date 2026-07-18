@@ -225,7 +225,7 @@ export function Header() {
                 rel="noreferrer"
                 className="rounded-lg px-3 py-1.5 text-sm text-white/55"
               >
-                𝕏 @hoodmemesdotfun
+                𝕏 @hoodmemesdotcom
               </a>
               <div className="mt-1 text-[10px] text-white/30">
                 Robinhood Chain · {ROBINHOOD_CHAIN.id}

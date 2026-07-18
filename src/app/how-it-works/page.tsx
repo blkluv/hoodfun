@@ -46,7 +46,7 @@ export default function HowItWorksPage() {
           },
           {
             t: "Trade & get indexed",
-            d: "Token is live on Uniswap immediately — Fomo, DexScreener, and bots that cover Robinhood Chain can pick it up. Share your CA + hoodmemes.fun/token/… page.",
+            d: "Token is live on Uniswap immediately — Fomo, DexScreener, and bots that cover Robinhood Chain can pick it up. Share your CA + hoodmemes.com/token/… page.",
           },
         ].map((s, i) => (
           <li
@@ -160,10 +160,10 @@ export default function HowItWorksPage() {
           Contact
         </Link>
         <a
-          href="mailto:admin@hoodmemes.fun"
+          href="mailto:hahz@hoodmemes.com"
           className="rounded-xl border border-[#ccff00]/30 px-5 py-2.5 text-sm font-semibold text-[#ccff00]"
         >
-          admin@hoodmemes.fun
+          hahz@hoodmemes.com
         </a>
         <AddNetworkButton />
       </div>

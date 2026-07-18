@@ -1,6 +1,6 @@
 # HoodMemes contracts (Robinhood Chain)
 
-Site: https://hoodmemes.fun
+Site: https://hoodmemes.com
 
 Target: **Robinhood Chain** — chain ID `4663`, RPC `https://rpc.mainnet.chain.robinhood.com`.
 

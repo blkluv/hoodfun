@@ -89,7 +89,7 @@ export const DEFAULT_SITE_CONFIG: SiteConfig = {
     twitter: "https://x.com/hoodmemesdotcom",
     telegram: "",
     discord: "",
-    email: "admin@hoodmemes.com",
+    email: "hahz@hoodmemes.com",
   },
   minLiquidityUsd: 0,
   showDexBoard: true,
